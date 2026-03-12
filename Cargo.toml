@@ -1,0 +1,21 @@
+[package]
+name = "karat"
+version = "0.1.0"
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "karat"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.28.0"
+whatsapp-rust = "0.3"
+whatsapp-rust-sqlite-storage = "0.3"
+whatsapp-rust-tokio-transport = "0.3"
+whatsapp-rust-ureq-http-client = "0.3"
+wacore = "0.3"
+waproto = "0.3"
+tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
+async-trait = "0.1.89"
+pyo3-async-runtimes = { version = "0.28.0", features = ["attributes", "async-std-runtime"] }
