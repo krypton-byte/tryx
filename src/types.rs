@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
-use pyo3::{PyErr, PyResult, Python, exceptions::{PyException, PyRuntimeError}, ffi::PyObject, pyclass, pymethods, types::PyDateTime};
+use pyo3::{PyErr, PyResult, Python, exceptions::{PyException, PyRuntimeError}, ffi::PyObject, pyclass, pymethods, types::{PyBytes, PyDateTime}};
 use whatsapp_rust::{Jid as WhatsAppJID};
-use wacore::types::message::{EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo, BotEditType};
+use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo, MsgMetaInfo as WhatsappMsgMetaInfo};
+use prost::Message;
 #[pyclass]
 pub struct JID {
     inner: Arc<WhatsAppJID>,
@@ -80,16 +81,7 @@ impl MessageSource {
 }
 
 
-#[pyclass]
-struct MessageInfo {
-    inner: Arc<WhatsAppMessageInfo>,
-    #[pyo3(get)]
-    id: String,
-    #[pyo3(get)]
-    r#type: String,
-    #[pyo3(get)]
-    push_name: String,
-}
+
 #[pyclass]
 struct MsgBotInfo {
     inner: Arc<WhatsAppMsgBotInfo>,
@@ -98,6 +90,7 @@ struct MsgBotInfo {
 }
 #[pymethods]
 impl MsgBotInfo {
+    #[getter]
     fn edit_type(&self) -> Option<&str> {
         self.inner.edit_type.as_ref().map(|edit_type| match edit_type {
             BotEditType::First => "First",
@@ -120,6 +113,61 @@ impl MsgBotInfo {
         }
     }
 }
+#[pyclass]
+struct MsgMetaInfo {
+    inner: Arc<WhatsappMsgMetaInfo>,
+    #[pyo3(get)]
+    target_id: Option<String>,
+    target_sender: Option<JID>,
+    #[pyo3(get)]
+    deprecated_lid_session: Option<bool>,
+    #[pyo3(get)]
+    thread_message_id: Option<String>,
+}
+
+#[pymethods]
+impl MsgMetaInfo {
+    #[getter]
+    fn target_id(&self) -> Option<&str> {
+        self.inner.target_id.as_ref().map(|s| s.as_str())
+    }
+    #[getter]
+    fn target_sender(&self) -> Option<JID> {
+        self.inner.target_sender.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
+    }
+    #[getter]
+    fn deprecated_lid_session(&self) -> Option<bool> {
+        self.inner.deprecated_lid_session
+    }
+    #[getter]
+    fn thread_message_id(&self) -> Option<&str> {
+        self.inner.thread_message_id.as_ref().map(|s| s.as_str())
+    }
+    #[getter]
+    fn thread_message_sender_jid(&self) -> Option<JID> {
+        self.inner.thread_message_sender_jid.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
+    }
+}
+
+#[pyclass]
+struct MessageInfo {
+    inner: Arc<WhatsAppMessageInfo>,
+    #[pyo3(get)]
+    id: String,
+    #[pyo3(get)]
+    r#type: String,
+    #[pyo3(get)]
+    push_name: String,
+}
+
+#[pyclass]
+struct DeviceSentMeta {
+    #[pyo3(get)]
+    destination_jid: String,
+    #[pyo3(get)]
+    phash: String,
+}
+
 #[pymethods]
 impl MessageInfo {
     #[getter]
@@ -174,7 +222,42 @@ impl MessageInfo {
         }
     }
     #[getter]
-    fn meta_info(&self) -> Option<&str> {
-        self.inner.meta_info.as_ref().map(|_| "MetaInfo")
+    fn meta_info(&self) -> MsgMetaInfo{
+        MsgMetaInfo {
+            inner: Arc::new(self.inner.meta_info.clone()),
+            target_id: match self.inner.meta_info.target_id {
+                Some(ref s) => Some(s.clone()),
+                None => None,
+            },
+            target_sender: match self.inner.meta_info.target_sender {
+                Some(ref jid) => Some(JID { inner: Arc::new(jid.clone()) }),
+                None => None,
+            },
+            deprecated_lid_session: self.inner.meta_info.deprecated_lid_session,
+            thread_message_id: match self.inner.meta_info.thread_message_id {
+                Some(ref s) => Some(s.clone()),
+                None => None,
+            },
+        }
+    }
+    #[getter]
+    fn verified_name(&self, py: Python) -> Option<pyo3::Py<PyBytes>> {
+        match self.inner.verified_name {
+            Some(ref name) => {
+                let mut buffer = Vec::new();
+                name.encode(&mut buffer);
+                let py_bytes = PyBytes::new(py, &buffer);
+                Some(py_bytes.into())
+
+            },
+            None => None, // Placeholder, as VerifiedNameCertificate is not yet implemented
+        }
+    }
+    #[getter]
+    fn device_sent_meta(&self) -> Option<DeviceSentMeta> {
+        self.inner.device_sent_meta.as_ref().map(|meta| DeviceSentMeta {
+            destination_jid: meta.destination_jid.clone(),
+            phash: meta.phash.clone(),
+        })
     }
 }
