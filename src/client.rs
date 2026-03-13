@@ -1,7 +1,5 @@
-use std::any::Any;
-use std::{ sync::Arc};
-use pyo3::exceptions::PyException;
-use pyo3::{pyclass, pymethods};
+use std::sync::Arc;
+use pyo3::{Bound, PyAny, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::async_std::future_into_py;
 use tokio::runtime;
@@ -11,26 +9,43 @@ use whatsapp_rust::store::Backend;
 use whatsapp_rust_tokio_transport::TokioWebSocketTransportFactory;
 use whatsapp_rust_ureq_http_client::UreqHttpClient;
 
-use crate::backend::{BackendType, SqliteBackend, BackendBase};
+use crate::backend::{SqliteBackend, BackendBase};
+use crate::events::Dispatcher;
 
 #[pyclass]
-struct KaratClient {
+pub struct Tryx {
     backend: Arc<dyn Backend>,
+    handlers: Py<Dispatcher>,
 }
 
 #[pymethods]
-impl KaratClient {
+impl Tryx {
     #[new]
     fn new(py: Python, backend: Py<BackendBase>) -> PyResult<Self> {
         if let Ok(sqlite) = backend.extract::<Py<SqliteBackend>>(py) {
             let backends = sqlite.borrow(py);
             let store = runtime::Runtime::new().unwrap().block_on(backends.connect()).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))?;
             // let store = sqlite_backend.connect().await.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))?;
-            Ok(KaratClient { backend: Arc::new(store)})
+            Ok(Tryx {
+                backend: Arc::new(store),
+                handlers: Py::new(py, Dispatcher::empty())?,
+            })
         } else {
             Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Unsupported backend type"))
         }
     }
+
+    /// Returns a decorator compatible with:
+    /// @client.on(Message)
+    /// async def on_message(client, data): ...
+    fn on(&self, py: Python, event_type: &Bound<PyAny>) -> PyResult<Py<PyAny>> {
+        let decorator = self
+            .handlers
+            .bind(py)
+            .call_method1("on", (event_type,))?;
+        Ok(decorator.unbind())
+    }
+
     fn run<'py>(&'py self, py: Python<'py> ) -> Result<Bound<PyAny>, PyErr> {
         // Here you would implement the logic to run the bot using the backend
         let backend = self.backend.clone();
@@ -50,7 +65,7 @@ impl KaratClient {
                     }
                 })
                 .build();
-            bot.await.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?.run().await. .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?.await.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            // bot.await.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?.run().await. .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?.await.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
         })
     }

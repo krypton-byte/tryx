@@ -1207,23 +1207,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "karat"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "prost",
- "pyo3",
- "pyo3-async-runtimes",
- "tokio",
- "wacore",
- "waproto",
- "whatsapp-rust",
- "whatsapp-rust-sqlite-storage",
- "whatsapp-rust-tokio-transport",
- "whatsapp-rust-ureq-http-client",
-]
-
-[[package]]
 name = "kv-log-macro"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2363,6 +2346,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "702d4415e08923e7e1ef96cd5727c0dfed80b4d2fa25db9647fe5eb6f7c5a4c4"
 dependencies = [
  "winnow",
+]
+
+[[package]]
+name = "tryx"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "prost",
+ "pyo3",
+ "pyo3-async-runtimes",
+ "tokio",
+ "wacore",
+ "waproto",
+ "whatsapp-rust",
+ "whatsapp-rust-sqlite-storage",
+ "whatsapp-rust-tokio-transport",
+ "whatsapp-rust-ureq-http-client",
 ]
 
 [[package]]

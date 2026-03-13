@@ -150,7 +150,7 @@ impl MsgMetaInfo {
 }
 
 #[pyclass]
-struct MessageInfo {
+pub struct MessageInfo {
     inner: Arc<WhatsAppMessageInfo>,
     #[pyo3(get)]
     id: String,

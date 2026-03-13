@@ -1,7 +1,4 @@
 
-use std::sync::Arc;
-use async_trait::async_trait;
-use whatsapp_rust::store::Backend;
 use whatsapp_rust_sqlite_storage::SqliteStore;
 use pyo3::prelude::*;
 
@@ -13,10 +10,6 @@ pub struct SqliteBackend {
     path: String,
 }
 
-#[pyclass(extends=BackendBase)]
-pub struct PostgresBackend {
-    connection_string: String,
-}
 #[pymethods]
 impl SqliteBackend {
     #[new]
@@ -32,17 +25,5 @@ impl SqliteBackend {
             Err(e) => Err(e.to_string().into()),
         }
     }
-}
-
-#[pymethods]
-impl PostgresBackend {
-    #[new]
-    fn new(connection_string: String) -> (Self, BackendBase) {
-        (PostgresBackend { connection_string }, BackendBase)
-    }
-}
-pub enum BackendType {
-    Sqlite(SqliteBackend),
-    Postgres(PostgresBackend)
 }
 
