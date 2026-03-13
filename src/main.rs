@@ -26,10 +26,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => {}
             }
         })
-        .build()
-        .await?;
+        .build();
+        let mut bot2 = bot.await?;
+        let g = bot2.client();
+        g.send_message(to, message)
 
     // Start the bot
-    bot.run().await?.await?;
+    bot2.run().await?.await?;
     Ok(())
 }

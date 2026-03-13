@@ -11,6 +11,13 @@ use prost::Message;
 pub struct JID {
     inner: Arc<WhatsAppJID>,
 }
+
+impl JID {
+    pub fn as_whatsapp_jid(&self) -> WhatsAppJID {
+        (*self.inner).clone()
+    }
+}
+
 #[pymethods]
 impl JID {
     #[new]
