@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
-use pyo3::{PyErr, PyResult, Python, exceptions::{PyException, PyRuntimeError}, ffi::PyObject, pyclass, pymethods, types::{PyBytes, PyDateTime}};
+use pyo3::{PyAny, PyErr, PyResult, Python, exceptions::{PyException, PyRuntimeError}, ffi::PyObject, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyDateTime, PyType}};
+use waproto::whatsapp::VerifiedNameCertificate;
 use whatsapp_rust::{Jid as WhatsAppJID};
 use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo, MsgMetaInfo as WhatsappMsgMetaInfo};
 use prost::Message;
@@ -252,16 +253,23 @@ impl MessageInfo {
         }
     }
     #[getter]
-    fn verified_name(&self, py: Python) -> Option<pyo3::Py<PyBytes>> {
+    fn verified_name(&self, py: Python<'_>) -> PyResult<pyo3::Py<PyAny>> {
         match self.inner.verified_name {
             Some(ref name) => {
                 let mut buffer = Vec::new();
-                let f = name.encode(&mut buffer);
-                let py_bytes = PyBytes::new(py, &buffer);
-                Some(py_bytes.into())
+                name.encode(&mut buffer).map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                        format!("Failed to encode VerifiedNameCertificate: {}", e),
+                    )
+                })?;
 
-            },
-            None => None, // Placeholder, as VerifiedNameCertificate is not yet implemented
+                let verified_proto = py.import("waproto.whatsapp_pb2")?;
+                let proto_type = verified_proto.getattr("attr_name")?;
+                let proto_instance = proto_type.call0()?;
+                proto_instance.call_method1("ParseFromString", (PyBytes::new(py, &buffer),))?;
+                Ok(proto_instance.into())
+            }
+            None => Ok(py.None()), // Placeholder, as VerifiedNameCertificate is not yet implemented
         }
     }
     #[getter]

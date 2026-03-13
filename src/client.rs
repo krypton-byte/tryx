@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex, Once};
+use std::sync::{Arc, Once};
 use std::future::Future;
 use std::pin::Pin;
 use pyo3::{Bound, PyAny, pyclass, pymethods};
@@ -6,6 +6,7 @@ use pyo3::prelude::*;
 use pyo3_async_runtimes::{TaskLocals, into_future_with_locals};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals, into_future};
 use tokio::runtime;
+use tokio::sync::watch;
 use tokio::time::{Duration, interval};
 use wacore::types::events::Event;
 use whatsapp_rust::Client;
@@ -40,7 +41,44 @@ fn init_logging() {
 pub struct Tryx {
     backend: Arc<dyn Backend>,
     handlers: Py<Dispatcher>,
-    bot: Arc<Mutex<Option<Arc<Client>>>>,
+    tryx_client: Py<TryxClient>,
+    client_tx: watch::Sender<Option<Arc<Client>>>,
+}
+
+#[pyclass]
+pub struct TryxClient {
+    client_rx: watch::Receiver<Option<Arc<Client>>>,
+}
+
+#[pymethods]
+impl TryxClient {
+    fn send_message<'py>(&self, py: Python<'py>, to: Py<JID>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+
+        let jid = to.bind(py).borrow().as_whatsapp_jid();
+
+        // Python protobuf object -> bytes -> Rust proto
+        let serialized: Vec<u8> = message
+            .call_method0(py, "SerializeToString")?
+            .extract(py)?;
+
+        let whatsapp_message = WhatsappMessage::decode(serialized.as_slice()).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Failed to decode WhatsAppMessage proto: {}", e),
+            )
+        })?;
+
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let message_id = client
+                .send_message(jid, whatsapp_message)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(message_id.to_string())
+        })
+    }
 }
 
 impl Tryx {
@@ -48,7 +86,8 @@ impl Tryx {
         backend: Arc<dyn Backend>,
         handlers: Py<Dispatcher>,
         locals: Option<TaskLocals>,
-        bot_state: Arc<Mutex<Option<Arc<Client>>>>,
+        tryx_client: Py<TryxClient>,
+        client_tx: watch::Sender<Option<Arc<Client>>>,
     ) -> PyResult<()> {
         info!("building WhatsApp bot");
         let mut bot = Bot::builder()
@@ -58,6 +97,7 @@ impl Tryx {
             .on_event(move |event, _client| {
                 let handlers = Python::attach(|py| handlers.clone_ref(py));
                 let locals = locals.clone();
+                let tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
                 async move {
                     match event {
                         Event::PairingQrCode { code, timeout } => {
@@ -120,7 +160,8 @@ impl Tryx {
                                 let locals = locals.clone();
                                 let py_future = Python::attach(|py| -> PyResult<_> {
                                     let payload = Py::new(py, WAMessage::new(msg.clone(), info.clone()))?;
-                                    let awaitable = callback.bind(py).call1((py.None(), payload))?;
+                                    let client_obj = tryx_client.clone_ref(py);
+                                    let awaitable = callback.bind(py).call1((client_obj, payload))?;
                                     let fut: Pin<Box<dyn Future<Output = PyResult<Py<PyAny>>> + Send>> = match &locals {
                                         Some(locals) => {
                                             let fut = into_future_with_locals(locals, awaitable)?;
@@ -164,12 +205,9 @@ impl Tryx {
             })?;
 
         let client = bot.client();
-        {
-            let mut state = bot_state
-                .lock()
-                .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Failed to lock bot state"))?;
-            *state = Some(client);
-        }
+        client_tx
+            .send(Some(client))
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
         info!("bot built successfully, starting run loop");
         bot.run()
@@ -204,11 +242,14 @@ impl Tryx {
             let store = rt
                 .block_on(backends.connect())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))?;
+            let (client_tx, client_rx) = watch::channel(None);
+            let tryx_client = Py::new(py, TryxClient { client_rx })?;
             info!("backend connected and dispatcher initialized");
             Ok(Tryx {
                 backend: Arc::new(store),
                 handlers: Py::new(py, Dispatcher::empty())?,
-                bot: Arc::new(Mutex::new(None)),
+                tryx_client,
+                client_tx,
             })
         } else {
             error!("unsupported backend type passed to Tryx");
@@ -233,10 +274,11 @@ impl Tryx {
         info!("starting bot in async mode via Tryx.run");
         let backend = self.backend.clone();
         let handlers = self.handlers.clone_ref(py);
-        let bot_state = self.bot.clone();
+        let tryx_client = self.tryx_client.clone_ref(py);
+        let client_tx = self.client_tx.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals.clone(), async move {
-            Self::run_bot(backend, handlers, Some(locals), bot_state).await
+            Self::run_bot(backend, handlers, Some(locals), tryx_client, client_tx).await
         })
     
     }
@@ -250,7 +292,8 @@ impl Tryx {
         info!("starting bot in blocking mode via Tryx.run_blocking");
         let backend = self.backend.clone();
         let handlers = Python::attach(|py| self.handlers.clone_ref(py));
-        let bot_state = self.bot.clone();
+        let tryx_client = Python::attach(|py| self.tryx_client.clone_ref(py));
+        let client_tx = self.client_tx.clone();
         py.detach(move || {
             let rt = runtime::Runtime::new()
                 .map_err(|e| {
@@ -259,7 +302,7 @@ impl Tryx {
                 })?;
 
             rt.block_on(async {
-                let mut bot_task = tokio::spawn(Self::run_bot(backend, handlers, None, bot_state));
+                let mut bot_task = tokio::spawn(Self::run_bot(backend, handlers, None, tryx_client, client_tx));
                 let mut signal_tick = interval(Duration::from_millis(200));
 
                 loop {
@@ -317,40 +360,6 @@ impl Tryx {
                 info!("blocking run interrupted and finished");
                 Ok(())
             })
-        })
-    }
-
-    fn send_message<'py>(&self, py: Python<'py>, to: Py<JID>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
-        let client = {
-            let state = self
-                .bot
-                .lock()
-                .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Failed to lock bot state"))?;
-            state
-                .clone()
-                .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running"))?
-        };
-
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
-
-        // Python protobuf object -> bytes -> Rust proto
-        let serialized: Vec<u8> = message
-            .call_method0(py, "SerializeToString")?
-            .extract(py)?;
-
-        let whatsapp_message = WhatsappMessage::decode(serialized.as_slice()).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Failed to decode WhatsAppMessage proto: {}", e),
-            )
-        })?;
-
-        let locals = get_current_locals(py)?;
-        future_into_py_with_locals(py, locals, async move {
-            let _message_id = client
-                .send_message(jid, whatsapp_message)
-                .await
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            Ok(())
         })
     }
 }

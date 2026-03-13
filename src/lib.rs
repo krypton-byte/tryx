@@ -1,4 +1,6 @@
 use pyo3::prelude::*;
+
+use crate::client::TryxClient;
 /// A Python module implemented in Rust.
 /// 
 #[pymodule]
@@ -9,6 +11,7 @@ fn tryx(_py: &Bound<'_, PyModule>) -> PyResult<()> {
     _py.add_class::<events::Message>()?;
     _py.add_class::<events::PairingQrCode>()?;
     _py.add_class::<types::MessageInfo>()?;
+    _py.add_class::<TryxClient>()?;
     Ok(())
 }
 

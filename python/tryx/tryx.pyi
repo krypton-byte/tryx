@@ -1,5 +1,5 @@
 from typing import Any, Awaitable, Callable, Optional, Type
-
+from .waproto.whatsapp_pb2 import Message  as MessageProto
 class JID:
     user: str
     server: str
@@ -36,3 +36,6 @@ class Tryx:
 
     def run(self) -> Awaitable[None]: ...
     def run_blocking(self) -> None: ...
+
+class TryxClient:
+    async def send_message(self, chat: JID, message: MessageProto) -> str: ...
