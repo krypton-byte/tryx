@@ -19,6 +19,7 @@ python-source = "python"
 [dependency-groups]
 dev = [
     "mypy-protobuf>=5.0.0",
+    "segno>=1.6.6",
 ]
 # include = [
 #     { path = "python/tryx/__init__.py", format = ["sdist", "wheel"] },

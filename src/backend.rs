@@ -1,6 +1,7 @@
 
 use whatsapp_rust_sqlite_storage::SqliteStore;
 use pyo3::prelude::*;
+use tracing::{error, info};
 
 #[pyclass(subclass)]
 pub struct BackendBase;
@@ -20,9 +21,16 @@ impl SqliteBackend {
 
 impl SqliteBackend {
     pub async fn connect(&self) -> Result<SqliteStore, String> {
+        info!(path = %self.path, "connecting sqlite backend");
         match SqliteStore::new(&self.path).await {
-            Ok(store) => Ok(store),
-            Err(e) => Err(e.to_string().into()),
+            Ok(store) => {
+                info!(path = %self.path, "sqlite backend connected");
+                Ok(store)
+            }
+            Err(e) => {
+                error!(path = %self.path, error = %e, "sqlite backend connection failed");
+                Err(e.to_string().into())
+            }
         }
     }
 }

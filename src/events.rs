@@ -1,7 +1,11 @@
+use std::sync::Arc;
+
 use prost::Message as ProstMessage;
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, PyTypeInfo, Python, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyType, PyTypeMethods}};
-use whatsapp_rust::types::events::{LoggedOut as WhatsAppLoggedOut, ConnectFailureReason};
+use whatsapp_rust::types::events::{LoggedOut as WhatsAppLoggedOut, ConnectFailureReason };
 use pyo3::sync::PyOnceLock;
+use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
+use tracing::{debug, info};
 use crate::types::{JID, MessageInfo};
 
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
@@ -47,28 +51,57 @@ impl LoggedOut {
 struct PairSuccess {
     id: JID,
     lid: JID,
+    #[pyo3(get)]
     business_name: String,
+    #[pyo3(get)]
     platform: String,
+}
+
+#[pymethods]
+impl PairSuccess {
+    #[getter]
+    fn id(&self) -> JID {
+        self.id.clone()
+    }
+    #[getter]
+    fn lid(&self) -> JID {
+        self.lid.clone()
+    }
 }
 
 #[pyclass]
 struct PairError {
+    #[pyo3(get)]
     id: JID,
+    #[pyo3(get)]
     lid: JID,
+    #[pyo3(get)]
     business_name: String,
+    #[pyo3(get)]
     platform: String,
+    #[pyo3(get)]
     error: String,
 }
 
 #[pyclass]
-struct PairingQrCode {
+pub struct PairingQrCode {
+    #[pyo3(get)]
     code: String,
+    #[pyo3(get)]
     timeout: u64,
+}
+impl PairingQrCode {
+    pub fn new(code: String, timeout: u64) -> Self {
+        Self { code, timeout }
+    }
+
 }
 
 #[pyclass]
-struct PairingCode {
+pub struct PairingCode {
+    #[pyo3(get)]
     code: String,
+    #[pyo3(get)]
     timeout: u64,
 }
 
@@ -80,9 +113,21 @@ struct QrScannedWithoutMultidevice;
 struct ClientOutDated;
 
 #[pyclass]
-struct Message {
+pub struct Message {
     inner: Box<waproto::whatsapp::Message>,
+    #[pyo3(get)]
     message_info: MessageInfo,
+}
+impl Message {
+    pub fn new(inner: Box<waproto::whatsapp::Message>, message_info: WhatsappMessageInfo) -> Self {
+        let info = MessageInfo {
+            inner: Arc::new(message_info.clone()),
+            id: message_info.id.clone(),
+            r#type: message_info.r#type.clone(),
+            push_name: message_info.push_name.clone(),
+        };
+        Self { inner, message_info: info }
+    }
 }
 #[pymethods]
 impl Message {
@@ -236,6 +281,22 @@ impl Dispatcher {
         }
     }
 
+    pub fn pairing_qr_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = self.pairing_qr_code
+            .iter()
+            .map(|handler| handler.clone_ref(py))
+            .collect::<Vec<_>>();
+        debug!(handlers = handlers.len(), "collected pairing QR handlers");
+        handlers
+    }
+    pub fn message_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = self.message
+            .iter()
+            .map(|handler| handler.clone_ref(py))
+            .collect::<Vec<_>>();
+        debug!(handlers = handlers.len(), "collected message handlers");
+        handlers
+    }
     fn handlers_for_event(&self, event: DispatchEvent) -> &Vec<Py<PyAny>> {
         match event {
             DispatchEvent::Connected => &self.connected,
@@ -249,6 +310,21 @@ impl Dispatcher {
             DispatchEvent::ClientOutDated => &self.client_outdated,
             DispatchEvent::Message => &self.message,
         }
+    }
+}
+
+fn dispatch_event_name(event: DispatchEvent) -> &'static str {
+    match event {
+        DispatchEvent::Connected => "connected",
+        DispatchEvent::Disconnected => "disconnected",
+        DispatchEvent::LoggedOut => "logged_out",
+        DispatchEvent::PairSuccess => "pair_success",
+        DispatchEvent::PairError => "pair_error",
+        DispatchEvent::PairingQrCode => "pairing_qr_code",
+        DispatchEvent::PairingCode => "pairing_code",
+        DispatchEvent::QrScannedWithoutMultidevice => "qr_scanned_without_multidevice",
+        DispatchEvent::ClientOutDated => "client_outdated",
+        DispatchEvent::Message => "message",
     }
 }
 
@@ -296,6 +372,7 @@ impl Dispatcher {
     ///     ...
     fn on(slf: Py<Self>, py: Python, event_type: &Bound<PyAny>) -> PyResult<Py<PyAny>> {
         let event = dispatch_event_from_type(py, event_type)?;
+        info!(event = dispatch_event_name(event), "selected event for next callback registration");
         {
             let mut this = slf.borrow_mut(py);
             this.pending_event = Some(event);
@@ -322,6 +399,9 @@ impl Dispatcher {
             DispatchEvent::ClientOutDated => self.client_outdated.push(func.clone_ref(py)),
             DispatchEvent::Message => self.message.push(func.clone_ref(py)),
         }
+
+        let total_handlers = self.handlers_for_event(event).len();
+        info!(event = dispatch_event_name(event), handlers = total_handlers, "registered Python callback");
 
         Ok(func)
     }

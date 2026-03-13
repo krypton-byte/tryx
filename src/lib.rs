@@ -5,6 +5,9 @@ use pyo3::prelude::*;
 fn tryx(_py: &Bound<'_, PyModule>) -> PyResult<()> {
     _py.add_class::<client::Tryx>()?;
     _py.add_class::<backend::SqliteBackend>()?;
+    _py.add_class::<types::JID>()?;
+    _py.add_class::<events::Message>()?;
+    _py.add_class::<events::PairingQrCode>()?;
     _py.add_class::<types::MessageInfo>()?;
     Ok(())
 }

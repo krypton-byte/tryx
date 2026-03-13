@@ -16,7 +16,9 @@ whatsapp-rust-tokio-transport = "0.3"
 whatsapp-rust-ureq-http-client = "0.3"
 wacore = "0.3"
 waproto = "0.3"
-tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.48", features = ["macros", "rt-multi-thread", "signal"] }
 async-trait = "0.1.89"
-pyo3-async-runtimes = { version = "0.28.0", features = ["attributes", "async-std-runtime"] }
+pyo3-async-runtimes = { version = "0.28.0", features = ["attributes", "tokio-runtime"] }
 prost = "0.14.3"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "fmt"] }

@@ -4,7 +4,10 @@ use pyo3::{PyErr, PyResult, Python, exceptions::{PyException, PyRuntimeError}, f
 use whatsapp_rust::{Jid as WhatsAppJID};
 use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo, MsgMetaInfo as WhatsappMsgMetaInfo};
 use prost::Message;
-#[pyclass]
+
+
+#[pyclass(skip_from_py_object)]
+#[derive(Clone)]
 pub struct JID {
     inner: Arc<WhatsAppJID>,
 }
@@ -149,15 +152,16 @@ impl MsgMetaInfo {
     }
 }
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
+#[derive(Clone)]
 pub struct MessageInfo {
-    inner: Arc<WhatsAppMessageInfo>,
+    pub inner: Arc<WhatsAppMessageInfo>,
     #[pyo3(get)]
-    id: String,
+    pub id: String,
     #[pyo3(get)]
-    r#type: String,
+    pub r#type: String,
     #[pyo3(get)]
-    push_name: String,
+    pub push_name: String,
 }
 
 #[pyclass]
@@ -245,7 +249,7 @@ impl MessageInfo {
         match self.inner.verified_name {
             Some(ref name) => {
                 let mut buffer = Vec::new();
-                name.encode(&mut buffer);
+                let f = name.encode(&mut buffer);
                 let py_bytes = PyBytes::new(py, &buffer);
                 Some(py_bytes.into())
 
