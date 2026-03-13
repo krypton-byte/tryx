@@ -256,7 +256,9 @@ impl Tryx {
             Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Unsupported backend type"))
         }
     }
-
+    fn get_client(&self, py: Python<'_>) -> Py<TryxClient> {
+        self.tryx_client.clone_ref(py)
+    }
     /// Returns a decorator compatible with:
     /// @client.on(Message)
     /// async def on_message(client, data): ...
