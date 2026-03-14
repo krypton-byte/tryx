@@ -21,7 +21,8 @@ use tracing::{debug, error, info, warn};
 use tracing_subscriber::EnvFilter;
 
 use crate::backend::{SqliteBackend, BackendBase};
-use crate::events::{Message as WAMessage, PairingQrCode};
+use crate::events::{Connected, Message as WAMessage, PairingQrCode};
+use crate::exceptions::UnsupportedBackend;
 use crate::types::JID;
 use crate::dispatcher::Dispatcher;
 
@@ -192,6 +193,17 @@ impl Tryx {
                                 }
                             }
                         }
+                        Event::Connected(_) => {
+                            let callbacks = Python::attach(|py| handlers.clone_ref(py).bind(py).borrow().conneccted_handlers(py));
+                            for (idx, callback) in callbacks.into_iter().enumerate() {
+                                debug!(handler_index = idx, "calling connected event handler");
+                                let _ = Python::attach(|py| -> PyResult<_> {
+                                    let awaitable = callback.bind(py).call1((Connected{},))?;
+                                    let fut = into_future(awaitable)?;
+                                    Ok(fut)
+                                });
+                            }
+                        }
                         _ => {
                             debug!("received event without registered dispatcher path");
                         }
@@ -254,7 +266,7 @@ impl Tryx {
             })
         } else {
             error!("unsupported backend type passed to Tryx");
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Unsupported backend type"))
+            Err(PyErr::new::<UnsupportedBackend, _>("Unsupported backend type"))
         }
     }
     fn get_client(&self, py: Python<'_>) -> Py<TryxClient> {

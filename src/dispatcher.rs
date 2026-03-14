@@ -3,6 +3,7 @@ use tracing::{debug, info};
 use pyo3::types::{PyType};
 use pyo3::{PyTypeInfo};
 use crate::events::{Connected, Disconnected, LoggedOut, PairSuccess, PairError, PairingCode, PairingQrCode, QrScannedWithoutMultidevice, ClientOutDated, Message};
+use crate::exceptions::UnsupportedEventType;
 
 #[pyclass]
 pub struct Dispatcher {
@@ -116,6 +117,14 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected message handlers");
         handlers
     }
+    pub fn conneccted_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = self.connected
+            .iter()
+            .map(|handler| handler.clone_ref(py))
+            .collect::<Vec<_>>();
+        debug!(handlers = handlers.len(), "collected connected handlers");
+        handlers
+    }
     fn handlers_for_event(&self, event: DispatchEvent) -> &Vec<Py<PyAny>> {
         match event {
             DispatchEvent::Connected => &self.connected,
@@ -172,7 +181,8 @@ fn dispatch_event_from_type(py: Python, event_type: &Bound<PyAny>) -> PyResult<D
     } else if event_type.is_subclass(&Message::type_object(py))? {
         Ok(DispatchEvent::Message)
     } else {
-        Err(pyo3::exceptions::PyValueError::new_err("Unsupported event type"))
+        Err(PyErr::new::<UnsupportedEventType, _>("Unsupported event type"))
+
     }
 }
 

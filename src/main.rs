@@ -23,6 +23,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Event::Message(msg, info) => {
                     println!("Message from {}: {:?}", info.source.sender, msg);
                 }
+                 Event::Connected(e)=> {
+                    println!("Connected to WhatsApp");
+                }
                 _ => {}
             }
         })

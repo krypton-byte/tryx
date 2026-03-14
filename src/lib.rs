@@ -32,3 +32,4 @@ mod client;
 mod events;
 mod types;
 mod dispatcher;
+mod exceptions;
