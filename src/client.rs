@@ -21,8 +21,9 @@ use tracing::{debug, error, info, warn};
 use tracing_subscriber::EnvFilter;
 
 use crate::backend::{SqliteBackend, BackendBase};
-use crate::events::{Dispatcher, Message as WAMessage, PairingQrCode};
+use crate::events::{Message as WAMessage, PairingQrCode};
 use crate::types::JID;
+use crate::dispatcher::Dispatcher;
 
 static LOG_INIT: Once = Once::new();
 

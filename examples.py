@@ -1,18 +1,21 @@
-from pathlib import Path
 import asyncio
-import segno
-import asyncio
-from tryx import Message, PairingQrCode, SqliteBackend, Tryx
+from tryx.backend import SqliteBackend
+from tryx.client import TryxClient, Tryx#, Test, K
+from tryx.events import Message
 from tryx.waproto.whatsapp_pb2 import Message as msg
 
 DB_PATH = "whatsapp.db"
 
+# t = Test()
+# @t.on(K)
+# async def handle_event(client: TryxClient, event: int) -> None:
+#     print("Handling event with data:", event)
 
 backend = SqliteBackend(DB_PATH)
 client = Tryx(backend)
 
 @client.on(Message)
-async def on_message(client, event: Message) -> None:
+async def on_message(client: TryxClient, event: Message) -> None:
     info = event.message_info
     source = info.source
     sender = source.sender
@@ -20,12 +23,12 @@ async def on_message(client, event: Message) -> None:
     text = event.get_text() or event.caption or "<non-text message>"
     sender_jid = f"{sender.user}@{sender.server}"
     chat = source.chat
-
+    print(event.raw_proto)
     print(f"[{info.id}] {sender_jid}: {text}")
     print("text:", event.get_text())
     print("client:", client)
-    print("chat:", chat)
-    b = await client.send_message(chat, msg(conversation="Hello from Tryx!"))
+    print("chat:", chat, dir(chat))
+    await client.send_message(chat, msg(conversation="Hello!"))
     await asyncio.sleep(1)
     await client.send_message(chat, msg(conversation="This is a follow-up message."))
     await asyncio.sleep(4)

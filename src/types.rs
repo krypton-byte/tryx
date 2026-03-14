@@ -17,6 +17,7 @@ impl JID {
     pub fn as_whatsapp_jid(&self) -> WhatsAppJID {
         (*self.inner).clone()
     }
+
 }
 
 #[pymethods]
@@ -33,6 +34,9 @@ impl JID {
     #[getter]
     fn server(&self) -> String {
         self.inner.server.clone()
+    }
+    fn __repr__(&self) -> String {
+        format!("JID(user='{}', server='{}')", self.inner.user, self.inner.server)
     }
 }
 
@@ -88,7 +92,9 @@ impl MessageSource {
     fn recipient(&self) -> Option<JID> {
         self.inner.recipient.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
     }
-
+    fn __repr__(&self) -> String {
+        format!("MessageSource(chat='{}', sender='{}')", self.chat, self.sender)
+    }
 }
 
 
@@ -110,54 +116,28 @@ impl MsgBotInfo {
         })
     }
     #[getter]
-    fn edit_target_id(&self) -> Option<&str> {
-        self.inner.edit_target_id.as_ref().map(|s| s.as_str())
+    fn edit_sender_timestamp(&self, py: Python) -> PyResult<Option<pyo3::Py<PyDateTime>>> {
+        self.inner.edit_sender_timestamp_ms.map(|x| {
+            let date = PyDateTime::from_timestamp(py, x.timestamp_millis()as f64/1000.0, None).map_err(|_| PyErr::new::<PyRuntimeError, _>("Failed to convert timestamp to datetime"))?;
+            Ok(date.into())
+        }).transpose()
     }
-    #[getter]
-    fn edit_sender_timestamp_ms(&self, py: Python) -> PyResult<Option<pyo3::Py<PyDateTime>>> {
-        match self.inner.edit_sender_timestamp_ms {
-            Some(ts) => {
-                let date = PyDateTime::from_timestamp(py, ts.timestamp_millis() as f64, None).map_err(|_| PyErr::new::<PyRuntimeError, _>("Failed to convert timestamp to datetime"))?;
-                Ok(Some(date.into()))
-            },
-            None => Ok(None),
-        }
+    fn __repr__(&self, py: Python<'_>) -> String {
+        format!("MsgBotInfo(edit_type={:?}, edit_sender_timestamp={:?})", self.edit_type(), self.edit_sender_timestamp(py).unwrap_or(None))
     }
 }
 #[pyclass]
 struct MsgMetaInfo {
-    inner: Arc<WhatsappMsgMetaInfo>,
     #[pyo3(get)]
     target_id: Option<String>,
+    #[pyo3(get)]
     target_sender: Option<JID>,
     #[pyo3(get)]
     deprecated_lid_session: Option<bool>,
     #[pyo3(get)]
     thread_message_id: Option<String>,
-}
-
-#[pymethods]
-impl MsgMetaInfo {
-    #[getter]
-    fn target_id(&self) -> Option<&str> {
-        self.inner.target_id.as_ref().map(|s| s.as_str())
-    }
-    #[getter]
-    fn target_sender(&self) -> Option<JID> {
-        self.inner.target_sender.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
-    }
-    #[getter]
-    fn deprecated_lid_session(&self) -> Option<bool> {
-        self.inner.deprecated_lid_session
-    }
-    #[getter]
-    fn thread_message_id(&self) -> Option<&str> {
-        self.inner.thread_message_id.as_ref().map(|s| s.as_str())
-    }
-    #[getter]
-    fn thread_message_sender_jid(&self) -> Option<JID> {
-        self.inner.thread_message_sender_jid.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
-    }
+    #[pyo3(get)]
+    thread_message_sender_jid: Option<JID>,
 }
 
 #[pyclass(skip_from_py_object)]
@@ -236,7 +216,6 @@ impl MessageInfo {
     #[getter]
     fn meta_info(&self) -> MsgMetaInfo{
         MsgMetaInfo {
-            inner: Arc::new(self.inner.meta_info.clone()),
             target_id: match self.inner.meta_info.target_id {
                 Some(ref s) => Some(s.clone()),
                 None => None,
@@ -250,10 +229,14 @@ impl MessageInfo {
                 Some(ref s) => Some(s.clone()),
                 None => None,
             },
+            thread_message_sender_jid: match self.inner.meta_info.thread_message_sender_jid {
+                Some(ref jid) => Some(JID { inner: Arc::new(jid.clone()) }),
+                None => None,
+            },
         }
     }
     #[getter]
-    fn verified_name(&self, py: Python<'_>) -> PyResult<pyo3::Py<PyAny>> {
+    fn verified_name(&self, py: Python<'_>) -> PyResult<Option<pyo3::Py<PyAny>>> {
         match self.inner.verified_name {
             Some(ref name) => {
                 let mut buffer = Vec::new();
@@ -267,9 +250,9 @@ impl MessageInfo {
                 let proto_type = verified_proto.getattr("attr_name")?;
                 let proto_instance = proto_type.call0()?;
                 proto_instance.call_method1("ParseFromString", (PyBytes::new(py, &buffer),))?;
-                Ok(proto_instance.into())
+                Ok(Some(proto_instance.into()))
             }
-            None => Ok(py.None()), // Placeholder, as VerifiedNameCertificate is not yet implemented
+            None => Ok(None), // Placeholder, as VerifiedNameCertificate is not yet implemented
         }
     }
     #[getter]
@@ -278,5 +261,8 @@ impl MessageInfo {
             destination_jid: meta.destination_jid.clone(),
             phash: meta.phash.clone(),
         })
+    }
+    fn __repr__(&self) -> String {
+        format!("MessageInfo(id='{}', type='{}', push_name='{}')", self.id, self.r#type, self.push_name)
     }
 }

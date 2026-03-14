@@ -8,6 +8,7 @@ pub struct BackendBase;
 
 #[pyclass(extends=BackendBase)]
 pub struct SqliteBackend {
+    #[pyo3(get)]
     path: String,
 }
 

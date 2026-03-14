@@ -13,7 +13,7 @@ classifiers = [
 dynamic = ["version"]
 
 [tool.maturin]
-module-name = "tryx.tryx"
+module-name = "tryx._tryx"
 python-source = "python"
 
 [dependency-groups]
