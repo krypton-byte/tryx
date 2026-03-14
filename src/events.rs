@@ -169,15 +169,6 @@ impl Message {
                 Ok(out_proto.clone_ref(py))
             },
         }
-        // let mut buffer = Vec::new();
-        // self.inner
-        //     .as_ref()
-        //     .encode(&mut buffer)
-        //     .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-
-        // let proto = parse_message_proto(py, &buffer)?;
-        // self.message_proto = Some(proto.clone());
-        // Ok(proto)
     }
     fn __repr__(&self) -> String {
         format!("Message(id='{}', type='{}', push_name='{}')", self.message_info.id, self.message_info.r#type, self.message_info.push_name)
