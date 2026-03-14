@@ -1,6 +1,6 @@
 import asyncio
 from tryx.backend import SqliteBackend
-from tryx.client import TryxClient, Tryx#, Test, K
+from tryx.client import TryxClient, Tryx  # , Test, K
 from tryx.events import Message
 from tryx.waproto.whatsapp_pb2 import Message as msg
 
@@ -13,6 +13,7 @@ DB_PATH = "whatsapp.db"
 
 backend = SqliteBackend(DB_PATH)
 client = Tryx(backend)
+
 
 @client.on(Message)
 async def on_message(client: TryxClient, event: Message) -> None:
@@ -32,10 +33,14 @@ async def on_message(client: TryxClient, event: Message) -> None:
     await asyncio.sleep(1)
     await client.send_message(chat, msg(conversation="This is a follow-up message."))
     await asyncio.sleep(4)
-    await client.send_message(chat, msg(conversation="This is a message after a delay."))
+    await client.send_message(
+        chat, msg(conversation="This is a message after a delay.")
+    )
+
 
 async def main() -> None:
     await client.run()
+
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()

@@ -1,13 +1,11 @@
 from typing import Literal
 from .waproto.whatsapp_pb2 import VerifiedNameCertificate
 
-
 class JID:
     user: str
     server: str
 
     def __init__(self, user: str, server: str) -> None: ...
-
 
 class MessageSource:
     sender: JID
@@ -20,6 +18,7 @@ class MsgBotInfo:
     def edit_target_id(self) -> str | None: ...
     @property
     def edit_sender_timestamp(self) -> int | None: ...
+
 class MsgMetaInfo:
     @property
     def target_id(self) -> str | None: ...
@@ -31,6 +30,7 @@ class MsgMetaInfo:
     def thread_message_id(self) -> str | None: ...
     @property
     def thread_message_sender_jid(self) -> JID | None: ...
+
 class DeviceSentMeta:
     @property
     def destination_jid(self) -> str: ...
@@ -42,7 +42,7 @@ class MessageInfo:
     type: str
     push_name: str
     @property
-    def source(self) -> 'MessageSource': ...
+    def source(self) -> "MessageSource": ...
     @property
     def multicast(self) -> bool: ...
     @property

@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class MediaType(Enum):
     Image = 1
     Video = 2
