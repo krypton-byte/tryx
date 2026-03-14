@@ -4,8 +4,9 @@ from typing import Any, Awaitable, Callable, Type
 
 # from tryx.events import Message
 from .waproto.whatsapp_pb2 import Message  as MessageProto
-from .types import JID
+from .types import JID, UploadResponse
 from .backend import SqliteBackend
+from .wacore import MediaType
 
 class Tryx:
     def __init__(self, backend: SqliteBackend) -> None: ...
@@ -17,6 +18,9 @@ class Tryx:
 
 class TryxClient:
     async def send_message(self, chat: JID, message: MessageProto) -> str: ...
+    async def upload(self, data: bytes, media_type: MediaType) -> UploadResponse: ...
+    async def upload_file(self, path: str, media_type: MediaType) -> UploadResponse: ...
+
 
 class Nu[T]:
     X: T

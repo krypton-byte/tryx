@@ -23,7 +23,11 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     let types_module = PyModule::new(_py.py(), "types")?;
     types_module.add_class::<types::JID>()?;
     types_module.add_class::<types::MessageInfo>()?;
+    types_module.add_class::<types::UploadResponse>()?;
     _py.add_submodule(&types_module)?;
+    let wacore_module = PyModule::new(_py.py(), "wacore")?;
+    wacore_module.add_class::<wacore::MediaType>()?;
+    _py.add_submodule(&wacore_module)?;
     Ok(())
 }
 
@@ -33,3 +37,4 @@ mod events;
 mod types;
 mod dispatcher;
 mod exceptions;
+mod wacore;

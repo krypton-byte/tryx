@@ -266,3 +266,19 @@ impl MessageInfo {
         format!("MessageInfo(id='{}', type='{}', push_name='{}')", self.id, self.r#type, self.push_name)
     }
 }
+
+#[pyclass]
+pub struct UploadResponse {
+    #[pyo3(get)]
+    pub url: String,
+    #[pyo3(get)]
+    pub direct_path: String,
+    #[pyo3(get)]
+    pub media_key: Vec<u8>,
+    #[pyo3(get)]
+    pub file_enc_sha256: Vec<u8>,
+    #[pyo3(get)]
+    pub file_sha256: Vec<u8>,
+    #[pyo3(get)]
+    pub file_length: u64,
+}

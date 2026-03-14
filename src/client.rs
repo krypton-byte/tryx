@@ -21,10 +21,11 @@ use tracing::{debug, error, info, warn};
 use tracing_subscriber::EnvFilter;
 
 use crate::backend::{SqliteBackend, BackendBase};
-use crate::events::{Connected, Message as WAMessage, PairingQrCode};
+use crate::events::{Connected, LoggedOut, Message as WAMessage, PairingQrCode};
 use crate::exceptions::UnsupportedBackend;
-use crate::types::JID;
+use crate::types::{JID, UploadResponse};
 use crate::dispatcher::Dispatcher;
+use crate::wacore::MediaType;
 
 static LOG_INIT: Once = Once::new();
 
@@ -54,6 +55,54 @@ pub struct TryxClient {
 
 #[pymethods]
 impl TryxClient {
+    fn upload_file<'py>(&self, py: Python<'py>, path: String, media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let media_type_enum = media_type.bind(py).borrow_mut().to_wacore_enum();
+        let locals = get_current_locals(py)?;
+        let data = std::fs::read(path.clone()).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+        future_into_py_with_locals(py, locals, async move {
+            let url = client
+                .upload(data, media_type_enum)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let result= UploadResponse {
+                url: url.url,
+                direct_path: url.direct_path,
+                media_key: url.media_key,
+                file_enc_sha256: url.file_enc_sha256,
+                file_sha256: url.file_sha256,
+                file_length: url.file_length,
+            };
+            Ok(result)
+        })
+    }
+    fn upload<'py>(&self, py: Python<'py>, data: &[u8], media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let data_vec = data.to_vec();
+        let mtype = media_type.bind(py).borrow_mut().to_wacore_enum();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals::<_, UploadResponse>(py, locals, async move {
+            let url = client
+                .upload(data_vec, mtype)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let result= UploadResponse {
+                url: url.url,
+                direct_path: url.direct_path,
+                media_key: url.media_key,
+                file_enc_sha256: url.file_enc_sha256,
+                file_sha256: url.file_sha256,
+                file_length: url.file_length,
+            };
+            Ok(result)
+        })
+        //     Ok(url)
+        // })
+    }
     fn send_message<'py>(&self, py: Python<'py>, to: Py<JID>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
@@ -91,28 +140,47 @@ impl Tryx {
         tryx_client: Py<TryxClient>,
         client_tx: watch::Sender<Option<Arc<Client>>>,
     ) -> PyResult<()> {
+        let (pairing_qr_callbacks, message_callbacks, connected_callbacks, logout_callbacks) =
+            Python::attach(|py| {
+                let dispatcher = handlers.bind(py).borrow();
+                (
+                    dispatcher.pairing_qr_handlers(py),
+                    dispatcher.message_handlers(py),
+                    dispatcher.conneccted_handlers(py),
+                    dispatcher.logout_handlers(py),
+                )
+            });
+        let pairing_qr_callbacks = Arc::new(pairing_qr_callbacks);
+        let message_callbacks = Arc::new(message_callbacks);
+        let connected_callbacks = Arc::new(connected_callbacks);
+        let logout_callbacks = Arc::new(logout_callbacks);
+        info!(
+            pairing_qr_handlers = pairing_qr_callbacks.len(),
+            message_handlers = message_callbacks.len(),
+            connected_handlers = connected_callbacks.len(),
+            logout_handlers = logout_callbacks.len(),
+            "cached dispatcher handlers for runtime"
+        );
+
         info!("building WhatsApp bot");
         let mut bot = Bot::builder()
             .with_backend(backend)
             .with_transport_factory(TokioWebSocketTransportFactory::new())
             .with_http_client(UreqHttpClient::new())
             .on_event(move |event, _client| {
-                let handlers = Python::attach(|py| handlers.clone_ref(py));
                 let locals = locals.clone();
+                let pairing_qr_callbacks = Arc::clone(&pairing_qr_callbacks);
+                let message_callbacks = Arc::clone(&message_callbacks);
+                let connected_callbacks = Arc::clone(&connected_callbacks);
+                let logout_callbacks = Arc::clone(&logout_callbacks);
                 let tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
                 async move {
                     match event {
                         Event::PairingQrCode { code, timeout } => {
                             info!(timeout_secs = timeout.as_secs(), "received pairing QR event");
-                            let callbacks = Python::attach(|py| {
-                                handlers
-                                    .bind(py)
-                                    .borrow()
-                                    .pairing_qr_handlers(py)
-                            });
-                            info!(handlers = callbacks.len(), "dispatching pairing QR handlers");
+                            info!(handlers = pairing_qr_callbacks.len(), "dispatching pairing QR handlers");
 
-                            for (idx, callback) in callbacks.into_iter().enumerate() {
+                            for (idx, callback) in pairing_qr_callbacks.iter().enumerate() {
                                 debug!(handler_index = idx, "calling pairing QR Python callback");
                                 let locals = locals.clone();
                                 let py_future = Python::attach(|py| -> PyResult<_> {
@@ -149,15 +217,9 @@ impl Tryx {
                         }
                         Event::Message(msg, info) => {
                             debug!(message_id = %info.id, "received message event");
-                            let callbacks = Python::attach(|py| {
-                                handlers
-                                    .bind(py)
-                                    .borrow()
-                                    .message_handlers(py)
-                            });
-                            info!(handlers = callbacks.len(), message_id = %info.id, "dispatching message handlers");
+                            info!(handlers = message_callbacks.len(), message_id = %info.id, "dispatching message handlers");
 
-                            for (idx, callback) in callbacks.into_iter().enumerate() {
+                            for (idx, callback) in message_callbacks.iter().enumerate() {
                                 debug!(handler_index = idx, message_id = %info.id, "calling message Python callback");
                                 let locals = locals.clone();
                                 let py_future = Python::attach(|py| -> PyResult<_> {
@@ -194,8 +256,7 @@ impl Tryx {
                             }
                         }
                         Event::Connected(_) => {
-                            let callbacks = Python::attach(|py| handlers.clone_ref(py).bind(py).borrow().conneccted_handlers(py));
-                            for (idx, callback) in callbacks.into_iter().enumerate() {
+                            for (idx, callback) in connected_callbacks.iter().enumerate() {
                                 debug!(handler_index = idx, "calling connected event handler");
                                 let _ = Python::attach(|py| -> PyResult<_> {
                                     let awaitable = callback.bind(py).call1((Connected{},))?;
@@ -203,6 +264,17 @@ impl Tryx {
                                     Ok(fut)
                                 });
                             }
+                        }
+                        Event::LoggedOut(logout) => {
+                            for (idx, callback) in logout_callbacks.iter().enumerate() {
+                                debug!(handler_index = idx, "calling logged out event handler");
+                                let _ = Python::attach(|py| -> PyResult<_> {
+                                    let awaitable = callback.bind(py).call1((LoggedOut::new(logout.clone()),))?;
+                                    let fut = into_future(awaitable)?;
+                                    Ok(fut)
+                                });
+                            }
+                            
                         }
                         _ => {
                             debug!("received event without registered dispatcher path");
@@ -377,4 +449,5 @@ impl Tryx {
             })
         })
     }
+    
 }

@@ -117,6 +117,14 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected message handlers");
         handlers
     }
+    pub fn logout_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = self.logged_out
+            .iter()
+            .map(|handler| handler.clone_ref(py))
+            .collect::<Vec<_>>();
+        debug!(handlers = handlers.len(), "collected logged out handlers");
+        handlers
+    }
     pub fn conneccted_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         let handlers = self.connected
             .iter()
@@ -182,7 +190,6 @@ fn dispatch_event_from_type(py: Python, event_type: &Bound<PyAny>) -> PyResult<D
         Ok(DispatchEvent::Message)
     } else {
         Err(PyErr::new::<UnsupportedEventType, _>("Unsupported event type"))
-
     }
 }
 
