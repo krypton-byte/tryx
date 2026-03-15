@@ -15,6 +15,7 @@ use whatsapp_rust::store::Backend;
 use whatsapp_rust_tokio_transport::TokioWebSocketTransportFactory;
 use whatsapp_rust_ureq_http_client::UreqHttpClient;
 use waproto::whatsapp::Message as WhatsappMessage;
+use waproto::whatsapp::message::{self as wa};
 use prost::Message;
 use tokio::signal;
 use tracing::{debug, error, info, warn};
@@ -55,13 +56,96 @@ pub struct TryxClient {
 
 #[pymethods]
 impl TryxClient {
+    fn is_connected(&self) -> bool {
+        self.client_rx.borrow().is_some()
+    }
+    fn download_media<'py>(&self, py: Python<'py>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let message_type_name = message
+            .getattr(py, "DESCRIPTOR")
+            .and_then(|descriptor| descriptor.getattr(py, "name"))
+            .and_then(|name| name.extract::<String>(py))
+            .unwrap_or_default();
+        let serialized: Vec<u8> = message
+            .call_method0(py, "SerializeToString")?
+            .extract(py)?;
+
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let download = match message_type_name.as_str() {
+                "ImageMessage" => {
+                    let media = wa::ImageMessage::decode(serialized.as_slice()).map_err(|e| {
+                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                            format!("Failed to decode ImageMessage: {}", e),
+                        )
+                    })?;
+                    client.download(&media).await
+                }
+                "VideoMessage" => {
+                    let media = wa::VideoMessage::decode(serialized.as_slice()).map_err(|e| {
+                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                            format!("Failed to decode VideoMessage: {}", e),
+                        )
+                    })?;
+                    client.download(&media).await
+                }
+                "DocumentMessage" => {
+                    let media = wa::DocumentMessage::decode(serialized.as_slice()).map_err(|e| {
+                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                            format!("Failed to decode DocumentMessage: {}", e),
+                        )
+                    })?;
+                    client.download(&media).await
+                }
+                "AudioMessage" => {
+                    let media = wa::AudioMessage::decode(serialized.as_slice()).map_err(|e| {
+                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                            format!("Failed to decode AudioMessage: {}", e),
+                        )
+                    })?;
+                    client.download(&media).await
+                }
+                "StickerMessage" => {
+                    let media = wa::StickerMessage::decode(serialized.as_slice()).map_err(|e| {
+                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                            format!("Failed to decode StickerMessage: {}", e),
+                        )
+                    })?;
+                    client.download(&media).await
+                }
+                _ => {
+                    // Fallback path for unknown wrappers from Python side.
+                    if let Ok(media) = wa::ImageMessage::decode(serialized.as_slice()) {
+                        client.download(&media).await
+                    } else if let Ok(media) = wa::VideoMessage::decode(serialized.as_slice()) {
+                        client.download(&media).await
+                    } else if let Ok(media) = wa::DocumentMessage::decode(serialized.as_slice()) {
+                        client.download(&media).await
+                    } else if let Ok(media) = wa::AudioMessage::decode(serialized.as_slice()) {
+                        client.download(&media).await
+                    } else if let Ok(media) = wa::StickerMessage::decode(serialized.as_slice()) {
+                        client.download(&media).await
+                    } else {
+                        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                            "Failed to decode message as supported media message",
+                        ));
+                    }
+                }
+            };
+
+            download.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+        })
+    }
     fn upload_file<'py>(&self, py: Python<'py>, path: String, media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
         })?;
         let media_type_enum = media_type.bind(py).borrow_mut().to_wacore_enum();
         let locals = get_current_locals(py)?;
-        let data = std::fs::read(path.clone()).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+        let data = std::fs::read(&path)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
         future_into_py_with_locals(py, locals, async move {
             let url = client
                 .upload(data, media_type_enum)

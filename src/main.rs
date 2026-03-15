@@ -11,11 +11,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let backend = Arc::new(SqliteStore::new("whatsapp.db").await?);
 
     // Build the bot
-    let mut bot = Bot::builder()
+    let bot = Bot::builder()
         .with_backend(backend)
         .with_transport_factory(TokioWebSocketTransportFactory::new())
         .with_http_client(UreqHttpClient::new())
-        .on_event(|event, client| async move {
+        .on_event(|event, _client| async move {
             match event {
                 Event::PairingQrCode { code, .. } => {
                     println!("Scan this QR code with WhatsApp:\n{}", code);
@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Event::Message(msg, info) => {
                     println!("Message from {}: {:?}", info.source.sender, msg);
                 }
-                 Event::Connected(e)=> {
+                 Event::Connected(_e)=> {
                     println!("Connected to WhatsApp");
                 }
                 _ => {}
@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .build();
         let mut bot2 = bot.await?;
-        let g = bot2.client();
+        let _g = bot2.client();
 
     // Start the bot
     bot2.run().await?.await?;

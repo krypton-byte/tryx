@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use pyo3::{PyAny, PyErr, PyResult, Python, exceptions::{PyException, PyRuntimeError}, ffi::PyObject, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyDateTime, PyType}};
-use waproto::whatsapp::VerifiedNameCertificate;
+use pyo3::{PyAny, PyErr, PyResult, Python, exceptions::PyRuntimeError, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyDateTime}};
 use whatsapp_rust::{Jid as WhatsAppJID};
-use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo, MsgMetaInfo as WhatsappMsgMetaInfo};
+use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo};
 use prost::Message;
 
 

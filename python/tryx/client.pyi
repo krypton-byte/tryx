@@ -19,10 +19,19 @@ class Tryx:
     def run(self) -> Awaitable[None]: ...
     def run_blocking(self) -> None: ...
 
+DownloadableMedia = (
+    MessageProto.ImageMessage
+    | MessageProto.VideoMessage
+    | MessageProto.AudioMessage
+    | MessageProto.DocumentMessage
+    | MessageProto.StickerMessage
+)
+
 class TryxClient:
     async def send_message(self, chat: JID, message: MessageProto) -> str: ...
     async def upload(self, data: bytes, media_type: MediaType) -> UploadResponse: ...
     async def upload_file(self, path: str, media_type: MediaType) -> UploadResponse: ...
+    async def download_media(self, message: DownloadableMedia) -> bytes: ...
 
 class Nu[T]:
     X: T
