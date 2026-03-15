@@ -113,9 +113,9 @@ pub struct ClientOutDated;
 
 #[pyclass]
 pub struct Message {
-    inner: Box<waproto::whatsapp::Message>,
+    pub inner: Box<waproto::whatsapp::Message>,
     #[pyo3(get)]
-    message_info: MessageInfo,
+    pub message_info: MessageInfo,
     message_proto: Option<Py<PyAny>>,
 }
 impl Message {

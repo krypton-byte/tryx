@@ -32,6 +32,19 @@ class TryxClient:
     async def upload(self, data: bytes, media_type: MediaType) -> UploadResponse: ...
     async def upload_file(self, path: str, media_type: MediaType) -> UploadResponse: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
+    async def send_image(
+        self,
+        to: JID,
+        photo_data: bytes,
+        caption: str,
+        quoted: MessageProto | None = None,
+    ) -> str: ...
+    async def send_text(
+        self,
+        to: JID,
+        text: str,
+        quoted: MessageProto | None = None,
+    ) -> str: ...
 
 class Nu[T]:
     X: T

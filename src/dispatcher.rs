@@ -125,7 +125,7 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected logged out handlers");
         handlers
     }
-    pub fn conneccted_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+    pub fn connected_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         let handlers = self.connected
             .iter()
             .map(|handler| handler.clone_ref(py))
