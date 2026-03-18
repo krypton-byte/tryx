@@ -56,11 +56,11 @@ pub struct EvLoggedOut{
     #[pyo3(get)]
     on_connect: bool,
     #[pyo3(get)]
-    reason: &'static str,
+    reason: String,
 }
 impl EvLoggedOut {
     pub fn new(logout: WhatsAppLoggedOut) -> Self {
-        Self { on_connect: logout.on_connect, reason: &connect_failure_reason_to_string(&logout.reason) }
+        Self { on_connect: logout.on_connect, reason: connect_failure_reason_to_string(&logout.reason) }
     }
 }
 
@@ -94,7 +94,11 @@ pub struct EvPairError {
     #[pyo3(get)]
     error: String,
 }
-
+impl EvPairError {
+    pub fn new(id: JID, lid: JID, business_name: String, platform: String, error: String) -> Self {
+        Self { id, lid, business_name, platform, error }
+    }
+}
 #[pyclass]
 pub struct EvPairingQrCode {
     #[pyo3(get)]
@@ -117,6 +121,12 @@ pub struct EvPairingCode {
     timeout: u64,
 }
 
+impl EvPairingCode {
+    pub fn new(code: String, timeout: u64) -> Self {
+        Self { code, timeout }
+    }
+}
+
 #[pyclass]
 pub struct EvQrScannedWithoutMultidevice;
 
@@ -125,7 +135,6 @@ pub struct EvQrScannedWithoutMultidevice;
 pub struct EvClientOutDated;
 
 #[pyclass]
-// #[derive(Clone)]
 enum ReceiptType {
     Delivered,
     Sender,
@@ -352,23 +361,23 @@ impl EvMessage {
     }
 }
 
-pub fn connect_failure_reason_to_string(reason: &ConnectFailureReason) -> &'static str {
+pub fn connect_failure_reason_to_string(reason: &ConnectFailureReason) -> String {
     match reason {
-        ConnectFailureReason::BadUserAgent => "BadUserAgent",
-        ConnectFailureReason::LoggedOut => "LoggedOut",
-        ConnectFailureReason::CatExpired => "CatExpired",
-        ConnectFailureReason::CatInvalid => "CatInvalid",
-        ConnectFailureReason::ClientOutdated => "ClientOutdated",
-        ConnectFailureReason::ClientUnknown => "ClientUnknown",
-        ConnectFailureReason::Generic => "Generic",
-        ConnectFailureReason::TempBanned => "TempBanned",
-        ConnectFailureReason::UnknownLogout => "Unknown",
-        ConnectFailureReason::MainDeviceGone => "MainDeviceGone",
-        ConnectFailureReason::NotFound => "NotFound",
-        ConnectFailureReason::ServiceUnavailable => "ServiceUnavailable",
-        ConnectFailureReason::InternalServerError => "InternalServerError",
-        ConnectFailureReason::Experimental => "Experimental",
-        ConnectFailureReason::Unknown(_) => "Unknown",
+        ConnectFailureReason::BadUserAgent => "BadUserAgent".into(),
+        ConnectFailureReason::LoggedOut => "LoggedOut".into(),
+        ConnectFailureReason::CatExpired => "CatExpired".into(),
+        ConnectFailureReason::CatInvalid => "CatInvalid".into(),
+        ConnectFailureReason::ClientOutdated => "ClientOutdated".into(),
+        ConnectFailureReason::ClientUnknown => "ClientUnknown".into(),
+        ConnectFailureReason::Generic => "Generic".into(),
+        ConnectFailureReason::TempBanned => "TempBanned".into(),
+        ConnectFailureReason::UnknownLogout => "Unknown".into(),
+        ConnectFailureReason::MainDeviceGone => "MainDeviceGone".into(),
+        ConnectFailureReason::NotFound => "NotFound".into(),
+        ConnectFailureReason::ServiceUnavailable => "ServiceUnavailable".into(),
+        ConnectFailureReason::InternalServerError => "InternalServerError".into(),
+        ConnectFailureReason::Experimental => "Experimental".into(),
+        ConnectFailureReason::Unknown(value) => format!("Unknown({})", value).into(), 
     }
 }
 

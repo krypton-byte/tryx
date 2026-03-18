@@ -20,7 +20,7 @@ use tracing::{debug, error, info, warn};
 use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
-use crate::events::types::{EvArchiveUpdate, EvConnected, EvLoggedOut, EvMessage, EvPairSuccess, EvPairingQrCode, EvReceipt};
+use crate::events::types::{EvArchiveUpdate, EvConnected, EvLoggedOut, EvMessage, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvReceipt};
 use crate::exceptions::UnsupportedBackend;
 use crate::events::dispatcher::Dispatcher;
 use crate::types::JID;
@@ -389,7 +389,7 @@ impl Tryx {
                 async move {
                     match event {
                         Event::PairingQrCode { code, timeout } => {
-                            let payload = Python::attach(|py| Py::new(py, EvPairingQrCode::new(code.clone(), timeout.as_secs()))).map_err(|e| e).unwrap();
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPairingQrCode::new(code.clone(), timeout.as_secs()))).map_err(|e| e).unwrap();
                             Self::call_event(pairing_qr_callbacks, payload, locals.clone()).await.unwrap()
                         }
                         Event::Message(msg, info) => {
@@ -423,6 +423,14 @@ impl Tryx {
                         Event::PairSuccess(pair_success) => {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvPairSuccess::new(pair_success.id.into(), pair_success.lid.into(), pair_success.business_name, pair_success.platform))).map_err(|e| e).unwrap();
                             Self::call_event(pair_success_callbacks, payload, locals.clone()).await.unwrap();
+                        }
+                        Event::PairError(pair_error) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPairError::new(pair_error.id.into(), pair_error.lid.into(), pair_error.business_name, pair_error.platform, pair_error.error))).map_err(|e| e).unwrap();
+                            Self::call_event(connect_failure_callbacks, payload, locals.clone()).await.unwrap();
+                        }
+                        Event::PairingCode { code, timeout } => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPairingCode::new(code, timeout.as_secs()))).map_err(|e| e).unwrap();
+                            Self::call_event(pairing_qr_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         _ => {
                             debug!("received event without registered dispatcher path");
