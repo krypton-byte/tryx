@@ -291,22 +291,224 @@ impl EvUndecryptableMessage {
 }
 
 #[pyclass]
-pub struct EvNotification;
+pub struct EvNotification{
+    inner: wacore_binary::node::Node,
+    node_cache: Option<Py<Node>>,
+}
+impl EvNotification {
+    pub fn new(inner: wacore_binary::node::Node) -> Self {
+        Self { inner, node_cache: None }
+    }
+}
+#[pymethods]
+impl EvNotification {
+    #[getter]
+    fn node(&mut self, py: Python<'_>) -> PyResult<Py<Node>> {
+        if let Some(ref node) = self.node_cache {
+            Ok(node.clone_ref(py))
+        } else {
+            let py_node = Py::new(py, Node::from_node(&self.inner)).unwrap();
+            self.node_cache = Some(py_node.clone_ref(py));
+            Ok(py_node)
+        }
+    }
+}
 
 #[pyclass]
-pub struct EvChatPresence;
+enum ChatPresence {
+    Composing,
+    Paused
+}
+
+#[pymethods]
+impl ChatPresence {
+    fn __str__(&self) -> &str {
+        match self {
+            ChatPresence::Composing => "composing",
+            ChatPresence::Paused => "paused",
+        }
+    }
+    fn __repr__(&self) -> &str {
+        self.__str__()
+    }
+}
 
 #[pyclass]
-pub struct EvPresence;
+enum ChatPresenceMedia {
+    Text,
+    Audio
+}
+
+#[pymethods]
+impl ChatPresenceMedia {
+    fn __str__(&self) -> &str {
+        match self {
+            ChatPresenceMedia::Text => "text",
+            ChatPresenceMedia::Audio => "audio",
+        }
+    }
+    fn __repr__(&self) -> &str {
+        self.__str__()
+    }
+}
 
 #[pyclass]
-pub struct EvPictureUpdate;
+pub struct EvChatPresence {
+    source: Arc<wacore::types::message::MessageSource>,
+    source_cache: Option<pyo3::Py<MessageSource>>,
+    state: ChatPresence,
+    media: ChatPresenceMedia
+}
+
+impl EvChatPresence {
+    pub fn new(source: Arc<wacore::types::message::MessageSource>, state: wacore::types::presence::ChatPresence, media: wacore::types::presence::ChatPresenceMedia) -> Self {
+        let chat_presence_state = match state {
+            wacore::types::presence::ChatPresence::Composing => ChatPresence::Composing,
+            wacore::types::presence::ChatPresence::Paused => ChatPresence::Paused,
+        };
+        let chat_presence_media = match media {
+            wacore::types::presence::ChatPresenceMedia::Text => ChatPresenceMedia::Text,
+            wacore::types::presence::ChatPresenceMedia::Audio => ChatPresenceMedia::Audio,
+        };
+        Self { source, source_cache: None, state: chat_presence_state, media: chat_presence_media }
+    }
+}
+
+impl From<wacore::types::events::ChatPresenceUpdate> for EvChatPresence {
+    fn from(event: wacore::types::events::ChatPresenceUpdate) -> Self {
+        EvChatPresence::new(Arc::new(event.source), event.state, event.media)
+    }
+}
 
 #[pyclass]
-pub struct EvUserAboutUpdate;
+pub struct EvPresence {
+    #[pyo3(get)]
+    from: JID,
+    #[pyo3(get)]
+    unavailable: bool,
+    #[pyo3(get)]
+    last_seen: Option<Py<PyDateTime>>,
+}
+impl EvPresence {
+    pub fn new(from: Jid, unavailable: bool, last_seen: Option<DateTime<Utc>>) -> Self {
+        let py_last_seen = last_seen.map(|dt| Python::attach(|py| PyDateTime::from_timestamp(py, dt.timestamp() as f64, None).unwrap().into()));
+        Self { from: from.into(), unavailable, last_seen: py_last_seen }
+    }
+}
+
+impl From<wacore::types::events::PresenceUpdate> for EvPresence {
+    fn from(event: wacore::types::events::PresenceUpdate) -> Self {
+        EvPresence::new(event.from, event.unavailable, event.last_seen)
+    }
+}
 
 #[pyclass]
-pub struct EvJoinedGroup;
+pub struct PictureUpdateData {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    author: Option<JID>,
+    #[pyo3(get)]
+    timestamp: Option<Py<PyDateTime>>,
+    #[pyo3(get)]
+    removed: bool,
+    #[pyo3(get)]
+    picture_id: Option<String>,
+}
+#[pyclass]
+pub struct EvPictureUpdate{
+    inner: wacore::types::events::PictureUpdate,
+    data_cached: Option<Py<PictureUpdateData>>,
+}
+impl EvPictureUpdate {
+    pub fn new(inner: wacore::types::events::PictureUpdate) -> Self {
+        Self { inner, data_cached: None }
+    }
+
+}
+impl From<wacore::types::events::PictureUpdate> for EvPictureUpdate {
+    fn from(event: wacore::types::events::PictureUpdate) -> Self {
+        EvPictureUpdate::new(event)
+    }
+}
+#[pymethods]
+impl EvPictureUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> Py<PictureUpdateData> {
+        if let Some(ref data) = self.data_cached {
+            data.clone_ref(py)
+        } else {
+            let new_data = PictureUpdateData {
+                jid: self.inner.jid.clone().into(),
+                author: self.inner.author.clone().map(|a| a.into()),
+                timestamp: Some(Python::attach(|py| {
+                        PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind()
+                    })),
+                removed: self.inner.removed,
+                picture_id: self.inner.picture_id.clone(),
+            };
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached = Some(py_data.clone_ref(py));
+            py_data
+        }
+    }
+}
+
+#[pyclass]
+pub struct UserAboutUpdateData {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    status: String,
+    #[pyo3(get)]
+    timestamp: Option<Py<PyDateTime>>,
+}
+
+#[pyclass]
+pub struct EvUserAboutUpdate{
+    inner: wacore::types::events::UserAboutUpdate,
+    data_cached: Option<Py<UserAboutUpdateData>>,
+}
+
+impl EvUserAboutUpdate {
+    pub fn new(inner: wacore::types::events::UserAboutUpdate) -> Self {
+        Self { inner, data_cached: None }
+    }
+}
+impl From<wacore::types::events::UserAboutUpdate> for EvUserAboutUpdate {
+    fn from(event: wacore::types::events::UserAboutUpdate) -> Self {
+        EvUserAboutUpdate::new(event)
+    }
+}
+#[pymethods]
+impl EvUserAboutUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> Py<UserAboutUpdateData> {
+        if let Some(ref data) = self.data_cached {
+            data.clone_ref(py)
+        } else {
+            let new_data = UserAboutUpdateData { jid: self.inner.jid.into(), status: self.inner.status.clone(), timestamp: self.inner.timestamp.map(|dt| Python::attach(|py| PyDateTime::from_timestamp(py, dt.timestamp() as f64, None).unwrap().into())) };
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached = Some(py_data.clone_ref(py));
+            py_data
+        }
+    }
+}
+
+#[pyclass]
+pub struct JoinedGroupData {
+    #[pyo3(get)]
+    chat: JID,
+    #[pyo3(get)]
+    sender: JID,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+}
+
+#[pyclass]
+pub struct EvJoinedGroup{
+
+}
 
 #[pyclass]
 pub struct EvGroupInfoUpdate;
@@ -432,8 +634,8 @@ impl EvConnectFailure {
     fn node(&mut self, py: Python<'_>) -> PyResult<Option<Py<Node>>> {
         if let Some(ref node) = self.node {
             Ok(Some(node.clone_ref(py)))
-        } else if let Some(ref raw_node) = self.inner.as_ref(){
-            let node_instance = Node::from_node((*raw_node).clone());
+        } else if let Some(raw_node) = self.inner.as_ref(){
+            let node_instance = Node::from_node(raw_node);
             let py_node = Py::new(py, node_instance)?;
             self.node = Some(py_node.clone_ref(py));
             Ok(Some(py_node))
@@ -462,8 +664,8 @@ impl EvStreamError {
     fn node(&mut self, py: Python<'_>) -> PyResult<Option<Py<Node>>> {
         if let Some(ref node) = self.node {
             Ok(Some(node.clone_ref(py)))
-        } else if let Some(ref raw_node) = self.inner.as_ref(){
-            let node_instance = Node::from_node((*raw_node).clone());
+        } else if let Some(raw_node) = self.inner.as_ref(){
+            let node_instance = Node::from_node(raw_node);
             let py_node = Py::new(py, node_instance)?;
             self.node = Some(py_node.clone_ref(py));
             Ok(Some(py_node))

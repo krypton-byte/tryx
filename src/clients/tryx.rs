@@ -341,10 +341,10 @@ impl Tryx {
         let temporary_ban_callbacks = Arc::new(temporary_ban_callbacks);
         let connect_failure_callbacks = Arc::new(connect_failure_callbacks);
         let stream_error_callbacks = Arc::new(stream_error_callbacks);
-        let disappearing_mode_changed_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().disappearing_mode_changed_handlers(py)));
-        let contact_number_changed_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().contact_number_changed_handlers(py)));
-        let contact_updated_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().contact_updated_handlers(py)));
-        let star_update_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().star_update_handlers(py)));
+        let disappearing_mode_changed_callbacks = Arc::new(disappearing_mode_changed_callbacks);
+        let contact_number_changed_callbacks = Arc::new(contact_number_changed_callbacks);
+        let contact_updated_callbacks = Arc::new(contact_updated_callbacks);
+        let star_update_callbacks = Arc::new(star_update_callbacks);
         let contact_sync_requested_callbacks = Arc::new(contact_sync_requested_callbacks);
         info!("building WhatsApp bot");
         let mut bot = Bot::builder()
@@ -390,6 +390,9 @@ impl Tryx {
                 let stream_error_callbacks = Arc::clone(&stream_error_callbacks);
                 let disappearing_mode_changed_callbacks = Arc::clone(&disappearing_mode_changed_callbacks);
                 let contact_sync_requested_callbacks = Arc::clone(&contact_sync_requested_callbacks);
+                let contact_updated_callbacks = Arc::clone(&contact_updated_callbacks);
+                let contact_number_changed_callbacks = Arc::clone(&contact_number_changed_callbacks);
+                let star_update_callbacks = Arc::clone(&star_update_callbacks);
                 let _tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
 
                 async move {
@@ -483,24 +486,24 @@ impl Tryx {
                                 .unwrap();
                             Self::call_event(undecryptable_message_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::Notification(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvNotification {})).map_err(|e| e).unwrap();
+                        Event::Notification(notification) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvNotification::new(notification))).map_err(|e| e).unwrap();
                             Self::call_event(notification_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::ChatPresence(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvChatPresence {})).map_err(|e| e).unwrap();
+                        Event::ChatPresence(chat_presence) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvChatPresence::from(chat_presence))).map_err(|e| e).unwrap();
                             Self::call_event(chat_presence_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::Presence(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPresence {})).map_err(|e| e).unwrap();
+                        Event::Presence(presence) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPresence::from(presence))).map_err(|e| e).unwrap();
                             Self::call_event(presence_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::PictureUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPictureUpdate {})).map_err(|e| e).unwrap();
+                        Event::PictureUpdate(picture_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPictureUpdate::new(picture_update))).map_err(|e| e).unwrap();
                             Self::call_event(picture_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::UserAboutUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvUserAboutUpdate {})).map_err(|e| e).unwrap();
+                        Event::UserAboutUpdate(user_about) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvUserAboutUpdate::new(user_about))).map_err(|e| e).unwrap();
                             Self::call_event(user_about_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::JoinedGroup(_) => {

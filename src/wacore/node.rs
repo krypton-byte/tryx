@@ -200,23 +200,23 @@ impl Node {
         builder
     }
 
-    pub fn from_node(node: wacore_binary::node::Node) -> Self {
+    pub fn from_node(node: &wacore_binary::node::Node) -> Self {
         let attrs = Python::attach(|py| {
-            node.attrs.into_iter().map(|(k, v)| {
+            node.attrs.iter().map(|(k, v)| {
                 let value = match v {
-                    wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s),
-                    wacore_binary::node::NodeValue::Jid(jid) => NodeValue::jid(Py::new(py, JID::from(jid)).unwrap()),
+                    wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.clone()),
+                    wacore_binary::node::NodeValue::Jid(jid) => NodeValue::jid(Py::new(py, JID::from(jid.clone())).unwrap()),
                 };
-                Py::new(py, Attrs::new(k, Py::new(py, value).unwrap())).unwrap()
+                Py::new(py, Attrs::new(k.clone(), Py::new(py, value).unwrap())).unwrap()
             }).collect::<Vec<_>>()
         });
-        let content = node.content.map(|c| {
+        let content = node.content.as_ref().map(|c| {
             Python::attach(|py| {
                 let content_enum = match c {
-                    wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b),
-                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s),
+                    wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b.clone()),
+                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.clone()),
                     wacore_binary::node::NodeContent::Nodes(n) => {
-                        let nodes = n.into_iter().map(Self::from_node).map(|node| Py::new(py, node).unwrap()).collect();
+                        let nodes = n.iter().map(Self::from_node).map(|node| Py::new(py, node).unwrap()).collect();
                         NodeContentEnum::Nodes(nodes)
                     }
                 };
@@ -224,7 +224,7 @@ impl Node {
             })
         });
         Self {
-            tag: node.tag,
+            tag: node.tag.clone(),
             attrs: attrs,
             content: content,
         }
