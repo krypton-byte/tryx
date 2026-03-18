@@ -4,10 +4,10 @@ use prost::Message as ProstMessage;
 use pyo3::{Py, PyAny, PyErr, PyResult, Python,pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyType}};
 use pyo3::types::{PyDateTime};
 use chrono::{DateTime, Utc};
-use whatsapp_rust::types::events::{LoggedOut as WhatsAppLoggedOut, ConnectFailureReason };
+use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as WhatsAppLoggedOut }};
 use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
-use crate::types::{JID, MessageInfo};
+use crate::types::{JID, MessageInfo, MessageSource};
 
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
@@ -32,12 +32,6 @@ fn get_proto_sync_action_value_from_string(py: Python<'_>) -> Result<&Py<PyType>
 }
 fn from_string_to_python_proto(py: Python<'_>, proto_class: &Py<PyType>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
     let proto_instance = proto_class.bind(py).call0()?;
-    proto_instance.call_method1("ParseFromString", (PyBytes::new(py, proto_bytes),))?;
-    Ok(proto_instance.into_any().unbind())
-}
-fn parse_sync_action_value_proto(py: Python<'_>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
-    let proto_type = get_proto_sync_action_value_from_string(py)?;
-    let proto_instance = proto_type.bind(py).call0()?;
     proto_instance.call_method1("ParseFromString", (PyBytes::new(py, proto_bytes),))?;
     Ok(proto_instance.into_any().unbind())
 }
@@ -80,6 +74,11 @@ pub struct EvPairSuccess {
     business_name: String,
     #[pyo3(get)]
     platform: String,
+}
+impl EvPairSuccess {
+    pub fn new(id: JID, lid: JID, business_name: String, platform: String) -> Self {
+        Self { id, lid, business_name, platform }
+    }
 }
 
 #[pyclass]
@@ -126,7 +125,82 @@ pub struct EvQrScannedWithoutMultidevice;
 pub struct EvClientOutDated;
 
 #[pyclass]
-pub struct EvReceipt;
+// #[derive(Clone)]
+enum ReceiptType {
+    Delivered,
+    Sender,
+    Retry,
+    Read,
+    ReadSelf,
+    Played,
+    PlayedSelf,
+    ServerError,
+    Inactive,
+    PeerMsg,
+    HistorySync,
+    Other
+}
+#[pyclass]
+pub struct EvReceipt {
+    inner: Arc<wacore::types::message::MessageSource>,
+    source: Option<pyo3::Py<MessageSource>>,
+    #[pyo3(get)]
+    message_ids: Vec<String>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    #[pyo3(get)]
+    receipt_type: Py<ReceiptType>,
+    #[pyo3(get)]
+    message_sender: JID
+}
+
+impl EvReceipt {
+    pub fn new(inner: Arc<wacore::types::message::MessageSource>, message_ids: Vec<String>, timestamp: DateTime<Utc>, r#type: wacore::types::presence::ReceiptType,message_sender: Jid)-> Py<Self> {
+        let receipt_type = match r#type {
+            wacore::types::presence::ReceiptType::Delivered => ReceiptType::Delivered,
+            wacore::types::presence::ReceiptType::Sender => ReceiptType::Sender,
+            wacore::types::presence::ReceiptType::Retry => ReceiptType::Retry,
+            wacore::types::presence::ReceiptType::Read => ReceiptType::Read,
+            wacore::types::presence::ReceiptType::ReadSelf => ReceiptType::ReadSelf,
+            wacore::types::presence::ReceiptType::Played => ReceiptType::Played,
+            wacore::types::presence::ReceiptType::PlayedSelf => ReceiptType::PlayedSelf,
+            wacore::types::presence::ReceiptType::ServerError => ReceiptType::ServerError,
+            wacore::types::presence::ReceiptType::Inactive => ReceiptType::Inactive,
+            wacore::types::presence::ReceiptType::PeerMsg => ReceiptType::PeerMsg,
+            wacore::types::presence::ReceiptType::HistorySync => ReceiptType::HistorySync,
+            wacore::types::presence::ReceiptType::Other(_) => ReceiptType::Other
+            
+        };
+        Python::attach(|py|{
+            pyo3::Py::new(py, Self{
+                inner,
+                source: None,
+                message_ids,
+                timestamp: PyDateTime::from_timestamp(py, timestamp.naive_utc().and_utc().timestamp_millis() as f64 / 1000.0, None).unwrap().into(),
+                receipt_type: Py::new(py, receipt_type).unwrap(),
+                message_sender: message_sender.into(),
+            })
+        }).unwrap()
+    }
+}
+
+#[pymethods]
+impl EvReceipt {
+    #[getter]
+    fn source(&mut self) -> Option<pyo3::Py<MessageSource>> {
+        Python::attach(|py|{
+            match &self.source {
+                Some(src) => Some(src.clone_ref(py)),
+                None => {
+                    let src = MessageSource::from((*self.inner).clone());
+                    let py_src = Py::new(py, src).unwrap();
+                    self.source = Some(py_src.clone_ref(py));
+                    Some(py_src)
+                }
+            }
+        })
+    }
+}
 
 #[pyclass]
 pub struct EvUndecryptableMessage;

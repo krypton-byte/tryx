@@ -1,7 +1,7 @@
 use std::sync::{Arc};
 use std::future::Future;
 use std::pin::Pin;
-use pyo3::{Bound, PyAny, pyclass, pymethods};
+use pyo3::{Bound, PyAny, PyTypeInfo, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::{TaskLocals, into_future_with_locals};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals, into_future};
@@ -20,7 +20,7 @@ use tracing::{debug, error, info, warn};
 use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
-use crate::events::types::{EvArchiveUpdate, EvConnected, EvLoggedOut, EvMessage, EvPairingQrCode};
+use crate::events::types::{EvArchiveUpdate, EvConnected, EvLoggedOut, EvMessage, EvPairSuccess, EvPairingQrCode, EvReceipt};
 use crate::exceptions::UnsupportedBackend;
 use crate::events::dispatcher::Dispatcher;
 use crate::types::JID;
@@ -29,6 +29,7 @@ use crate::types::JID;
 #[pyclass]
 pub struct Tryx {
     backend: Arc<dyn Backend>,
+    #[pyo3(get)]
     handlers: Py<Dispatcher>,
     tryx_client: Py<TryxClient>,
     client_tx: watch::Sender<Option<Arc<Client>>>,
@@ -67,7 +68,7 @@ impl Tryx {
         self.tryx_client.clone_ref(py)
     }
     /// Returns a decorator compatible with:
-    /// @client.on(Message)
+    /// @client.on(EvMessage)
     /// async def on_message(client, data): ...
     fn on(&self, py: Python, event_type: &Bound<PyAny>) -> PyResult<Py<PyAny>> {
         debug!("registering event decorator through Tryx.on");
@@ -175,6 +176,41 @@ impl Tryx {
     
 
 impl Tryx {
+    async fn call_event<T: PyTypeInfo>(callbacks: Arc<Vec<Py<PyAny>>>, payload: Py<T>, locals: Option<TaskLocals>) -> PyResult<()> {
+        for callback in callbacks.iter() {
+            debug!("calling event Python callback");
+            let py_future = Python::attach(|py| -> PyResult<_> {
+                let awaitable = callback.bind(py).call1((payload.clone_ref(py),))?;
+                let fut: Pin<Box<dyn Future<Output = PyResult<Py<PyAny>>> + Send>> = match &locals {
+                    Some(locals) => {
+                        let fut = into_future_with_locals(locals, awaitable)?;
+                        Box::pin(async move { fut.await })
+                    }
+                    None => {
+                        let fut = into_future(awaitable)?;
+                        Box::pin(async move { fut.await })
+                    }
+                };
+                Ok(fut)
+            });
+
+            match py_future {
+                Ok(py_future) => {
+                    if let Err(err) = py_future.await {
+                        error!(error = %err, "event callback failed");
+                        Python::attach(|py| err.print(py));
+                    } else {
+                        debug!("event callback finished");
+                    }
+                }
+                Err(err) => {
+                    error!(error = %err, "failed to schedule event callback");
+                    Python::attach(|py| err.print(py));
+                }
+            }
+        }
+        Ok(())
+    }
     async fn run_bot(
         backend: Arc<dyn Backend>,
         handlers: Py<Dispatcher>,
@@ -187,6 +223,7 @@ impl Tryx {
             message_callbacks,
             connected_callbacks,
             logout_callbacks,
+            pair_success_callbacks,
             receipt_callbacks,
             undecryptable_message_callbacks,
             notification_callbacks,
@@ -219,6 +256,7 @@ impl Tryx {
                 dispatcher.message_handlers(py),
                 dispatcher.connected_handlers(py),
                 dispatcher.logout_handlers(py),
+                dispatcher.pair_success_handlers(py),
                 dispatcher.receipt_handlers(py),
                 dispatcher.undecryptable_message_handlers(py),
                 dispatcher.notification_handlers(py),
@@ -250,6 +288,7 @@ impl Tryx {
         let message_callbacks = Arc::new(message_callbacks);
         let connected_callbacks = Arc::new(connected_callbacks);
         let logout_callbacks = Arc::new(logout_callbacks);
+        let pair_success_callbacks = Arc::new(pair_success_callbacks);
         let receipt_callbacks = Arc::new(receipt_callbacks);
         let undecryptable_message_callbacks = Arc::new(undecryptable_message_callbacks);
         let notification_callbacks = Arc::new(notification_callbacks);
@@ -276,38 +315,38 @@ impl Tryx {
         let connect_failure_callbacks = Arc::new(connect_failure_callbacks);
         let stream_error_callbacks = Arc::new(stream_error_callbacks);
 
-        info!(
-            pairing_qr_handlers = pairing_qr_callbacks.len(),
-            message_handlers = message_callbacks.len(),
-            connected_handlers = connected_callbacks.len(),
-            logout_handlers = logout_callbacks.len(),
-            receipt_handlers = receipt_callbacks.len(),
-            undecryptable_message_handlers = undecryptable_message_callbacks.len(),
-            notification_handlers = notification_callbacks.len(),
-            chat_presence_handlers = chat_presence_callbacks.len(),
-            presence_handlers = presence_callbacks.len(),
-            picture_update_handlers = picture_update_callbacks.len(),
-            user_about_update_handlers = user_about_update_callbacks.len(),
-            joined_group_handlers = joined_group_callbacks.len(),
-            group_info_update_handlers = group_info_update_callbacks.len(),
-            contact_update_handlers = contact_update_callbacks.len(),
-            push_name_update_handlers = push_name_update_callbacks.len(),
-            self_push_name_updated_handlers = self_push_name_updated_callbacks.len(),
-            pin_update_handlers = pin_update_callbacks.len(),
-            mute_update_handlers = mute_update_callbacks.len(),
-            archive_update_handlers = archive_update_callbacks.len(),
-            mark_chat_as_read_update_handlers = mark_chat_as_read_update_callbacks.len(),
-            history_sync_handlers = history_sync_callbacks.len(),
-            offline_sync_preview_handlers = offline_sync_preview_callbacks.len(),
-            offline_sync_completed_handlers = offline_sync_completed_callbacks.len(),
-            device_list_update_handlers = device_list_update_callbacks.len(),
-            business_status_update_handlers = business_status_update_callbacks.len(),
-            stream_replaced_handlers = stream_replaced_callbacks.len(),
-            temporary_ban_handlers = temporary_ban_callbacks.len(),
-            connect_failure_handlers = connect_failure_callbacks.len(),
-            stream_error_handlers = stream_error_callbacks.len(),
-            "cached dispatcher handlers for runtime"
-        );
+        // info!(
+        //     pairing_qr_handlers = pairing_qr_callbacks.len(),
+        //     message_handlers = message_callbacks.len(),
+        //     connected_handlers = connected_callbacks.len(),
+        //     logout_handlers = logout_callbacks.len(),
+        //     receipt_handlers = receipt_callbacks.len(),
+        //     undecryptable_message_handlers = undecryptable_message_callbacks.len(),
+        //     notification_handlers = notification_callbacks.len(),
+        //     chat_presence_handlers = chat_presence_callbacks.len(),
+        //     presence_handlers = presence_callbacks.len(),
+        //     picture_update_handlers = picture_update_callbacks.len(),
+        //     user_about_update_handlers = user_about_update_callbacks.len(),
+        //     joined_group_handlers = joined_group_callbacks.len(),
+        //     group_info_update_handlers = group_info_update_callbacks.len(),
+        //     contact_update_handlers = contact_update_callbacks.len(),
+        //     push_name_update_handlers = push_name_update_callbacks.len(),
+        //     self_push_name_updated_handlers = self_push_name_updated_callbacks.len(),
+        //     pin_update_handlers = pin_update_callbacks.len(),
+        //     mute_update_handlers = mute_update_callbacks.len(),
+        //     archive_update_handlers = archive_update_callbacks.len(),
+        //     mark_chat_as_read_update_handlers = mark_chat_as_read_update_callbacks.len(),
+        //     history_sync_handlers = history_sync_callbacks.len(),
+        //     offline_sync_preview_handlers = offline_sync_preview_callbacks.len(),
+        //     offline_sync_completed_handlers = offline_sync_completed_callbacks.len(),
+        //     device_list_update_handlers = device_list_update_callbacks.len(),
+        //     business_status_update_handlers = business_status_update_callbacks.len(),
+        //     stream_replaced_handlers = stream_replaced_callbacks.len(),
+        //     temporary_ban_handlers = temporary_ban_callbacks.len(),
+        //     connect_failure_handlers = connect_failure_callbacks.len(),
+        //     stream_error_handlers = stream_error_callbacks.len(),
+        //     "cached dispatcher handlers for runtime"
+        // );
 
         info!("building WhatsApp bot");
         let mut bot = Bot::builder()
@@ -320,6 +359,7 @@ impl Tryx {
                 let message_callbacks = Arc::clone(&message_callbacks);
                 let connected_callbacks = Arc::clone(&connected_callbacks);
                 let logout_callbacks = Arc::clone(&logout_callbacks);
+                let pair_success_callbacks = Arc::clone(&pair_success_callbacks);
                 let receipt_callbacks = Arc::clone(&receipt_callbacks);
                 let undecryptable_message_callbacks = Arc::clone(&undecryptable_message_callbacks);
                 let notification_callbacks = Arc::clone(&notification_callbacks);
@@ -349,101 +389,20 @@ impl Tryx {
                 async move {
                     match event {
                         Event::PairingQrCode { code, timeout } => {
-                            info!(timeout_secs = timeout.as_secs(), "received pairing QR event");
-                            info!(handlers = pairing_qr_callbacks.len(), "dispatching pairing QR handlers");
-
-                            for (idx, callback) in pairing_qr_callbacks.iter().enumerate() {
-                                debug!(handler_index = idx, "calling pairing QR Python callback");
-                                let locals = locals.clone();
-                                let py_future = Python::attach(|py| -> PyResult<_> {
-                                    let payload = Py::new(py, EvPairingQrCode::new(code.clone(), timeout.as_secs()))?;
-                                    let awaitable = callback.bind(py).call1((py.None(), payload))?;
-                                    let fut: Pin<Box<dyn Future<Output = PyResult<Py<PyAny>>> + Send>> = match &locals {
-                                        Some(locals) => {
-                                            let fut = into_future_with_locals(locals, awaitable)?;
-                                            Box::pin(async move { fut.await })
-                                        }
-                                        None => {
-                                            let fut = into_future(awaitable)?;
-                                            Box::pin(async move { fut.await })
-                                        }
-                                    };
-                                    Ok(fut)
-                                });
-
-                                match py_future {
-                                    Ok(py_future) => {
-                                        if let Err(err) = py_future.await {
-                                            error!(handler_index = idx, error = %err, "pairing QR callback failed");
-                                            Python::attach(|py| err.print(py));
-                                        } else {
-                                            debug!(handler_index = idx, "pairing QR callback finished");
-                                        }
-                                    }
-                                    Err(err) => {
-                                        error!(handler_index = idx, error = %err, "failed to schedule pairing QR callback");
-                                        Python::attach(|py| err.print(py));
-                                    }
-                                }
-                            }
+                            let payload = Python::attach(|py| Py::new(py, EvPairingQrCode::new(code.clone(), timeout.as_secs()))).map_err(|e| e).unwrap();
+                            Self::call_event(pairing_qr_callbacks, payload, locals.clone()).await.unwrap()
                         }
                         Event::Message(msg, info) => {
                             let payload = Python::attach(|py| Py::new(py, EvMessage::new(msg, info))).map_err(|e| e).unwrap();
-                            for callback in message_callbacks.iter() {
-                                let locals = locals.clone();
-                                let py_future = Python::attach(|py| -> PyResult<_> {
-                                    let client_obj = tryx_client.clone_ref(py);
-                                    let awaitable = callback.bind(py).call1((client_obj, payload.clone_ref(py)))?;
-                                    let fut: Pin<Box<dyn Future<Output = PyResult<Py<PyAny>>> + Send>> = match &locals {
-                                        Some(locals) => {
-                                            let fut = into_future_with_locals(locals, awaitable)?;
-                                            Box::pin(async move { fut.await })
-                                        }
-                                        None => {
-                                            let fut = into_future(awaitable)?;
-                                            Box::pin(async move { fut.await })
-                                        }
-                                    };
-                                    Ok(fut)
-                                });
-
-                                match py_future {
-                                    Ok(py_future) => {
-                                        if let Err(err) = py_future.await {
-                                            Python::attach(|py| err.print(py));
-                                        } else {
-                                            debug!( "message callback finished");
-                                        }
-                                    }
-                                    Err(err) => {
-                                        error!("failed to schedule message callback");
-                                        Python::attach(|py| err.print(py));
-                                    }
-                                }
-                            }
+                            Self::call_event(message_callbacks, payload, locals.clone()).await.unwrap()
                         }
                         Event::Connected(_) => {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvConnected{})).map_err(|e| e).unwrap();
-                            for callback in connected_callbacks.iter() {
-                                debug!("calling connected event handler");
-                                let _ = Python::attach(|py| -> PyResult<_> {
-                                    let awaitable = callback.bind(py).call1((payload.clone_ref(py),))?;
-                                    let fut = into_future(awaitable)?;
-                                    Ok(fut)
-                                });
-                            }
+                            Self::call_event(connected_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::LoggedOut(logout) => {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvLoggedOut::new(logout))).map_err(|e| e).unwrap();
-                            for callback in logout_callbacks.iter() {
-                                debug!("calling logged out event handler");
-                                let _ = Python::attach(|py| -> PyResult<_> {
-                                    let awaitable = callback.bind(py).call1((payload.clone_ref(py),))?;
-                                    let fut = into_future(awaitable)?;
-                                    Ok(fut)
-                                });
-                            }
-                            
+                            Self::call_event(logout_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::ArchiveUpdate(archived) => {
 
@@ -453,16 +412,17 @@ impl Tryx {
                                 Arc::from(archived.action.clone()),
                                 archived.from_full_sync,
                             ))).map_err(|e| e).unwrap();
-                            for callback in archive_update_callbacks.iter() {
-                                debug!("calling archive update event handler");
-                                let _ = Python::attach(|py| -> PyResult<_> {
-                                    let awaitable = callback.bind(py).call1((payload.clone_ref(py),))?;
-                                    let fut = into_future(awaitable)?;
-                                    Ok(fut)
-                                });
-                            }
-                            // debug!("received archive update event for jid {}", archived.jid);
+                            Self::call_event(archive_update_callbacks, payload, locals.clone()).await.unwrap();
 
+                        }
+                        Event::Receipt(receipt) => {
+                            let receipt_callbacks = Arc::clone(&receipt_callbacks);
+                            let payload = EvReceipt::new(Arc::new(receipt.source), receipt.message_ids, receipt.timestamp, receipt.r#type, receipt.message_sender);
+                            Self::call_event(receipt_callbacks, payload, locals.clone()).await.unwrap();
+                        }
+                        Event::PairSuccess(pair_success) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPairSuccess::new(pair_success.id.into(), pair_success.lid.into(), pair_success.business_name, pair_success.platform))).map_err(|e| e).unwrap();
+                            Self::call_event(pair_success_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         _ => {
                             debug!("received event without registered dispatcher path");

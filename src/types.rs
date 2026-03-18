@@ -57,7 +57,7 @@ impl JID {
 }
 
 #[pyclass]
-struct MessageSource {
+pub struct MessageSource {
     inner: Arc<WhatsAppMessageSource>,
     chat: Arc<WhatsAppJID>,
     sender: Arc<WhatsAppJID>,
@@ -110,6 +110,15 @@ impl MessageSource {
     }
     fn __repr__(&self) -> String {
         format!("MessageSource(chat='{}', sender='{}')", self.chat, self.sender)
+    }
+}
+impl From<WhatsAppMessageSource> for MessageSource {
+    fn from(source: WhatsAppMessageSource) -> Self {
+        MessageSource {
+            inner: Arc::new(source.clone()),
+            chat: Arc::new(source.chat.clone()),
+            sender: Arc::new(source.sender.clone()),
+        }
     }
 }
 
