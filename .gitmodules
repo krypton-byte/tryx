@@ -1,0 +1,3 @@
+[submodule "libs/whatsapp-rust"]
+	path = libs/whatsapp-rust
+	url = git@github.com:jlucaso1/whatsapp-rust.git
