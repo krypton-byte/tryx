@@ -13,6 +13,7 @@ use crate::types::{JID, MessageInfo, MessageSource};
 use crate::wacore::node::Node;
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static LAZY_CONVERSATION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 fn get_proto_import(py: Python<'_>, import: &str, attr: &str) -> PyResult<Py<PyType>>{
     let module = py.import(import)?;
     let message_type = module.getattr(attr)?.cast_into::<PyType>()?;
@@ -31,6 +32,12 @@ fn get_proto_sync_action_value_from_string(py: Python<'_>) -> Result<&Py<PyType>
         get_proto_import(py, "tryx.waproto.whatsapp_pb2", "SyncActionValue")
     })?;
     Ok(proto_type)
+}
+fn get_lazy_conversation_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
+    let conversation = LAZY_CONVERSATION_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "Conversation")
+    })?;
+    Ok(conversation)
 }
 fn from_string_to_python_proto(py: Python<'_>, proto_class: &Py<PyType>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
     let proto_instance = proto_class.bind(py).call0()?;
@@ -487,7 +494,7 @@ impl EvUserAboutUpdate {
         if let Some(ref data) = self.data_cached {
             data.clone_ref(py)
         } else {
-            let new_data = UserAboutUpdateData { jid: self.inner.jid.into(), status: self.inner.status.clone(), timestamp: self.inner.timestamp.map(|dt| Python::attach(|py| PyDateTime::from_timestamp(py, dt.timestamp() as f64, None).unwrap().into())) };
+            let new_data = UserAboutUpdateData { jid: self.inner.jid.clone().into(), status: self.inner.status.clone(), timestamp: Some(Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind())) };
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached = Some(py_data.clone_ref(py));
             py_data
@@ -496,18 +503,55 @@ impl EvUserAboutUpdate {
 }
 
 #[pyclass]
-pub struct JoinedGroupData {
-    #[pyo3(get)]
-    chat: JID,
-    #[pyo3(get)]
-    sender: JID,
-    #[pyo3(get)]
-    timestamp: Py<PyDateTime>,
+pub struct LazyConversation {
+    inner: Arc<wacore::types::events::LazyConversation>,
+    parsed: Option<Py<PyAny>>,
+}
+impl LazyConversation {
+    pub fn new(inner: Arc<wacore::types::events::LazyConversation>) -> Self {
+        Self { inner, parsed: None }
+    }
+}
+#[pymethods]
+impl LazyConversation {
+    #[getter]
+    fn conversation(&mut self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
+        if let Some(ref parsed) = self.parsed {
+            Ok(Some(parsed.clone_ref(py)))
+        } else {
+            let proto_type = get_lazy_conversation_proto_type(py)?;
+            let proto = self.inner.get().ok_or_else(|| PyErr::new::<pyo3::exceptions::PyAttributeError, _>("LazyConversation does not contain conversation data"))?;
+            let mut proto_bytes = Vec::new();
+            proto.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode conversation proto: {}", e)))?;
+            let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
+            self.parsed = Some(parsed_proto.clone_ref(py));
+            Ok(Some(parsed_proto))
+        }
+    }
 }
 
 #[pyclass]
 pub struct EvJoinedGroup{
-
+    inner: wacore::types::events::LazyConversation,
+    conversation_cached: Option<Py<LazyConversation>>,
+}
+impl EvJoinedGroup {
+    pub fn new(inner: wacore::types::events::LazyConversation) -> Self {
+        Self { inner, conversation_cached: None }
+    }
+}
+#[pymethods]
+impl EvJoinedGroup {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<LazyConversation>> {
+        if let Some(ref cached) = self.conversation_cached {
+            Ok(cached.clone_ref(py))
+        } else {
+            let lazy_conversation = Py::new(py, LazyConversation::new(Arc::new(self.inner.clone()))).unwrap();
+            self.conversation_cached = Some(lazy_conversation.clone_ref(py));
+            Ok(lazy_conversation)
+        }
+    }
 }
 
 #[pyclass]

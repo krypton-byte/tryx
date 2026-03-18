@@ -506,8 +506,8 @@ impl Tryx {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvUserAboutUpdate::new(user_about))).map_err(|e| e).unwrap();
                             Self::call_event(user_about_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::JoinedGroup(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvJoinedGroup {})).map_err(|e| e).unwrap();
+                        Event::JoinedGroup(joined_group) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvJoinedGroup::new(joined_group))).map_err(|e| e).unwrap();
                             Self::call_event(joined_group_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::GroupUpdate { .. } => {
