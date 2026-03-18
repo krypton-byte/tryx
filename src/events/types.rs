@@ -10,7 +10,7 @@ use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as What
 use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
 use crate::types::{JID, MessageInfo, MessageSource};
-use crate::wacore::node::{Node, NodeContent, NodeValue};
+use crate::wacore::node::Node;
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 fn get_proto_import(py: Python<'_>, import: &str, attr: &str) -> PyResult<Py<PyType>>{
@@ -597,4 +597,110 @@ impl EvArchiveUpdate {
 
     }
 
+}
+
+#[pyclass]
+pub struct EvDisappearingModeChanged {
+    #[pyo3(get)]
+    from: JID,
+    #[pyo3(get)]
+    duration: u32,
+    #[pyo3(get)]
+    setting_timestamp: u64
+}
+
+impl EvDisappearingModeChanged {
+    pub fn new(from: Jid, duration: u32, setting_timestamp: u64) -> Self {
+        Self { from: from.into(), duration, setting_timestamp }
+    }
+}
+
+#[pyclass]
+pub struct EvContactNumberChanged {
+    #[pyo3(get)]
+    old_jid: JID,
+    #[pyo3(get)]
+    new_jid: JID,
+    #[pyo3(get)]
+    old_lid: Option<JID>,
+    #[pyo3(get)]
+    new_lid: Option<JID>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+}
+
+impl EvContactNumberChanged {
+    pub fn new(old_jid: Jid, new_jid: Jid, old_lid: Option<Jid>, new_lid: Option<Jid>, timestamp: DateTime<Utc>) -> Self {
+        let timestamp = Python::attach(|py| {
+            PyDateTime::from_timestamp(
+                py,
+                (timestamp.timestamp_millis() as f64) / 1000.0,
+                None
+            ).unwrap().into()
+        });
+        Self {
+            old_jid: old_jid.into(),
+            new_jid: new_jid.into(),
+            old_lid: old_lid.map(|j| j.into()),
+            new_lid: new_lid.map(|j| j.into()),
+            timestamp,
+        }
+    }
+}
+
+#[pyclass]
+pub struct EvContactSyncRequested{
+    #[pyo3(get)]
+    after: Option<Py<PyDateTime>>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+}
+impl EvContactSyncRequested {
+    pub fn new(after: Option<DateTime<Utc>>, timestamp: DateTime<Utc>) -> Self {
+        Python::attach(|py| {
+            let after = after.map(|dt| PyDateTime::from_timestamp(py, (dt.timestamp_millis() as f64) / 1000.0, None).unwrap().into());
+            let timestamp = PyDateTime::from_timestamp(py, (timestamp.timestamp_millis() as f64) / 1000.0, None).unwrap().into();
+            Self { after, timestamp }
+        })
+    }
+}
+
+#[pyclass]
+pub struct EvContactUpdated {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+}
+
+impl EvContactUpdated {
+    pub fn new(jid: Jid, timestamp: DateTime<Utc>) -> Self {
+        let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, (timestamp.timestamp_millis() as f64) / 1000.0, None).unwrap().into());
+        Self { jid: jid.into(), timestamp }
+    }
+}
+
+#[pyclass]
+pub struct EvStarUpdate {
+    #[pyo3(get)]
+    chat_jid: JID,
+    #[pyo3(get)]
+    participant_jid: Option<JID>,
+    #[pyo3(get)]
+    message_id: String,
+    #[pyo3(get)]
+    from_me: bool,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+    #[pyo3(get)]
+    starred: Option<bool>,
+}
+
+impl EvStarUpdate {
+    pub fn new(chat_jid: Jid, participant_jid: Option<Jid>, message_id: String, from_me: bool, timestamp: DateTime<Utc>, from_full_sync: bool, starred: Option<bool>) -> Self {
+        let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, (timestamp.timestamp_millis() as f64) / 1000.0, None).unwrap().into());
+        Self { chat_jid: chat_jid.into(), participant_jid: participant_jid.map(|j| j.into()), message_id, from_me, timestamp, from_full_sync, starred }
+    }
 }

@@ -9,6 +9,7 @@ use tokio::runtime;
 use tokio::sync::watch;
 use tokio::time::{Duration, interval};
 use wacore::types::events::Event;
+use waproto::whatsapp::disappearing_mode;
 use whatsapp_rust::Client;
 use whatsapp_rust::bot::Bot;
 use whatsapp_rust::store::Backend;
@@ -20,41 +21,7 @@ use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
 use crate::events::types::{
-    EvArchiveUpdate,
-    EvBusinessStatusUpdate,
-    EvChatPresence,
-    EvClientOutDated,
-    EvConnectFailure,
-    EvConnected,
-    EvContactUpdate,
-    EvDeviceListUpdate,
-    EvDisconnected,
-    EvGroupInfoUpdate,
-    EvHistorySync,
-    EvJoinedGroup,
-    EvLoggedOut,
-    EvMarkChatAsReadUpdate,
-    EvMessage,
-    EvMuteUpdate,
-    EvNotification,
-    EvOfflineSyncCompleted,
-    EvOfflineSyncPreview,
-    EvPairError,
-    EvPairSuccess,
-    EvPairingCode,
-    EvPairingQrCode,
-    EvPictureUpdate,
-    EvPinUpdate,
-    EvPresence,
-    EvPushNameUpdate,
-    EvQrScannedWithoutMultidevice,
-    EvReceipt,
-    EvSelfPushNameUpdated,
-    EvStreamError,
-    EvStreamReplaced,
-    EvTemporaryBan,
-    EvUndecryptableMessage,
-    EvUserAboutUpdate,
+    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupInfoUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
 };
 use crate::exceptions::UnsupportedBackend;
 use crate::events::dispatcher::Dispatcher;
@@ -288,6 +255,11 @@ impl Tryx {
             temporary_ban_callbacks,
             connect_failure_callbacks,
             stream_error_callbacks,
+            disappearing_mode_changed_callbacks,
+            contact_number_changed_callbacks,
+            contact_sync_requested_callbacks,
+            contact_updated_callbacks,
+            star_update_callbacks,
         ) = Python::attach(|py| {
             let dispatcher = handlers.bind(py).borrow();
             (
@@ -326,6 +298,11 @@ impl Tryx {
                 dispatcher.temporary_ban_handlers(py),
                 dispatcher.connect_failure_handlers(py),
                 dispatcher.stream_error_handlers(py),
+                dispatcher.disappearing_mode_changed_handlers(py),
+                dispatcher.contact_number_changed_handlers(py),
+                dispatcher.contact_sync_requested_handlers(py),
+                dispatcher.contact_updated_handlers(py),
+                dispatcher.star_update_handlers(py),
             )
         });
 
@@ -364,7 +341,11 @@ impl Tryx {
         let temporary_ban_callbacks = Arc::new(temporary_ban_callbacks);
         let connect_failure_callbacks = Arc::new(connect_failure_callbacks);
         let stream_error_callbacks = Arc::new(stream_error_callbacks);
-
+        let disappearing_mode_changed_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().disappearing_mode_changed_handlers(py)));
+        let contact_number_changed_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().contact_number_changed_handlers(py)));
+        let contact_updated_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().contact_updated_handlers(py)));
+        let star_update_callbacks = Arc::new(Python::attach(|py| handlers.bind(py).borrow().star_update_handlers(py)));
+        let contact_sync_requested_callbacks = Arc::new(contact_sync_requested_callbacks);
         info!("building WhatsApp bot");
         let mut bot = Bot::builder()
             .with_backend(backend)
@@ -407,6 +388,8 @@ impl Tryx {
                 let temporary_ban_callbacks = Arc::clone(&temporary_ban_callbacks);
                 let connect_failure_callbacks = Arc::clone(&connect_failure_callbacks);
                 let stream_error_callbacks = Arc::clone(&stream_error_callbacks);
+                let disappearing_mode_changed_callbacks = Arc::clone(&disappearing_mode_changed_callbacks);
+                let contact_sync_requested_callbacks = Arc::clone(&contact_sync_requested_callbacks);
                 let _tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
 
                 async move {
@@ -623,20 +606,31 @@ impl Tryx {
                             }).unwrap();
                             Self::call_event(stream_error_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::ContactNumberChanged(_) => {
-                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        Event::ContactNumberChanged(contact_number_changed) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactNumberChanged::new(contact_number_changed.old_jid.into(), contact_number_changed.new_jid.into(), contact_number_changed.old_lid.map(|f|f.into()), contact_number_changed.new_lid.map(|f|f.into()), contact_number_changed.timestamp))).unwrap();
+                            Self::call_event(contact_number_changed_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::ContactSyncRequested(_) => {
-                            // This event is currently not exposed to Python, but can be added in the future if needed. 
+                        Event::ContactSyncRequested(contact_sync_requested) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactSyncRequested::new(contact_sync_requested.after, contact_sync_requested.timestamp))).unwrap();
+                            Self::call_event(contact_sync_requested_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::ContactUpdated(_) => {
-                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        Event::ContactUpdated(contact_updated) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactUpdated::new(contact_updated.jid, contact_updated.timestamp))).unwrap();
+                            Self::call_event(contact_updated_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::StarUpdate(_) => {
-                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        Event::StarUpdate(star_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvStarUpdate::new(star_update.chat_jid, star_update.participant_jid, star_update.message_id, star_update.from_me, star_update.timestamp, star_update.from_full_sync, star_update.action.starred)  )).unwrap();
+                            Self::call_event(star_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::DisappearingModeChanged(_) => {
-                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        Event::DisappearingModeChanged(disappearing_mode_changed) => {
+                            let payload = Python::attach(|py| {
+                                pyo3::Py::new(py, EvDisappearingModeChanged::new(
+                                    disappearing_mode_changed.from,
+                                    disappearing_mode_changed.duration,
+                                    disappearing_mode_changed.setting_timestamp
+                                ))
+                            }).unwrap();
+                            Self::call_event(disappearing_mode_changed_callbacks, payload, locals.clone()).await.unwrap();
                         }
                 }
             }

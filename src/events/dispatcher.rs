@@ -39,6 +39,7 @@ use super::types::{
     EvUndecryptableMessage,
     EvUserAboutUpdate,
 };
+use crate::events::types::EvDisappearingModeChanged;
 use crate::exceptions::UnsupportedEventType;
 
 #[pyclass]
@@ -79,6 +80,10 @@ pub struct Dispatcher {
     connect_failure: Vec<Py<PyAny>>,
     stream_error: Vec<Py<PyAny>>,
     pending_event: Option<DispatchEvent>,
+    disappearing_mode_changed: Vec<Py<PyAny>>,
+    contact_sync_requested: Vec<Py<PyAny>>,
+    contact_updated: Vec<Py<PyAny>>,
+    star_update: Vec<Py<PyAny>>,
 }
 
 #[derive(Clone, Copy)]
@@ -118,6 +123,10 @@ enum DispatchEvent {
     TemporaryBan,
     ConnectFailure,
     StreamError,
+    DisappearingModeChanged,
+    ContactSyncRequested,
+    ContactUpdated,
+    StarUpdate,
 }
 
 impl Dispatcher {
@@ -165,7 +174,11 @@ impl Dispatcher {
             temporary_ban: Vec::new(),
             connect_failure: Vec::new(),
             stream_error: Vec::new(),
+            disappearing_mode_changed: Vec::new(),
             pending_event: None,
+            contact_sync_requested: Vec::new(),
+            contact_updated: Vec::new(),
+            star_update: Vec::new(),
         }
     }
 
@@ -382,7 +395,16 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected stream error handlers");
         handlers
     }
-
+    pub fn disappearing_mode_changed_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.disappearing_mode_changed);
+        debug!(handlers = handlers.len(), "collected disappearing mode changed handlers");
+        handlers
+    }
+    pub fn contact_number_changed_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.contact_update);
+        debug!(handlers = handlers.len(), "collected contact number changed handlers");
+        handlers
+    }
     fn handlers_for_event(&self, event: DispatchEvent) -> &Vec<Py<PyAny>> {
         match event {
             DispatchEvent::Connected => &self.connected,
@@ -420,6 +442,10 @@ impl Dispatcher {
             DispatchEvent::TemporaryBan => &self.temporary_ban,
             DispatchEvent::ConnectFailure => &self.connect_failure,
             DispatchEvent::StreamError => &self.stream_error,
+            DispatchEvent::DisappearingModeChanged => &self.disappearing_mode_changed,
+            DispatchEvent::ContactSyncRequested => &self.contact_sync_requested,
+            DispatchEvent::ContactUpdated => &self.contact_updated,
+            DispatchEvent::StarUpdate => &self.star_update,
         }
     }
 }
@@ -461,6 +487,10 @@ fn dispatch_event_name(event: DispatchEvent) -> &'static str {
         DispatchEvent::TemporaryBan => "temporary_ban",
         DispatchEvent::ConnectFailure => "connect_failure",
         DispatchEvent::StreamError => "stream_error",
+        DispatchEvent::DisappearingModeChanged => "disappearing_mode_changed",
+        DispatchEvent::ContactSyncRequested => "contact_sync_requested",
+        DispatchEvent::ContactUpdated => "contact_updated",
+        DispatchEvent::StarUpdate => "star_update",
     }
 }
 
@@ -538,6 +568,8 @@ fn dispatch_event_from_type(py: Python, event_type: &Bound<PyAny>) -> PyResult<D
         Ok(DispatchEvent::ConnectFailure)
     } else if event_type.is_subclass(&EvStreamError::type_object(py))? {
         Ok(DispatchEvent::StreamError)
+    }else if event_type.is_subclass(&EvDisappearingModeChanged::type_object(py))? {
+        Ok(DispatchEvent::DisappearingModeChanged)
     } else {
         Err(PyErr::new::<UnsupportedEventType, _>("Unsupported event type"))
     }
@@ -609,12 +641,36 @@ impl Dispatcher {
             DispatchEvent::TemporaryBan => self.temporary_ban.push(func.clone_ref(py)),
             DispatchEvent::ConnectFailure => self.connect_failure.push(func.clone_ref(py)),
             DispatchEvent::StreamError => self.stream_error.push(func.clone_ref(py)),
+            DispatchEvent::DisappearingModeChanged => self.disappearing_mode_changed.push(func.clone_ref(py)),
+            DispatchEvent::ContactSyncRequested => self.contact_sync_requested.push(func.clone_ref(py)),
+            DispatchEvent::ContactUpdated => self.contact_updated.push(func.clone_ref(py)),
+            DispatchEvent::StarUpdate => self.star_update.push(func.clone_ref(py)),
         }
 
         let total_handlers = self.handlers_for_event(event).len();
         info!(event = dispatch_event_name(event), handlers = total_handlers, "registered Python callback");
 
         Ok(func)
+    }
+}
+
+impl Dispatcher {
+    pub fn contact_sync_requested_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.contact_sync_requested);
+        debug!(handlers = handlers.len(), "collected contact sync requested handlers");
+        handlers
+    }
+
+    pub fn contact_updated_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.contact_updated);
+        debug!(handlers = handlers.len(), "collected contact updated handlers");
+        handlers
+    }
+
+    pub fn star_update_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.star_update);
+        debug!(handlers = handlers.len(), "collected star update handlers");
+        handlers
     }
 }
 
