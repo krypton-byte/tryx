@@ -117,7 +117,7 @@ impl MsgBotInfo {
     #[getter]
     fn edit_sender_timestamp(&self, py: Python) -> PyResult<Option<pyo3::Py<PyDateTime>>> {
         self.inner.edit_sender_timestamp_ms.map(|x| {
-            let date = PyDateTime::from_timestamp(py, x.timestamp_millis()as f64/1000.0, None).map_err(|_| PyErr::new::<PyRuntimeError, _>("Failed to convert timestamp to datetime"))?;
+            let date = PyDateTime::from_timestamp(py, x.naive_utc().and_utc().timestamp_millis()as f64/1000.0, None).map_err(|_| PyErr::new::<PyRuntimeError, _>("Failed to convert timestamp to datetime"))?;
             Ok(date.into())
         }).transpose()
     }

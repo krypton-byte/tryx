@@ -1,23 +1,46 @@
 use std::sync::Arc;
 
 use prost::Message as ProstMessage;
-use pyo3::{Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyType}};
+use pyo3::{Py, PyAny, PyErr, PyResult, Python,pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyType}};
+use pyo3::types::{PyDateTime};
+use chrono::{DateTime, Utc};
 use whatsapp_rust::types::events::{LoggedOut as WhatsAppLoggedOut, ConnectFailureReason };
 use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
 use crate::types::{JID, MessageInfo};
 
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+fn get_proto_import(py: Python<'_>, import: &str, attr: &str) -> PyResult<Py<PyType>>{
+    let module = py.import(import)?;
+    let message_type = module.getattr(attr)?.cast_into::<PyType>()?;
+    Ok(message_type.unbind())
+}
 
 fn get_proto_message_from_string(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
     let proto_type = WHATSAPP_MESSAGE_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        let proto_module = py.import("tryx.waproto.whatsapp_pb2")?;
-        let message_type = proto_module.getattr("Message")?.cast_into::<PyType>()?;
-        Ok(message_type.unbind())
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "Message")
     })?;
     Ok(proto_type)
 }
 
+fn get_proto_sync_action_value_from_string(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
+    let proto_type = SYNC_ACTION_VALUE.get_or_try_init(py, || -> PyResult<Py<PyType>> {
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "SyncActionValue")
+    })?;
+    Ok(proto_type)
+}
+fn from_string_to_python_proto(py: Python<'_>, proto_class: &Py<PyType>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
+    let proto_instance = proto_class.bind(py).call0()?;
+    proto_instance.call_method1("ParseFromString", (PyBytes::new(py, proto_bytes),))?;
+    Ok(proto_instance.into_any().unbind())
+}
+fn parse_sync_action_value_proto(py: Python<'_>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
+    let proto_type = get_proto_sync_action_value_from_string(py)?;
+    let proto_instance = proto_type.bind(py).call0()?;
+    proto_instance.call_method1("ParseFromString", (PyBytes::new(py, proto_bytes),))?;
+    Ok(proto_instance.into_any().unbind())
+}
 fn parse_message_proto(py: Python<'_>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
     let proto_type = get_proto_message_from_string(py)?;
     let proto_instance = proto_type.bind(py).call0()?;
@@ -26,29 +49,32 @@ fn parse_message_proto(py: Python<'_>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>
 }
 
 
-#[pyclass]
-pub struct Connected;
 
 #[pyclass]
-pub struct Disconnected;
+pub struct EvConnected;
+
+#[pyclass]
+pub struct EvDisconnected;
 
 
 #[pyclass]
-pub struct LoggedOut{
+pub struct EvLoggedOut{
     #[pyo3(get)]
     on_connect: bool,
     #[pyo3(get)]
     reason: &'static str,
 }
-impl LoggedOut {
+impl EvLoggedOut {
     pub fn new(logout: WhatsAppLoggedOut) -> Self {
         Self { on_connect: logout.on_connect, reason: &connect_failure_reason_to_string(&logout.reason) }
     }
 }
 
 #[pyclass]
-pub struct PairSuccess {
+pub struct EvPairSuccess {
+    #[pyo3(get)]
     id: JID,
+    #[pyo3(get)]
     lid: JID,
     #[pyo3(get)]
     business_name: String,
@@ -56,20 +82,8 @@ pub struct PairSuccess {
     platform: String,
 }
 
-#[pymethods]
-impl PairSuccess {
-    #[getter]
-    fn id(&self) -> JID {
-        self.id.clone()
-    }
-    #[getter]
-    fn lid(&self) -> JID {
-        self.lid.clone()
-    }
-}
-
 #[pyclass]
-pub struct PairError {
+pub struct EvPairError {
     #[pyo3(get)]
     id: JID,
     #[pyo3(get)]
@@ -83,13 +97,13 @@ pub struct PairError {
 }
 
 #[pyclass]
-pub struct PairingQrCode {
+pub struct EvPairingQrCode {
     #[pyo3(get)]
     code: String,
     #[pyo3(get)]
     timeout: u64,
 }
-impl PairingQrCode {
+impl EvPairingQrCode {
     pub fn new(code: String, timeout: u64) -> Self {
         Self { code, timeout }
     }
@@ -97,7 +111,7 @@ impl PairingQrCode {
 }
 
 #[pyclass]
-pub struct PairingCode {
+pub struct EvPairingCode {
     #[pyo3(get)]
     code: String,
     #[pyo3(get)]
@@ -105,20 +119,109 @@ pub struct PairingCode {
 }
 
 #[pyclass]
-pub struct QrScannedWithoutMultidevice;
+pub struct EvQrScannedWithoutMultidevice;
 
 
 #[pyclass]
-pub struct ClientOutDated;
+pub struct EvClientOutDated;
 
 #[pyclass]
-pub struct Message {
+pub struct EvReceipt;
+
+#[pyclass]
+pub struct EvUndecryptableMessage;
+
+#[pyclass]
+pub struct EvNotification;
+
+#[pyclass]
+pub struct EvChatPresence;
+
+#[pyclass]
+pub struct EvPresence;
+
+#[pyclass]
+pub struct EvPictureUpdate;
+
+#[pyclass]
+pub struct EvUserAboutUpdate;
+
+#[pyclass]
+pub struct EvJoinedGroup;
+
+#[pyclass]
+pub struct EvGroupInfoUpdate;
+
+#[pyclass]
+pub struct EvContactUpdate;
+
+#[pyclass]
+pub struct EvPushNameUpdate;
+
+#[pyclass]
+pub struct EvSelfPushNameUpdated;
+
+#[pyclass]
+pub struct EvPinUpdate;
+
+#[pyclass]
+pub struct EvMuteUpdate;
+
+#[pyclass]
+pub struct EvMarkChatAsReadUpdate;
+
+#[pyclass]
+pub struct EvHistorySync;
+
+#[pyclass]
+pub struct EvOfflineSyncPreview;
+
+#[pyclass]
+pub struct EvOfflineSyncCompleted;
+
+#[pyclass]
+pub struct EvDeviceListUpdate;
+
+#[pyclass]
+pub struct EvBusinessStatusUpdate;
+
+#[pyclass]
+pub struct EvStreamReplaced;
+
+#[pyclass(from_py_object)]
+#[derive(Clone)]
+enum TempBanReason {
+    SentToTooManyPeople,
+    SentBlockedNyUser,
+    CreateTooManyGroups,
+    SentTooManySameMessage,
+    Unknown,
+}
+
+#[pyclass]
+pub struct EvTemporaryBan {
+    #[pyo3(get)]
+    code: TempBanReason,
+    #[pyo3(get)]
+    expires_in_seconds: u64,
+    #[pyo3(get)]
+    description: String,
+}
+
+#[pyclass]
+pub struct EvConnectFailure;
+
+#[pyclass]
+pub struct EvStreamError;
+
+#[pyclass]
+pub struct EvMessage {
     pub inner: Box<waproto::whatsapp::Message>,
     #[pyo3(get)]
     pub message_info: MessageInfo,
     message_proto: Option<Py<PyAny>>,
 }
-impl Message {
+impl EvMessage {
     pub fn new(inner: Box<waproto::whatsapp::Message>, message_info: WhatsappMessageInfo) -> Self {
         let info = MessageInfo {
             inner: Arc::new(message_info.clone()),
@@ -130,7 +233,7 @@ impl Message {
     }
 }
 #[pymethods]
-impl Message {
+impl EvMessage {
     #[getter]
     fn conversation(&self) -> Option<&str> {
         self.inner.conversation.as_deref()
@@ -193,4 +296,47 @@ pub fn connect_failure_reason_to_string(reason: &ConnectFailureReason) -> &'stat
         ConnectFailureReason::Experimental => "Experimental",
         ConnectFailureReason::Unknown(_) => "Unknown",
     }
+}
+
+#[pyclass]
+pub struct EvArchiveUpdate {
+    #[pyo3(get)]
+    jid: JID,
+    timestamp: DateTime<Utc>,
+    action: Arc<waproto::whatsapp::sync_action_value::ArchiveChatAction>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+    action_cache: Option<Py<PyAny>>,
+}
+impl EvArchiveUpdate {
+    pub fn new(jid: JID, timestamp: DateTime<Utc>, action: Arc<waproto::whatsapp::sync_action_value::ArchiveChatAction>, from_full_sync: bool) -> Self {
+        Self {
+            jid,
+            timestamp,
+            action,
+            from_full_sync,
+            action_cache: None,
+        }
+    }
+}
+#[pymethods]
+impl EvArchiveUpdate {
+    #[getter]
+    fn timestamp(&self, py: Python<'_>) -> PyResult<pyo3::Py<PyDateTime>> {
+        let dt = self.timestamp.naive_utc();
+        let py_dt = PyDateTime::from_timestamp(py, dt.and_utc().timestamp_millis() as f64 /1000.0, None).map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("Failed to convert timestamp: {}", e)))?;
+        Ok(py_dt.into())
+    }
+    #[getter]
+    fn action(&mut self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(ref cache) = self.action_cache {
+            Ok(cache.clone_ref(py))
+        } else {
+            let proto_instance = from_string_to_python_proto(py, get_proto_sync_action_value_from_string(py)?, self.action.as_ref().encode_to_vec().as_slice())?;
+            self.action_cache = Some(proto_instance.clone_ref(py));
+            Ok(proto_instance)
+        }
+
+    }
+
 }

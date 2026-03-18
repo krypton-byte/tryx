@@ -1,7 +1,7 @@
 import asyncio
 from tryx.backend import SqliteBackend
 from tryx.client import TryxClient, Tryx  # , Test, K
-from tryx.events import Message
+from tryx.events import EvMessage
 from tryx.waproto.whatsapp_pb2 import Message as msg
 
 DB_PATH = "whatsapp.db"
@@ -15,8 +15,9 @@ backend = SqliteBackend(DB_PATH)
 client = Tryx(backend)
 
 
-@client.on(Message)
-async def on_message(client: TryxClient, event: Message) -> None:
+
+@client.on(EvMessage)
+async def on_message(client: TryxClient, event: EvMessage) -> None:
     info = event.message_info
     source = info.source
     sender = source.sender
