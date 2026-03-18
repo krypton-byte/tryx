@@ -411,16 +411,67 @@ impl EvTemporaryBan {
     }
 }
 
+
 #[pyclass]
-pub struct EvConnectFailure;
+pub struct EvConnectFailure {
+    #[pyo3(get)]
+    reason: String,
+    #[pyo3(get)]
+    message: String,
+    inner: Option<wacore_binary::node::Node>,
+    node: Option<Py<Node>>,
+}
+impl EvConnectFailure {
+    pub fn new(reason: ConnectFailureReason, message: String, raw_node: Option<wacore_binary::node::Node>) -> Self {
+        Self { reason: connect_failure_reason_to_string(&reason), message: message, inner: raw_node, node: None }
+    }
+}
+#[pymethods]
+impl EvConnectFailure {
+    #[getter]
+    fn node(&mut self, py: Python<'_>) -> PyResult<Option<Py<Node>>> {
+        if let Some(ref node) = self.node {
+            Ok(Some(node.clone_ref(py)))
+        } else if let Some(ref raw_node) = self.inner.as_ref(){
+            let node_instance = Node::from_node((*raw_node).clone());
+            let py_node = Py::new(py, node_instance)?;
+            self.node = Some(py_node.clone_ref(py));
+            Ok(Some(py_node))
+        } else {
+            Err(pyo3::exceptions::PyAttributeError::new_err("ConnectFailure does not contain a node"))
+        }
+    }
+}
 
 #[pyclass]
 pub struct EvStreamError{
     #[pyo3(get)]
     code: String,
-    raw: Option<Py<Node>>
-}
+    inner: Option<wacore_binary::node::Node>,
+    node: Option<Py<Node>>
 
+}
+impl EvStreamError {
+    pub fn new(code: String, raw: Option<wacore_binary::node::Node>) -> Self {
+        Self { code, inner: raw, node: None }
+    }
+}
+#[pymethods]
+impl EvStreamError {
+    #[getter]
+    fn node(&mut self, py: Python<'_>) -> PyResult<Option<Py<Node>>> {
+        if let Some(ref node) = self.node {
+            Ok(Some(node.clone_ref(py)))
+        } else if let Some(ref raw_node) = self.inner.as_ref(){
+            let node_instance = Node::from_node((*raw_node).clone());
+            let py_node = Py::new(py, node_instance)?;
+            self.node = Some(py_node.clone_ref(py));
+            Ok(Some(py_node))
+        } else {
+            Err(pyo3::exceptions::PyAttributeError::new_err("StreamError does not contain a node"))
+        }
+    }
+}
 #[pyclass]
 pub struct EvMessage {
     pub inner: Box<waproto::whatsapp::Message>,

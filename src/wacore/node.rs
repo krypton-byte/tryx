@@ -67,7 +67,7 @@ impl NodeValue {
 
 /// NodeContent enum internal
 pub enum NodeContentEnum {
-    Bytes(Py<Vec<u8>>),
+    Bytes(Vec<u8>),
     String(String),
     Nodes(Vec<Py<Node>>), // PyList<Node>
 }
@@ -83,7 +83,7 @@ impl NodeContent {
     #[getter]
     fn value(&self, py: Python<'_>) -> Py<PyAny> {
         let result = match &self.inner {
-            NodeContentEnum::Bytes(b) => b.clone_ref(py).into_any(),
+            NodeContentEnum::Bytes(b) => b.into_py_any(py).unwrap(),
             NodeContentEnum::String(s) => s.into_py_any(py).unwrap(),
             NodeContentEnum::Nodes(n) => n.into_py_any(py).unwrap(),
         };
@@ -166,9 +166,7 @@ impl Node {
             let content_ref = content.bind(py).borrow();
             match &content_ref.inner {
                 NodeContentEnum::Bytes(b) => {
-                    if let Ok(b_extract) = b.extract::<Vec<u8>>(py) {
-                        builder = builder.bytes(b_extract);
-                    }
+                    builder = builder.bytes(b.clone());
                 }
                 NodeContentEnum::String(s) => {
                     builder = builder.string_content(s.clone());
@@ -212,10 +210,23 @@ impl Node {
                 Py::new(py, Attrs::new(k, Py::new(py, value).unwrap())).unwrap()
             }).collect::<Vec<_>>()
         });
+        let content = node.content.map(|c| {
+            Python::attach(|py| {
+                let content_enum = match c {
+                    wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b),
+                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s),
+                    wacore_binary::node::NodeContent::Nodes(n) => {
+                        let nodes = n.into_iter().map(Self::from_node).map(|node| Py::new(py, node).unwrap()).collect();
+                        NodeContentEnum::Nodes(nodes)
+                    }
+                };
+                Py::new(py, NodeContent { inner: content_enum }).unwrap()
+            })
+        });
         Self {
             tag: node.tag,
             attrs: attrs,
-            content: None,
+            content: content,
         }
     }
 

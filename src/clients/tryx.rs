@@ -610,12 +610,18 @@ impl Tryx {
                             .unwrap();
                             Self::call_event(temporary_ban_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::ConnectFailure(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvConnectFailure {})).map_err(|e| e).unwrap();
+                        Event::ConnectFailure(connect_failure) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvConnectFailure::new(connect_failure.reason, connect_failure.message, connect_failure.raw))).map_err(|e| e).unwrap();
                             Self::call_event(connect_failure_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::StreamError(_) => {
-                            todo!()
+                        Event::StreamError(stream_error) => {
+                            let payload = Python::attach(|py| {
+                                Py::new(py, EvStreamError::new(
+                                    stream_error.code,
+                                    stream_error.raw
+                                ))
+                            }).unwrap();
+                            Self::call_event(stream_error_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::ContactNumberChanged(_) => {
                             // This event is currently not exposed to Python, but can be added in the future if needed.
