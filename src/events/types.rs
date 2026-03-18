@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
 use prost::Message as ProstMessage;
-use pyo3::{Py, PyAny, PyErr, PyResult, Python,pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyType}};
+use pyo3::{Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
+use pyo3::types::{PyAnyMethods, PyBytes, PyType};
 use pyo3::types::{PyDateTime};
 use chrono::{DateTime, Utc};
+use wacore::types::events::QrScannedWithoutMultidevice;
 use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as WhatsAppLoggedOut }};
 use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
@@ -130,6 +132,12 @@ impl EvPairingCode {
 #[pyclass]
 pub struct EvQrScannedWithoutMultidevice;
 
+impl From<QrScannedWithoutMultidevice> for EvQrScannedWithoutMultidevice {
+    fn from(_: QrScannedWithoutMultidevice) -> Self {
+        EvQrScannedWithoutMultidevice{}
+    }
+}
+
 
 #[pyclass]
 pub struct EvClientOutDated;
@@ -212,7 +220,73 @@ impl EvReceipt {
 }
 
 #[pyclass]
-pub struct EvUndecryptableMessage;
+enum UnavailableType {
+    Unknown,
+    ViewOnce,
+}
+
+#[pyclass]
+enum DecryptFailMode {
+    Show,
+    Hide
+}
+
+
+#[pyclass]
+pub struct EvUndecryptableMessage {
+    info_inner: Arc<wacore::types::message::MessageInfo>,
+    info: Option<pyo3::Py<MessageInfo>>,
+    #[pyo3(get)]
+    is_unavailable: bool,
+    #[pyo3(get)]
+    unavailable_type: Py<UnavailableType>,
+    #[pyo3(get)]
+    decrypt_fail_mode: Py<DecryptFailMode>,
+}
+
+impl EvUndecryptableMessage {
+    pub fn new(
+        info_inner: Arc<wacore::types::message::MessageInfo>,
+        is_unavailable: bool,
+        unavailable_type: wacore::types::events::UnavailableType,
+        decrypt_fail_mode: wacore::types::events::DecryptFailMode,
+    ) -> Self {
+        let py_unavailable_type = match unavailable_type {
+            wacore::types::events::UnavailableType::Unknown => UnavailableType::Unknown,
+            wacore::types::events::UnavailableType::ViewOnce => UnavailableType::ViewOnce,
+        };
+        let py_decrypt_fail_mode = match decrypt_fail_mode {
+            wacore::types::events::DecryptFailMode::Show => DecryptFailMode::Show,
+            wacore::types::events::DecryptFailMode::Hide => DecryptFailMode::Hide,
+        };
+
+        Self {
+            info_inner,
+            info: None,
+            is_unavailable,
+            unavailable_type: Python::attach(|py| Py::new(py, py_unavailable_type)).unwrap(),
+            decrypt_fail_mode: Python::attach(|py| Py::new(py, py_decrypt_fail_mode)).unwrap(),
+        }
+    }
+}
+
+#[pymethods]
+impl EvUndecryptableMessage {
+    #[getter]
+    fn info(&mut self) -> Option<pyo3::Py<MessageInfo>> {
+        Python::attach(|py|{
+            match &self.info {
+                Some(info) => Some(info.clone_ref(py)),
+                None => {
+                    let info = MessageInfo::from((*self.info_inner).clone());
+                    let py_info = Py::new(py, info).unwrap();
+                    self.info = Some(py_info.clone_ref(py));
+                    Some(py_info)
+                }
+            }
+        })
+    }
+}
 
 #[pyclass]
 pub struct EvNotification;
@@ -239,7 +313,22 @@ pub struct EvGroupInfoUpdate;
 pub struct EvContactUpdate;
 
 #[pyclass]
-pub struct EvPushNameUpdate;
+pub struct EvPushNameUpdate {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    message: Py<MessageInfo>,
+    #[pyo3(get)]
+    old_push_name: String,
+    #[pyo3(get)]
+    new_push_name: String,
+}
+impl EvPushNameUpdate {
+    pub fn new(jid: JID, message: MessageInfo, old_push_name: String, new_push_name: String) -> Self {
+        Self { jid, message: Python::attach(|py| Py::new(py, message).unwrap()), old_push_name, new_push_name }
+    }
+}
+
 
 #[pyclass]
 pub struct EvSelfPushNameUpdated;
@@ -289,6 +378,35 @@ pub struct EvTemporaryBan {
     expires_in_seconds: u64,
     #[pyo3(get)]
     description: String,
+}
+
+impl EvTemporaryBan {
+    pub fn from_wacore(value: wacore::types::events::TemporaryBan) -> Self {
+        let code = match value.code {
+            wacore::types::events::TempBanReason::SentToTooManyPeople => {
+                TempBanReason::SentToTooManyPeople
+            }
+            wacore::types::events::TempBanReason::BlockedByUsers => {
+                TempBanReason::SentBlockedNyUser
+            }
+            wacore::types::events::TempBanReason::CreatedTooManyGroups => {
+                TempBanReason::CreateTooManyGroups
+            }
+            wacore::types::events::TempBanReason::SentTooManySameMessage => {
+                TempBanReason::SentTooManySameMessage
+            }
+            wacore::types::events::TempBanReason::BroadcastList => {
+                TempBanReason::Unknown
+            }
+            wacore::types::events::TempBanReason::Unknown(_) => TempBanReason::Unknown,
+        };
+
+        Self {
+            code,
+            expires_in_seconds: value.expire.num_seconds().max(0) as u64,
+            description: value.code.to_string(),
+        }
+    }
 }
 
 #[pyclass]

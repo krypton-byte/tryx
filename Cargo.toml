@@ -9,7 +9,7 @@ name = "tryx"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.28.0"
+pyo3 = { version = "0.28.0", features = ["extension-module"] }
 whatsapp-rust = "0.3"
 whatsapp-rust-sqlite-storage = "0.3"
 whatsapp-rust-tokio-transport = "0.3"
