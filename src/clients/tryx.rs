@@ -58,7 +58,6 @@ use crate::events::types::{
 };
 use crate::exceptions::UnsupportedBackend;
 use crate::events::dispatcher::Dispatcher;
-use crate::types::MessageInfo;
 
 
 #[pyclass]
@@ -616,8 +615,7 @@ impl Tryx {
                             Self::call_event(connect_failure_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::StreamError(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvStreamError {})).map_err(|e| e).unwrap();
-                            Self::call_event(stream_error_callbacks, payload, locals.clone()).await.unwrap();
+                            todo!()
                         }
                     }
                 }

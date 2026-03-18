@@ -10,6 +10,7 @@ use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as What
 use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
 use crate::types::{JID, MessageInfo, MessageSource};
+use crate::wacore::node::{Node, NodeContent, NodeValue};
 
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
@@ -413,7 +414,11 @@ impl EvTemporaryBan {
 pub struct EvConnectFailure;
 
 #[pyclass]
-pub struct EvStreamError;
+pub struct EvStreamError{
+    #[pyo3(get)]
+    code: String,
+    raw: Option<Py<Node>>
+}
 
 #[pyclass]
 pub struct EvMessage {

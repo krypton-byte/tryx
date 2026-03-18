@@ -41,7 +41,7 @@ use self::events::types::{
 };
 use self::backend::SqliteBackend;
 use self::types::{JID, MessageInfo, UploadResponse};
-use self::wacore::MediaType;
+use self::wacore::download::MediaType;
 
 /// A Python module implemented in Rust.
 /// 

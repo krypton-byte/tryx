@@ -10,7 +10,7 @@ use prost::Message;
 use whatsapp_rust::Client;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, UploadResponse};
-use crate::wacore::MediaType;
+use crate::wacore::download::MediaType;
 #[pyclass]
 pub struct TryxClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
