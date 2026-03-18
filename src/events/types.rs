@@ -155,6 +155,7 @@ enum ReceiptType {
     Inactive,
     PeerMsg,
     HistorySync,
+    EncRekeyRetry,
     Other
 }
 #[pyclass]
@@ -185,6 +186,7 @@ impl EvReceipt {
             wacore::types::presence::ReceiptType::Inactive => ReceiptType::Inactive,
             wacore::types::presence::ReceiptType::PeerMsg => ReceiptType::PeerMsg,
             wacore::types::presence::ReceiptType::HistorySync => ReceiptType::HistorySync,
+            wacore::types::presence::ReceiptType::EncRekeyRetry => ReceiptType::EncRekeyRetry,
             wacore::types::presence::ReceiptType::Other(_) => ReceiptType::Other
             
         };

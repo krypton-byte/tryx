@@ -524,7 +524,7 @@ impl Tryx {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvJoinedGroup {})).map_err(|e| e).unwrap();
                             Self::call_event(joined_group_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::GroupInfoUpdate { .. } => {
+                        Event::GroupUpdate { .. } => {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvGroupInfoUpdate {})).map_err(|e| e).unwrap();
                             Self::call_event(group_info_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
@@ -617,8 +617,23 @@ impl Tryx {
                         Event::StreamError(_) => {
                             todo!()
                         }
-                    }
+                        Event::ContactNumberChanged(_) => {
+                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        }
+                        Event::ContactSyncRequested(_) => {
+                            // This event is currently not exposed to Python, but can be added in the future if needed. 
+                        }
+                        Event::ContactUpdated(_) => {
+                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        }
+                        Event::StarUpdate(_) => {
+                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        }
+                        Event::DisappearingModeChanged(_) => {
+                            // This event is currently not exposed to Python, but can be added in the future if needed.
+                        }
                 }
+            }
             })
             .build()
             .await

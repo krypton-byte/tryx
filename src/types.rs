@@ -49,7 +49,7 @@ impl JID {
     }
     #[getter]
     fn server(&self) -> String {
-        self.inner.server.clone()
+        self.inner.server.to_string()
     }
     pub fn __repr__(&self) -> String {
         format!("JID(user='{}', server='{}')", self.inner.user, self.inner.server)

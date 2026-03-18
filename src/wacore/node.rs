@@ -118,13 +118,13 @@ pub struct Attrs {
     #[pyo3(get, set)]
     pub key: String,
     #[pyo3(get, set)]
-    pub value: Vec<pyo3::Py<NodeValue>>, // PyList<NodeValue>
+    pub value: pyo3::Py<NodeValue>, // PyList<NodeValue>
 
 }
 #[pymethods]
 impl Attrs {
     #[new]
-    fn new(key: String, value: Vec<Py<NodeValue>>) -> Self {
+    fn new(key: String, value: Py<NodeValue>) -> Self {
         Attrs {
             key: key,
             value: value
@@ -166,8 +166,9 @@ impl Node {
             let content_ref = content.bind(py).borrow();
             match &content_ref.inner {
                 NodeContentEnum::Bytes(b) => {
-                    let b_extract = b.extract::<Vec<u8>>(py).unwrap();
-                    builder = builder.bytes(b_extract);
+                    if let Ok(b_extract) = b.extract::<Vec<u8>>(py) {
+                        builder = builder.bytes(b_extract);
+                    }
                 }
                 NodeContentEnum::String(s) => {
                     builder = builder.string_content(s.clone());
@@ -187,49 +188,54 @@ impl Node {
 
         for attr in &self.attrs {
             let attr_ref = attr.bind(py).borrow();
-            if attr_ref.value.len() == 1 {
-                let value_ref = attr_ref.value[0].bind(py).borrow();
-                builder = match &value_ref.inner {
-                    NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone(), s.clone()),
-                    NodeValueEnum::Jid(jid) => {
-                        let jid_ref = jid.bind(py).borrow();
-                        builder.jid_attr(attr_ref.key.clone(), jid_ref.as_whatsapp_jid())
-                    }
-                };
-            } else {
-                let joined = attr_ref
-                    .value
-                    .iter()
-                    .map(|v| {
-                        let v_ref = v.bind(py).borrow();
-                        match &v_ref.inner {
-                            NodeValueEnum::String(s) => s.clone(),
-                            NodeValueEnum::Jid(jid) => {
-                                let jid_ref = jid.bind(py).borrow();
-                                jid_ref.as_whatsapp_jid().to_string()
-                            }
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join(",");
-                builder = builder.attr(attr_ref.key.clone(), joined);
-            }
+            let value_ref = attr_ref.value.bind(py).borrow();
+
+            builder = match &value_ref.inner {
+                NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone(), s.clone()),
+                NodeValueEnum::Jid(jid) => {
+                    let jid_ref = jid.bind(py).borrow();
+                    builder.jid_attr(attr_ref.key.clone(), jid_ref.as_whatsapp_jid())
+                }
+            };
         }
 
         builder
     }
 
-    pub fn from_node_builder(builder: NodeBuilder) -> Self {
-        let node = builder.build();
-
+    pub fn from_node(node: wacore_binary::node::Node) -> Self {
+        let attrs = Python::attach(|py| {
+            node.attrs.into_iter().map(|(k, v)| {
+                let value = match v {
+                    wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s),
+                    wacore_binary::node::NodeValue::Jid(jid) => NodeValue::jid(Py::new(py, JID::from(jid)).unwrap()),
+                };
+                Py::new(py, Attrs::new(k, Py::new(py, value).unwrap())).unwrap()
+            }).collect::<Vec<_>>()
+        });
         Self {
             tag: node.tag,
-            attrs: Vec::new(),
+            attrs: attrs,
             content: None,
         }
     }
 
-    pub fn from_node(node: wacore_binary::node::Node) -> Self {
-        //
+    // pub fn from_node(node: wacore_binary::node::Node) -> Self {
+    //     let content = if let Some(c) = node.content {
+    //         Python::attach(|py| Some(Py::new(py, NodeContent {
+    //             inner: NodeContentEnum::Bytes(Py::new(py, c).unwrap()),
+    //         }).unwrap()))
+    //     } else {
+    //         None
+    //     };
+    //     Self {
+    //         tag: node.tag,
+    //         attrs: Vec::new(),
+    //         content: None,
+    //     }
+    // }
+    pub fn to_node(self) -> wacore_binary::node::Node {
+        Python::attach(|py|{
+            self.to_node_builder(py).build()
+        })
     }
 }
