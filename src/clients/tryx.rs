@@ -1,7 +1,7 @@
 use std::sync::{Arc};
 use std::future::Future;
 use std::pin::Pin;
-use pyo3::{Bound, PyAny, PyTypeInfo, pyclass, pymethods};
+use pyo3::{Bound, PyAny, PyClass, PyTypeInfo, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::{TaskLocals, into_future_with_locals};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals, into_future};
@@ -21,7 +21,7 @@ use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
 use crate::events::types::{
-    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupInfoUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
+    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupInfoUpdate, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
 };
 use crate::exceptions::UnsupportedBackend;
 use crate::events::dispatcher::Dispatcher;
@@ -510,24 +510,24 @@ impl Tryx {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvJoinedGroup::new(joined_group))).map_err(|e| e).unwrap();
                             Self::call_event(joined_group_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::GroupUpdate { .. } => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvGroupInfoUpdate {})).map_err(|e| e).unwrap();
+                        Event::GroupUpdate(group_info) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvGroupUpdate::new(group_info))).map_err(|e| e).unwrap();
                             Self::call_event(group_info_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::ContactUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactUpdate {})).map_err(|e| e).unwrap();
+                        Event::ContactUpdate(contact_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactUpdate::new(contact_update))).map_err(|e| e).unwrap();
                             Self::call_event(contact_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::PushNameUpdate(pushname) => {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvPushNameUpdate::new(pushname.jid.into(), (*pushname.message.as_ref()).clone().into(), pushname.old_push_name.into(), pushname.new_push_name))).map_err(|e| e).unwrap();
                             Self::call_event(push_name_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::SelfPushNameUpdated(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvSelfPushNameUpdated {})).map_err(|e| e).unwrap();
+                        Event::SelfPushNameUpdated(self_push_name_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvSelfPushNameUpdated::from(self_push_name_update))).map_err(|e| e).unwrap();
                             Self::call_event(self_push_name_updated_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::PinUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPinUpdate {})).map_err(|e| e).unwrap();
+                        Event::PinUpdate(pin_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPinUpdate::new(pin_update))).map_err(|e| e).unwrap();
                             Self::call_event(pin_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::MuteUpdate(_) => {

@@ -1,10 +1,11 @@
-use std::sync::Arc;
+use std::sync::{Arc, Once};
 
 use prost::Message as ProstMessage;
 use pyo3::{Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3::types::{PyAnyMethods, PyBytes, PyType};
 use pyo3::types::{PyDateTime};
 use chrono::{DateTime, Utc};
+use std::sync::OnceLock;
 use wacore::types::events::QrScannedWithoutMultidevice;
 use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as WhatsAppLoggedOut }};
 use pyo3::sync::PyOnceLock;
@@ -14,6 +15,7 @@ use crate::wacore::node::Node;
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static LAZY_CONVERSATION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static CONTACT_UPDATE_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 fn get_proto_import(py: Python<'_>, import: &str, attr: &str) -> PyResult<Py<PyType>>{
     let module = py.import(import)?;
     let message_type = module.getattr(attr)?.cast_into::<PyType>()?;
@@ -38,6 +40,12 @@ fn get_lazy_conversation_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr
         get_proto_import(py, "tryx.waproto.whatsapp_pb2", "Conversation")
     })?;
     Ok(conversation)
+}
+fn get_proto_contact_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
+    let contact_action = CONTACT_UPDATE_ACTION_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "ContactAction")
+    })?;
+    Ok(contact_action)
 }
 fn from_string_to_python_proto(py: Python<'_>, proto_class: &Py<PyType>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
     let proto_instance = proto_class.bind(py).call0()?;
@@ -300,22 +308,23 @@ impl EvUndecryptableMessage {
 #[pyclass]
 pub struct EvNotification{
     inner: wacore_binary::node::Node,
-    node_cache: Option<Py<Node>>,
+    node_cache: OnceLock<Py<Node>>,
 }
 impl EvNotification {
     pub fn new(inner: wacore_binary::node::Node) -> Self {
-        Self { inner, node_cache: None }
+        Self { inner, node_cache: OnceLock::new() }
     }
 }
 #[pymethods]
 impl EvNotification {
     #[getter]
     fn node(&mut self, py: Python<'_>) -> PyResult<Py<Node>> {
-        if let Some(ref node) = self.node_cache {
+        if let Some(node) = self.node_cache.get() {
             Ok(node.clone_ref(py))
         } else {
-            let py_node = Py::new(py, Node::from_node(&self.inner)).unwrap();
-            self.node_cache = Some(py_node.clone_ref(py));
+            let node = Node::from_node(&self.inner);
+            let py_node = Py::new(py, node)?;
+            self.node_cache.set(py_node.clone_ref(py)).ok();
             Ok(py_node)
         }
     }
@@ -362,7 +371,7 @@ impl ChatPresenceMedia {
 #[pyclass]
 pub struct EvChatPresence {
     source: Arc<wacore::types::message::MessageSource>,
-    source_cache: Option<pyo3::Py<MessageSource>>,
+    source_cache: OnceLock<pyo3::Py<MessageSource>>,
     state: ChatPresence,
     media: ChatPresenceMedia
 }
@@ -377,13 +386,43 @@ impl EvChatPresence {
             wacore::types::presence::ChatPresenceMedia::Text => ChatPresenceMedia::Text,
             wacore::types::presence::ChatPresenceMedia::Audio => ChatPresenceMedia::Audio,
         };
-        Self { source, source_cache: None, state: chat_presence_state, media: chat_presence_media }
+        Self { source, source_cache: OnceLock::new(), state: chat_presence_state, media: chat_presence_media }
     }
 }
 
 impl From<wacore::types::events::ChatPresenceUpdate> for EvChatPresence {
     fn from(event: wacore::types::events::ChatPresenceUpdate) -> Self {
         EvChatPresence::new(Arc::new(event.source), event.state, event.media)
+    }
+}
+
+#[pymethods]
+impl EvChatPresence {
+    #[getter]
+    fn source(&mut self, py: Python<'_>) -> Py<MessageSource> {
+        if let Some(cached) = self.source_cache.get() {
+            cached.clone_ref(py)
+        } else {
+            let py_source = Py::new(py, MessageSource::from((*self.source).clone())).unwrap();
+            self.source_cache.set(py_source.clone_ref(py)).ok();
+            py_source
+        }
+    }
+
+    #[getter]
+    fn state(&self) -> &'static str {
+        match self.state {
+            ChatPresence::Composing => "composing",
+            ChatPresence::Paused => "paused",
+        }
+    }
+
+    #[getter]
+    fn media(&self) -> &'static str {
+        match self.media {
+            ChatPresenceMedia::Text => "text",
+            ChatPresenceMedia::Audio => "audio",
+        }
     }
 }
 
@@ -425,11 +464,11 @@ pub struct PictureUpdateData {
 #[pyclass]
 pub struct EvPictureUpdate{
     inner: wacore::types::events::PictureUpdate,
-    data_cached: Option<Py<PictureUpdateData>>,
+    data_cached: OnceLock<Py<PictureUpdateData>>,
 }
 impl EvPictureUpdate {
     pub fn new(inner: wacore::types::events::PictureUpdate) -> Self {
-        Self { inner, data_cached: None }
+        Self { inner, data_cached: OnceLock::new() }
     }
 
 }
@@ -442,7 +481,7 @@ impl From<wacore::types::events::PictureUpdate> for EvPictureUpdate {
 impl EvPictureUpdate {
     #[getter]
     fn data(&mut self, py: Python<'_>) -> Py<PictureUpdateData> {
-        if let Some(ref data) = self.data_cached {
+        if let Some(ref data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
             let new_data = PictureUpdateData {
@@ -455,7 +494,7 @@ impl EvPictureUpdate {
                 picture_id: self.inner.picture_id.clone(),
             };
             let py_data = Py::new(py, new_data).unwrap();
-            self.data_cached = Some(py_data.clone_ref(py));
+            self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data
         }
     }
@@ -474,12 +513,12 @@ pub struct UserAboutUpdateData {
 #[pyclass]
 pub struct EvUserAboutUpdate{
     inner: wacore::types::events::UserAboutUpdate,
-    data_cached: Option<Py<UserAboutUpdateData>>,
+    data_cached: OnceLock<Py<UserAboutUpdateData>>,
 }
 
 impl EvUserAboutUpdate {
     pub fn new(inner: wacore::types::events::UserAboutUpdate) -> Self {
-        Self { inner, data_cached: None }
+        Self { inner, data_cached: OnceLock::new() }
     }
 }
 impl From<wacore::types::events::UserAboutUpdate> for EvUserAboutUpdate {
@@ -491,12 +530,12 @@ impl From<wacore::types::events::UserAboutUpdate> for EvUserAboutUpdate {
 impl EvUserAboutUpdate {
     #[getter]
     fn data(&mut self, py: Python<'_>) -> Py<UserAboutUpdateData> {
-        if let Some(ref data) = self.data_cached {
+        if let Some(ref data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
             let new_data = UserAboutUpdateData { jid: self.inner.jid.clone().into(), status: self.inner.status.clone(), timestamp: Some(Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind())) };
             let py_data = Py::new(py, new_data).unwrap();
-            self.data_cached = Some(py_data.clone_ref(py));
+            self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data
         }
     }
@@ -558,9 +597,6 @@ impl EvJoinedGroup {
 pub struct EvGroupInfoUpdate;
 
 #[pyclass]
-pub struct EvContactUpdate;
-
-#[pyclass]
 pub struct EvPushNameUpdate {
     #[pyo3(get)]
     jid: JID,
@@ -579,10 +615,66 @@ impl EvPushNameUpdate {
 
 
 #[pyclass]
-pub struct EvSelfPushNameUpdated;
+pub struct EvSelfPushNameUpdated {
+    #[pyo3(get)]
+    from_server: bool,
+    #[pyo3(get)]
+    old_name: String,
+    #[pyo3(get)]
+    new_name: String,
+}
+impl From<wacore::types::events::SelfPushNameUpdated> for EvSelfPushNameUpdated {
+    fn from(event: wacore::types::events::SelfPushNameUpdated) -> Self {
+        EvSelfPushNameUpdated { from_server: event.from_server, old_name: event.old_name, new_name: event.new_name }
+    }
+}
 
 #[pyclass]
-pub struct EvPinUpdate;
+pub struct EvPinUpdatedata {
+    #[pyo3(get)]
+    jid: Py<JID>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    #[pyo3(get)]
+    pinned: Option<bool>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+}
+impl EvPinUpdatedata {
+    pub fn new(jid: Jid, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::PinAction, from_full_sync: bool) -> Self {
+        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), pinned: action.pinned, from_full_sync }
+    }
+}
+
+#[pyclass]
+pub struct EvPinUpdate {
+    inner: Arc<wacore::types::events::PinUpdate>,
+    data_cached: OnceLock<Py<EvPinUpdatedata>>,
+}
+impl EvPinUpdate {
+    pub fn new(inner: wacore::types::events::PinUpdate) -> Self {
+        Self { inner: Arc::new(inner), data_cached: OnceLock::new() }
+    }
+}
+impl From<wacore::types::events::PinUpdate> for EvPinUpdate {
+    fn from(event: wacore::types::events::PinUpdate) -> Self {
+        EvPinUpdate::new(event)
+    }
+}
+#[pymethods]
+impl EvPinUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvPinUpdatedata>> {
+        if let Some(ref data) = self.data_cached.get() {
+            Ok(data.clone_ref(py))
+        } else {
+            let new_data = EvPinUpdatedata::new(self.inner.jid.clone(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
 
 #[pyclass]
 pub struct EvMuteUpdate;
@@ -948,5 +1040,287 @@ impl EvStarUpdate {
     pub fn new(chat_jid: Jid, participant_jid: Option<Jid>, message_id: String, from_me: bool, timestamp: DateTime<Utc>, from_full_sync: bool, starred: Option<bool>) -> Self {
         let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, (timestamp.timestamp_millis() as f64) / 1000.0, None).unwrap().into());
         Self { chat_jid: chat_jid.into(), participant_jid: participant_jid.map(|j| j.into()), message_id, from_me, timestamp, from_full_sync, starred }
+    }
+}
+
+#[pyclass]
+struct GroupParticipant {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    phone_number: Option<JID>
+}
+
+#[pyclass]
+enum GroupNotificationAction {
+    Add {
+        participants: Vec<Py<GroupParticipant>>,
+        reason: Option<String>,
+    },
+    Remove {
+        participants: Vec<Py<GroupParticipant>>,
+        reason: Option<String>,
+    },
+    Promote {
+        participants: Vec<Py<GroupParticipant>>,
+    },
+    Demote {
+        participants: Vec<Py<GroupParticipant>>,
+    },
+    Modify {
+        participants: Vec<Py<GroupParticipant>>,
+    },
+    Subject {
+        subject: String,
+        subject_owner: Option<Py<JID>>,
+        subject_timestamp: Option<Py<PyDateTime>>,
+    },
+    Description {
+        id: String,
+        description: Option<String>,
+    },
+    Locked {
+        threshold: Option<String>,
+    },
+    Unlocked(),
+    Announce(),
+    NotAnnounce(),
+    Ephemeral {
+        expiration: u32,
+        trigger: Option<u32>,
+    },
+    MembershipApprovalMode {
+        enabled: bool,
+    },
+    MemberAddMode {
+        mode: String,
+    },
+    NoFrequentlyForwarded(),
+    FrequentlyForwardedOk(),
+    Invite{
+        code: String,
+    },
+    RevokeInvite(),
+    GrowthLocked {
+        expiration: u32,
+        lock_type: String,
+    },
+    GrowthUnlocked(),
+    Create {
+        raw: Py<Node>,
+    },
+    Delete {
+        reason: Option<String>,
+    },
+    Link {
+        link_type: String,
+        raw: Py<Node>,
+    },
+    Unlink {
+        unlink_type: String,
+        unlink_reason: Option<String>,
+        raw: Py<Node>,
+    },
+    Unknown {
+        tag: String,
+    }
+
+}
+
+#[pyclass]
+pub struct GroupUpdateData{
+    #[pyo3(get)]
+    group_jid: JID,
+    #[pyo3(get)]
+    participant: Option<JID>,
+    #[pyo3(get)]
+    participant_pn: Option<JID>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    #[pyo3(get)]
+    is_lid_addressing_mode: bool,
+    #[pyo3(get)]
+    action: Py<GroupNotificationAction>
+}
+
+#[pyclass]
+pub struct EvGroupUpdate {
+    inner: wacore::types::events::GroupUpdate,
+    data_cache: OnceLock<Py<GroupUpdateData>>,
+}
+impl EvGroupUpdate {
+    pub fn new(inner: wacore::types::events::GroupUpdate) -> Self {
+        Self { inner, data_cache: OnceLock::new() }
+    }
+}
+#[pymethods]
+impl EvGroupUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<GroupUpdateData>> {
+        if let Some(ref data) = self.data_cache.get() {
+            Ok(data.clone_ref(py))
+        } else {
+            let participant = self.inner.participant.as_ref().map(|p| p.clone().into());
+            let participant_pn = self.inner.participant_pn.as_ref().map(|pn| pn.clone().into());
+            let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into());
+
+            let py_group_participants = |participants: &[wacore::stanza::groups::GroupParticipantInfo]| {
+                participants
+                    .iter()
+                    .map(|p| {
+                        let group_participant = GroupParticipant {
+                            jid: p.jid.clone().into(),
+                            phone_number: p.phone_number.as_ref().map(|pn| pn.clone().into()),
+                        };
+                        Py::new(py, group_participant).unwrap()
+                    })
+                    .collect::<Vec<_>>()
+            };
+
+            let action = match &self.inner.action {
+                wacore::stanza::groups::GroupNotificationAction::Add { participants, reason } => {
+                    let py_participants = py_group_participants(participants);
+                    GroupNotificationAction::Add { participants: py_participants, reason: reason.clone() }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Remove { participants, reason } => {
+                    let py_participants = py_group_participants(participants);
+                    GroupNotificationAction::Remove { participants: py_participants, reason: reason.clone() }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Promote { participants } => {
+                    let py_participants = py_group_participants(participants);
+                    GroupNotificationAction::Promote { participants: py_participants }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Demote { participants } => {
+                    let py_participants = py_group_participants(participants);
+                    GroupNotificationAction::Demote { participants: py_participants }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Modify { participants } => {
+                    let py_participants = py_group_participants(participants);
+                    GroupNotificationAction::Modify { participants: py_participants }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Subject { subject, subject_owner, subject_time } => {
+                    let py_subject_owner = subject_owner
+                        .as_ref()
+                        .map(|o| Py::new(py, JID::from(o.clone())).unwrap());
+                    let py_subject_timestamp = subject_time.map(|t| {
+                        Python::attach(|py| PyDateTime::from_timestamp(py, t as f64, None).unwrap().into())
+                    });
+                    GroupNotificationAction::Subject { subject: subject.clone(), subject_owner: py_subject_owner, subject_timestamp: py_subject_timestamp }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Description { id, description } => {
+                    GroupNotificationAction::Description { id: id.clone(), description: description.clone() }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Locked { threshold } => {
+                    GroupNotificationAction::Locked { threshold: threshold.clone() }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Unlocked => GroupNotificationAction::Unlocked(),
+                wacore::stanza::groups::GroupNotificationAction::Announce => GroupNotificationAction::Announce(),
+                wacore::stanza::groups::GroupNotificationAction::NotAnnounce => GroupNotificationAction::NotAnnounce(),
+                wacore::stanza::groups::GroupNotificationAction::Ephemeral { expiration, trigger } => GroupNotificationAction::Ephemeral { expiration: *expiration, trigger: *trigger },
+                wacore::stanza::groups::GroupNotificationAction::MembershipApprovalMode { enabled } => GroupNotificationAction::MembershipApprovalMode { enabled: *enabled },
+                wacore::stanza::groups::GroupNotificationAction::MemberAddMode { mode } => GroupNotificationAction::MemberAddMode { mode: mode.clone() },
+                wacore::stanza::groups::GroupNotificationAction::NoFrequentlyForwarded => GroupNotificationAction::NoFrequentlyForwarded(),
+                wacore::stanza::groups::GroupNotificationAction::FrequentlyForwardedOk => GroupNotificationAction::FrequentlyForwardedOk(),
+                wacore::stanza::groups::GroupNotificationAction::Invite { code } => GroupNotificationAction::Invite { code: code.clone() },
+                wacore::stanza::groups::GroupNotificationAction::RevokeInvite => GroupNotificationAction::RevokeInvite(),
+                wacore::stanza::groups::GroupNotificationAction::GrowthLocked { expiration, lock_type } => GroupNotificationAction::GrowthLocked { expiration: *expiration, lock_type: lock_type.clone() },
+                wacore::stanza::groups::GroupNotificationAction::GrowthUnlocked => GroupNotificationAction::GrowthUnlocked(),
+                wacore::stanza::groups::GroupNotificationAction::Create { raw } => {
+                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                    GroupNotificationAction::Create { raw: py_raw }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Delete { reason } => GroupNotificationAction::Delete { reason: reason.clone() },
+                wacore::stanza::groups::GroupNotificationAction::Link { link_type, raw } => {
+                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                    GroupNotificationAction::Link { link_type: link_type.clone(), raw: py_raw }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Unlink { unlink_type, unlink_reason, raw } => {
+                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                    GroupNotificationAction::Unlink { unlink_type: unlink_type.clone(), unlink_reason: unlink_reason.clone(), raw: py_raw }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Unknown { tag } => GroupNotificationAction::Unknown { tag: tag.clone() },
+            };
+            let action = Py::new(py, action)?;
+            let data = GroupUpdateData {
+                group_jid: self.inner.group_jid.clone().into(),
+                participant,
+                participant_pn,
+                timestamp,
+                is_lid_addressing_mode: self.inner.is_lid_addressing_mode,
+                action,
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
+
+
+#[pyclass]
+struct ContactUpdateData {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    action_cache: OnceLock<Py<PyAny>>,
+    action: Arc<waproto::whatsapp::sync_action_value::ContactAction>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+}
+
+#[pymethods]
+impl ContactUpdateData {
+    #[getter]
+    fn action(&mut self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(cache) = self.action_cache.get() {
+            Ok(cache.clone_ref(py))
+        } else {
+            let proto_instance = from_string_to_python_proto(py, get_proto_contact_action_proto_type(py)?, self.action.as_ref().encode_to_vec().as_slice())?;
+            self.action_cache.set(proto_instance.clone_ref(py)).ok();
+            Ok(proto_instance)
+        }
+    }
+}
+
+#[pyclass]
+pub struct EvContactUpdate{
+    inner: Arc<wacore::types::events::ContactUpdate>,
+    contact_cache: OnceLock<Py<ContactUpdateData>>,
+
+}   
+
+impl EvContactUpdate {
+    pub fn new(inner: wacore::types::events::ContactUpdate) -> Self {
+        Self {
+            inner:Arc::new(inner),
+            contact_cache: OnceLock::new(),
+        }
+    }
+}
+#[pymethods]
+impl EvContactUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<ContactUpdateData>> {
+        if let Some(ref cache) = self.contact_cache.get() {
+            Ok(cache.clone_ref(py))
+        } else {
+            let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into());
+            let data = ContactUpdateData {
+                jid: self.inner.jid.clone().into(),
+                timestamp,
+                action: Arc::from(self.inner.action.clone()),
+                from_full_sync: self.inner.from_full_sync,
+                action_cache: OnceLock::new(),
+            };
+            let py_data = Py::new(py, data)?;
+            self.contact_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
+impl From<wacore::types::events::ContactUpdate> for EvContactUpdate {
+    fn from(event: wacore::types::events::ContactUpdate) -> Self {
+        EvContactUpdate::new(event)
     }
 }
