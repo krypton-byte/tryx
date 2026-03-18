@@ -1,7 +1,5 @@
-use std::ops::Deref;
-
-use pyo3::types::{PyList, PyString};
-use pyo3::{Python, pyclass, pymethods, types::PyBytes};
+use pyo3::types::PyString;
+use pyo3::{Python, pyclass, pymethods};
 use pyo3::{IntoPyObjectExt, prelude::*};
 use whatsapp_rust::NodeBuilder;
 use crate::types::JID;
@@ -69,9 +67,9 @@ impl NodeValue {
 
 /// NodeContent enum internal
 pub enum NodeContentEnum {
-    Bytes(Py<PyBytes>),
-    String(Py<PyString>),
-    Nodes(Py<PyList>), // PyList<Node>
+    Bytes(Py<Vec<u8>>),
+    String(String),
+    Nodes(Vec<Py<Node>>), // PyList<Node>
 }
 
 /// PyClass wrapper untuk NodeContent
@@ -84,11 +82,12 @@ pub struct NodeContent {
 impl NodeContent {
     #[getter]
     fn value(&self, py: Python<'_>) -> Py<PyAny> {
-        match &self.inner {
+        let result = match &self.inner {
             NodeContentEnum::Bytes(b) => b.clone_ref(py).into_any(),
-            NodeContentEnum::String(s) => s.clone_ref(py).into_any(),
-            NodeContentEnum::Nodes(n) => n.clone_ref(py).into_any(),
-        }
+            NodeContentEnum::String(s) => s.into_py_any(py).unwrap(),
+            NodeContentEnum::Nodes(n) => n.into_py_any(py).unwrap(),
+        };
+        result
     }
 
     pub fn is_bytes(&self) -> bool {
@@ -103,13 +102,14 @@ impl NodeContent {
         matches!(self.inner, NodeContentEnum::Nodes(_))
     }
 
-    // pub fn __repr__(&self, py: Python<'_>) -> String {
-    //     match &self.inner {
-    //         NodeContentEnum::Bytes(_) => "NodeContent::Bytes(...)".to_string(),
-    //         NodeContentEnum::String(s) => format!("NodeContent::String({})", s),
-    //         NodeContentEnum::Nodes(n) => format!("NodeContent::Nodes(len={})", n.len()),
-    //     }
-    // }
+    pub fn __repr__(&self, _py: Python<'_>) -> PyResult<String> {
+        let repr = match &self.inner {
+            NodeContentEnum::Bytes(_) => "NodeContent::Bytes(...)".to_string(),
+            NodeContentEnum::String(s) => format!("NodeContent::String({})", s),
+            NodeContentEnum::Nodes(n) => format!("NodeContent::Nodes(len={})", n.len()),
+        };
+        Ok(repr)
+    }
 }
 
 
@@ -118,40 +118,34 @@ pub struct Attrs {
     #[pyo3(get, set)]
     pub key: String,
     #[pyo3(get, set)]
-    pub value: pyo3::Py<PyList>, // PyList<NodeValue>
+    pub value: Vec<pyo3::Py<NodeValue>>, // PyList<NodeValue>
 
+}
+#[pymethods]
+impl Attrs {
+    #[new]
+    fn new(key: String, value: Vec<Py<NodeValue>>) -> Self {
+        Attrs {
+            key: key,
+            value: value
+        }
+    }
 }
 #[pyclass]
 pub struct Node {
     #[pyo3(get, set)]
     pub tag: String,
     #[pyo3(get, set)]
-    pub attrs: Py<PyList>, // PyList<Attrs>
+    pub attrs: Vec<Py<Attrs>>, // PyList<Attrs>
     #[pyo3(get, set)]
-    pub content: Py<PyAny>, // Py<PyAny> yang bisa berisi NodeContent atau None
+    pub content: Option<Py<NodeContent>>, // Py<PyAny> yang bisa berisi NodeContent atau None
 }
 
 #[pymethods]
 impl Node {
     #[new]
-    pub fn new(tag: String, attrs: Option<Py<PyList>>, content: Option<pyo3::Py<NodeContent>>) -> PyResult<Self> {
-        Python::attach(|py| {
-            let content_py = match content {
-                Some(c) => c.into_any(),
-                None => py.None(),
-            };
-            let attrs_py = match attrs {
-                Some(a) => {
-                    let list = a.clone_ref(py);
-                    for item in list.bind(py).iter() {
-                        let _ = item.extract::<Py<Attrs>>()?;
-                    };
-                    list
-                },
-                None => PyList::empty(py).unbind(),
-            };
-            Ok(Self { tag, attrs: attrs_py, content: content_py })
-        })
+    pub fn new(tag: String, attrs: Vec<Py<Attrs>>, content: Option<pyo3::Py<NodeContent>>) -> Self {
+        Self { tag, attrs: attrs, content: content }
     }
 
     // pub fn __repr__(&self, py: Python<'_>) -> String {
@@ -167,6 +161,7 @@ impl Node {
 impl Node {
     pub fn to_node_builder(&self, py: Python<'_>) -> NodeBuilder {
         let mut builder = NodeBuilder::new(self.tag.clone());
+
         if let Some(content) = &self.content {
             let content_ref = content.bind(py).borrow();
             match &content_ref.inner {
@@ -175,21 +170,66 @@ impl Node {
                     builder = builder.bytes(b_extract);
                 }
                 NodeContentEnum::String(s) => {
-                    let s_extract = s.to_str(py).unwrap();
-                    builder = builder.string_content(s_extract);
+                    builder = builder.string_content(s.clone());
                 }
                 NodeContentEnum::Nodes(n) => {
-                    n.bind(py).iter().for_each(|item| {
-                        let it= item.extract();
-                    });
+                    let nodes_extract = n
+                        .iter()
+                        .map(|node| {
+                            let node_ref = node.bind(py).borrow();
+                            node_ref.to_node_builder(py).build()
+                        })
+                        .collect::<Vec<_>>();
+                    builder = builder.children(nodes_extract);
                 }
+            };
+        }
+
+        for attr in &self.attrs {
+            let attr_ref = attr.bind(py).borrow();
+            if attr_ref.value.len() == 1 {
+                let value_ref = attr_ref.value[0].bind(py).borrow();
+                builder = match &value_ref.inner {
+                    NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone(), s.clone()),
+                    NodeValueEnum::Jid(jid) => {
+                        let jid_ref = jid.bind(py).borrow();
+                        builder.jid_attr(attr_ref.key.clone(), jid_ref.as_whatsapp_jid())
+                    }
+                };
+            } else {
+                let joined = attr_ref
+                    .value
+                    .iter()
+                    .map(|v| {
+                        let v_ref = v.bind(py).borrow();
+                        match &v_ref.inner {
+                            NodeValueEnum::String(s) => s.clone(),
+                            NodeValueEnum::Jid(jid) => {
+                                let jid_ref = jid.bind(py).borrow();
+                                jid_ref.as_whatsapp_jid().to_string()
+                            }
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(",");
+                builder = builder.attr(attr_ref.key.clone(), joined);
             }
         }
+
         builder
     }
+
     pub fn from_node_builder(builder: NodeBuilder) -> Self {
         let node = builder.build();
-        Self { tag: node.tag, content: node.content }
 
+        Self {
+            tag: node.tag,
+            attrs: Vec::new(),
+            content: None,
+        }
+    }
+
+    pub fn from_node(node: wacore_binary::node::Node) -> Self {
+        //
     }
 }
