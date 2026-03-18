@@ -11,6 +11,23 @@ use prost::Message;
 pub struct JID {
     inner: Arc<WhatsAppJID>,
 }
+impl From<WhatsAppJID> for JID {
+    fn from(jid: WhatsAppJID) -> Self {
+        JID { inner: Arc::new(jid) }
+    }
+}
+
+impl From<JID> for WhatsAppJID {
+    fn from(jid: JID) -> Self {
+        (*jid.inner).clone()
+    }
+}
+
+impl From<Arc<WhatsAppJID>> for JID {
+    fn from(jid: Arc<WhatsAppJID>) -> Self {
+        JID { inner: jid }
+    }
+}
 
 impl JID {
     pub fn as_whatsapp_jid(&self) -> WhatsAppJID {
@@ -49,11 +66,11 @@ struct MessageSource {
 impl MessageSource {
     #[getter]
     fn chat(&self) -> JID {
-        JID { inner: self.chat.clone() }
+        self.chat.clone().into()
     }
     #[getter]
     fn sender(&self) -> JID {
-        JID { inner: self.sender.clone() }
+        self.sender.clone().into()
     }
     #[getter]
     fn is_from_me(&self) -> bool {

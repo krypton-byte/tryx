@@ -9,6 +9,7 @@ use tokio::runtime;
 use tokio::sync::watch;
 use tokio::time::{Duration, interval};
 use wacore::types::events::Event;
+use waproto::whatsapp::sync_action_value::ArchiveChatAction;
 use whatsapp_rust::Client;
 use whatsapp_rust::bot::Bot;
 use whatsapp_rust::store::Backend;
@@ -19,9 +20,10 @@ use tracing::{debug, error, info, warn};
 use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
-use crate::events::types::{EvConnected, EvLoggedOut,EvMessage, EvPairingQrCode};
+use crate::events::types::{EvArchiveUpdate, EvConnected, EvLoggedOut, EvMessage, EvPairingQrCode};
 use crate::exceptions::UnsupportedBackend;
 use crate::events::dispatcher::Dispatcher;
+use crate::types::JID;
 
 
 #[pyclass]
@@ -386,16 +388,12 @@ impl Tryx {
                             }
                         }
                         Event::Message(msg, info) => {
-                            debug!(message_id = %info.id, "received message event");
-                            info!(handlers = message_callbacks.len(), message_id = %info.id, "dispatching message handlers");
-
-                            for (idx, callback) in message_callbacks.iter().enumerate() {
-                                debug!(handler_index = idx, message_id = %info.id, "calling message Python callback");
+                            let payload = Python::attach(|py| Py::new(py, EvMessage::new(msg, info))).map_err(|e| e).unwrap();
+                            for callback in message_callbacks.iter() {
                                 let locals = locals.clone();
                                 let py_future = Python::attach(|py| -> PyResult<_> {
-                                    let payload = Py::new(py, EvMessage::new(msg.clone(), info.clone()))?;
                                     let client_obj = tryx_client.clone_ref(py);
-                                    let awaitable = callback.bind(py).call1((client_obj, payload))?;
+                                    let awaitable = callback.bind(py).call1((client_obj, payload.clone_ref(py)))?;
                                     let fut: Pin<Box<dyn Future<Output = PyResult<Py<PyAny>>> + Send>> = match &locals {
                                         Some(locals) => {
                                             let fut = into_future_with_locals(locals, awaitable)?;
@@ -412,34 +410,35 @@ impl Tryx {
                                 match py_future {
                                     Ok(py_future) => {
                                         if let Err(err) = py_future.await {
-                                            error!(handler_index = idx, message_id = %info.id, error = %err, "message callback failed");
                                             Python::attach(|py| err.print(py));
                                         } else {
-                                            debug!(handler_index = idx, message_id = %info.id, "message callback finished");
+                                            debug!( "message callback finished");
                                         }
                                     }
                                     Err(err) => {
-                                        error!(handler_index = idx, message_id = %info.id, error = %err, "failed to schedule message callback");
+                                        error!("failed to schedule message callback");
                                         Python::attach(|py| err.print(py));
                                     }
                                 }
                             }
                         }
                         Event::Connected(_) => {
-                            for (idx, callback) in connected_callbacks.iter().enumerate() {
-                                debug!(handler_index = idx, "calling connected event handler");
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvConnected{})).map_err(|e| e).unwrap();
+                            for callback in connected_callbacks.iter() {
+                                debug!("calling connected event handler");
                                 let _ = Python::attach(|py| -> PyResult<_> {
-                                    let awaitable = callback.bind(py).call1((EvConnected{},))?;
+                                    let awaitable = callback.bind(py).call1((payload.clone_ref(py),))?;
                                     let fut = into_future(awaitable)?;
                                     Ok(fut)
                                 });
                             }
                         }
                         Event::LoggedOut(logout) => {
-                            for (idx, callback) in logout_callbacks.iter().enumerate() {
-                                debug!(handler_index = idx, "calling logged out event handler");
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvLoggedOut::new(logout))).map_err(|e| e).unwrap();
+                            for callback in logout_callbacks.iter() {
+                                debug!("calling logged out event handler");
                                 let _ = Python::attach(|py| -> PyResult<_> {
-                                    let awaitable = callback.bind(py).call1((EvLoggedOut::new(logout.clone()),))?;
+                                    let awaitable = callback.bind(py).call1((payload.clone_ref(py),))?;
                                     let fut = into_future(awaitable)?;
                                     Ok(fut)
                                 });
@@ -447,7 +446,22 @@ impl Tryx {
                             
                         }
                         Event::ArchiveUpdate(archived) => {
-                            debug!("received archive update event for jid {}", archived.jid);
+
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvArchiveUpdate::new(
+                                archived.jid.into(),
+                                archived.timestamp,
+                                Arc::from(archived.action.clone()),
+                                archived.from_full_sync,
+                            ))).map_err(|e| e).unwrap();
+                            for callback in archive_update_callbacks.iter() {
+                                debug!("calling archive update event handler");
+                                let _ = Python::attach(|py| -> PyResult<_> {
+                                    let awaitable = callback.bind(py).call1((payload.clone_ref(py),))?;
+                                    let fut = into_future(awaitable)?;
+                                    Ok(fut)
+                                });
+                            }
+                            // debug!("received archive update event for jid {}", archived.jid);
 
                         }
                         _ => {
