@@ -566,16 +566,16 @@ impl Tryx {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvOfflineSyncPreview::from(offline_sync_preview))).map_err(|e| e).unwrap();
                             Self::call_event(offline_sync_preview_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::OfflineSyncCompleted(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvOfflineSyncCompleted {}))
+                        Event::OfflineSyncCompleted(offline_sync_complete) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvOfflineSyncCompleted::from(offline_sync_complete)))
                                 .map_err(|e| e)
                                 .unwrap();
                             Self::call_event(offline_sync_completed_callbacks, payload, locals.clone())
                                 .await
                                 .unwrap();
                         }
-                        Event::DeviceListUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvDeviceListUpdate {})).map_err(|e| e).unwrap();
+                        Event::DeviceListUpdate(device_list_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvDeviceListUpdate::from(device_list_update))).map_err(|e| e).unwrap();
                             Self::call_event(device_list_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::BusinessStatusUpdate(_) => {

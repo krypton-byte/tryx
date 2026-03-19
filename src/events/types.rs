@@ -12,6 +12,7 @@ use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
 use crate::types::{JID, MessageInfo, MessageSource};
 use crate::wacore::node::Node;
+use crate::wacore::stanza::KeyIndexInfo;
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static LAZY_CONVERSATION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
@@ -881,6 +882,20 @@ pub struct EvOfflineSyncPreview {
     inner: Arc<wacore::types::events::OfflineSyncPreview>,
     data_cached: OnceLock<Py<OfflineSyncData>>,
 }
+#[pymethods]
+impl EvOfflineSyncPreview {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> Py<OfflineSyncData> {
+        if let Some(ref data) = self.data_cached.get() {
+            data.clone_ref(py)
+        } else {
+            let new_data = OfflineSyncData::new(self.inner.total, self.inner.app_data_changes, self.inner.messages, self.inner.notifications, self.inner.receipts);
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            py_data
+        }
+    }
+}
 impl EvOfflineSyncPreview {
     pub fn new(inner: Arc<wacore::types::events::OfflineSyncPreview>) -> Self {
         Self { inner, data_cached: OnceLock::new() }
@@ -892,10 +907,121 @@ impl From<wacore::types::events::OfflineSyncPreview> for EvOfflineSyncPreview {
     }
 }
 #[pyclass]
-pub struct EvOfflineSyncCompleted;
+pub struct OfflineSyncCompletedData {
+    #[pyo3(get)]
+    count: i32,
+}
+impl OfflineSyncCompletedData {
+    pub fn new(count: i32) -> Self {
+        Self { count }
+    }
+}
 
 #[pyclass]
-pub struct EvDeviceListUpdate;
+pub struct EvOfflineSyncCompleted{
+    inner: Arc<wacore::types::events::OfflineSyncCompleted>,
+    data_cached: OnceLock<Py<OfflineSyncCompletedData>>,
+}
+
+impl EvOfflineSyncCompleted {
+    pub fn new(inner: Arc<wacore::types::events::OfflineSyncCompleted>) -> Self {
+        Self { inner, data_cached: OnceLock::new() }
+    }
+}
+impl From<wacore::types::events::OfflineSyncCompleted> for EvOfflineSyncCompleted {
+    fn from(event: wacore::types::events::OfflineSyncCompleted) -> Self {
+        EvOfflineSyncCompleted::new(Arc::new(event))
+    }
+}
+#[pymethods]
+impl EvOfflineSyncCompleted {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> Py<OfflineSyncCompletedData> {
+        if let Some(ref data) = self.data_cached.get() {
+            data.clone_ref(py)
+        } else {
+            let new_data = OfflineSyncCompletedData::new(self.inner.count);
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            py_data
+        }
+    }
+}
+
+#[pyclass]
+enum DeviceListUpdateType {
+    Added,
+    Removed,
+    Updated
+}
+#[pyclass]
+struct DeviceNottificationInfo {
+    #[pyo3(get)]
+    device_id: u32,
+    #[pyo3(get)]
+    key_index: Option<u32>,
+}
+#[pyclass]
+pub struct DeviceListUpdateData {
+    #[pyo3(get)]
+    user: JID,
+    #[pyo3(get)]
+    lid_user: Option<JID>,
+    #[pyo3(get)]
+    update_type: Py<DeviceListUpdateType>,
+    #[pyo3(get)]
+    devices: Vec<Py<DeviceNottificationInfo>>,
+    #[pyo3(get)]
+    key_index: Option<Py<KeyIndexInfo>>,
+    #[pyo3(get)]
+    contact_hash: Option<String>,
+}
+
+#[pyclass]
+pub struct EvDeviceListUpdate {
+    inner: Arc<wacore::types::events::DeviceListUpdate>,
+    data_cached: OnceLock<Py<DeviceListUpdateData>>,
+}
+impl EvDeviceListUpdate {
+    pub fn new(inner: Arc<wacore::types::events::DeviceListUpdate>) -> Self {
+        Self { inner, data_cached: OnceLock::new() }
+    }
+}
+impl From<wacore::types::events::DeviceListUpdate> for EvDeviceListUpdate {
+    fn from(event: wacore::types::events::DeviceListUpdate) -> Self {
+        EvDeviceListUpdate::new(Arc::new(event))
+    }
+}
+#[pymethods]
+impl EvDeviceListUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> Py<DeviceListUpdateData> {
+        if let Some(data) = self.data_cached.get() {
+            data.clone_ref(py)
+        } else {
+            let update_type = match self.inner.update_type {
+                wacore::types::events::DeviceListUpdateType::Add => DeviceListUpdateType::Added,
+                wacore::types::events::DeviceListUpdateType::Remove => DeviceListUpdateType::Removed,
+                wacore::types::events::DeviceListUpdateType::Update => DeviceListUpdateType::Updated,
+            };
+            let devices = self.inner.devices.iter().map(|d| {
+                Py::new(py, DeviceNottificationInfo { device_id: d.device_id, key_index: d.key_index }).unwrap()
+            }).collect();
+            let key_index = self.inner.key_index.clone().map(|k| Py::new(py, KeyIndexInfo::new(k.timestamp, k.signed_bytes)).unwrap());
+            let new_data = DeviceListUpdateData {
+                user: self.inner.user.clone().into(),
+                lid_user: self.inner.lid_user.clone().map(|u| u.into()),
+                update_type: Python::attach(|py| Py::new(py, update_type).unwrap()),
+                devices,
+                key_index,
+                contact_hash: self.inner.contact_hash.clone(),
+            };
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            py_data
+        }
+    }
+}
 
 #[pyclass]
 pub struct EvBusinessStatusUpdate;
