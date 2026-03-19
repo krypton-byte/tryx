@@ -1,7 +1,7 @@
 use std::sync::{Arc};
 use std::future::Future;
 use std::pin::Pin;
-use pyo3::{Bound, PyAny, PyClass, PyTypeInfo, pyclass, pymethods};
+use pyo3::{Bound, PyAny, PyTypeInfo, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::{TaskLocals, into_future_with_locals};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals, into_future};
@@ -9,7 +9,6 @@ use tokio::runtime;
 use tokio::sync::watch;
 use tokio::time::{Duration, interval};
 use wacore::types::events::Event;
-use waproto::whatsapp::disappearing_mode;
 use whatsapp_rust::Client;
 use whatsapp_rust::bot::Bot;
 use whatsapp_rust::store::Backend;
@@ -21,10 +20,11 @@ use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
 use crate::events::types::{
-    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupInfoUpdate, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
+    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
 };
-use crate::exceptions::UnsupportedBackend;
+use crate::exceptions::{EventDispatchError, FailedBuildBot, UnsupportedBackend};
 use crate::events::dispatcher::Dispatcher;
+use super::event_callbacks::EventCallbacks;
 
 
 #[pyclass]
@@ -177,7 +177,7 @@ impl Tryx {
     
 
 impl Tryx {
-    async fn call_event<T: PyTypeInfo>(callbacks: Arc<Vec<Py<PyAny>>>, payload: Py<T>, locals: Option<TaskLocals>) -> PyResult<()> {
+    async fn call_event<T: PyTypeInfo>(callbacks: &[Py<PyAny>], payload: Py<T>, locals: Option<TaskLocals>) -> PyResult<()> {
         for callback in callbacks.iter() {
             debug!("calling event Python callback");
             let py_future = Python::attach(|py| -> PyResult<_> {
@@ -212,140 +212,38 @@ impl Tryx {
         }
         Ok(())
     }
+
+    async fn emit_event<T: PyTypeInfo>(
+        callbacks: &[Py<PyAny>],
+        payload: PyResult<Py<T>>,
+        locals: Option<TaskLocals>,
+        event_name: &str,
+    ) {
+        match payload {
+            Ok(py_payload) => {
+                if let Err(err) = Self::call_event(callbacks, py_payload, locals).await {
+                    error!(event = event_name, error = %err, "failed to call python event callbacks");
+                    Python::attach(|py| err.print(py));
+                }
+            }
+            Err(err) => {
+                error!(event = event_name, error = %err, "failed to build python event payload");
+                Python::attach(|py| err.print(py));
+            }
+        }
+    }
+
     async fn run_bot(
         backend: Arc<dyn Backend>,
         handlers: Py<Dispatcher>,
         locals: Option<TaskLocals>,
-        tryx_client: Py<TryxClient>,
+        _tryx_client: Py<TryxClient>,
         client_tx: watch::Sender<Option<Arc<Client>>>,
     ) -> PyResult<()> {
-        let (
-            connected_callbacks,
-            disconnected_callbacks,
-            logout_callbacks,
-            pair_success_callbacks,
-            pair_error_callbacks,
-            pairing_qr_callbacks,
-            pairing_code_callbacks,
-            qr_scanned_without_multidevice_callbacks,
-            client_outdated_callbacks,
-            message_callbacks,
-            receipt_callbacks,
-            undecryptable_message_callbacks,
-            notification_callbacks,
-            chat_presence_callbacks,
-            presence_callbacks,
-            picture_update_callbacks,
-            user_about_update_callbacks,
-            joined_group_callbacks,
-            group_info_update_callbacks,
-            contact_update_callbacks,
-            push_name_update_callbacks,
-            self_push_name_updated_callbacks,
-            pin_update_callbacks,
-            mute_update_callbacks,
-            archive_update_callbacks,
-            mark_chat_as_read_update_callbacks,
-            history_sync_callbacks,
-            offline_sync_preview_callbacks,
-            offline_sync_completed_callbacks,
-            device_list_update_callbacks,
-            business_status_update_callbacks,
-            stream_replaced_callbacks,
-            temporary_ban_callbacks,
-            connect_failure_callbacks,
-            stream_error_callbacks,
-            disappearing_mode_changed_callbacks,
-            contact_number_changed_callbacks,
-            contact_sync_requested_callbacks,
-            contact_updated_callbacks,
-            star_update_callbacks,
-        ) = Python::attach(|py| {
+        let callbacks = Arc::new(Python::attach(|py| {
             let dispatcher = handlers.bind(py).borrow();
-            (
-                dispatcher.connected_handlers(py),
-                dispatcher.disconnected_handlers(py),
-                dispatcher.logout_handlers(py),
-                dispatcher.pair_success_handlers(py),
-                dispatcher.pair_error_handlers(py),
-                dispatcher.pairing_qr_handlers(py),
-                dispatcher.pairing_code_handlers(py),
-                dispatcher.qr_scanned_without_multidevice_handlers(py),
-                dispatcher.client_outdated_handlers(py),
-                dispatcher.message_handlers(py),
-                dispatcher.receipt_handlers(py),
-                dispatcher.undecryptable_message_handlers(py),
-                dispatcher.notification_handlers(py),
-                dispatcher.chat_presence_handlers(py),
-                dispatcher.presence_handlers(py),
-                dispatcher.picture_update_handlers(py),
-                dispatcher.user_about_update_handlers(py),
-                dispatcher.joined_group_handlers(py),
-                dispatcher.group_info_update_handlers(py),
-                dispatcher.contact_update_handlers(py),
-                dispatcher.push_name_update_handlers(py),
-                dispatcher.self_push_name_updated_handlers(py),
-                dispatcher.pin_update_handlers(py),
-                dispatcher.mute_update_handlers(py),
-                dispatcher.archive_update_handlers(py),
-                dispatcher.mark_chat_as_read_update_handlers(py),
-                dispatcher.history_sync_handlers(py),
-                dispatcher.offline_sync_preview_handlers(py),
-                dispatcher.offline_sync_completed_handlers(py),
-                dispatcher.device_list_update_handlers(py),
-                dispatcher.business_status_update_handlers(py),
-                dispatcher.stream_replaced_handlers(py),
-                dispatcher.temporary_ban_handlers(py),
-                dispatcher.connect_failure_handlers(py),
-                dispatcher.stream_error_handlers(py),
-                dispatcher.disappearing_mode_changed_handlers(py),
-                dispatcher.contact_number_changed_handlers(py),
-                dispatcher.contact_sync_requested_handlers(py),
-                dispatcher.contact_updated_handlers(py),
-                dispatcher.star_update_handlers(py),
-            )
-        });
-
-        let connected_callbacks = Arc::new(connected_callbacks);
-        let disconnected_callbacks = Arc::new(disconnected_callbacks);
-        let logout_callbacks = Arc::new(logout_callbacks);
-        let pair_success_callbacks = Arc::new(pair_success_callbacks);
-        let pair_error_callbacks = Arc::new(pair_error_callbacks);
-        let pairing_qr_callbacks = Arc::new(pairing_qr_callbacks);
-        let pairing_code_callbacks = Arc::new(pairing_code_callbacks);
-        let qr_scanned_without_multidevice_callbacks = Arc::new(qr_scanned_without_multidevice_callbacks);
-        let client_outdated_callbacks = Arc::new(client_outdated_callbacks);
-        let message_callbacks = Arc::new(message_callbacks);
-        let receipt_callbacks = Arc::new(receipt_callbacks);
-        let undecryptable_message_callbacks = Arc::new(undecryptable_message_callbacks);
-        let notification_callbacks = Arc::new(notification_callbacks);
-        let chat_presence_callbacks = Arc::new(chat_presence_callbacks);
-        let presence_callbacks = Arc::new(presence_callbacks);
-        let picture_update_callbacks = Arc::new(picture_update_callbacks);
-        let user_about_update_callbacks = Arc::new(user_about_update_callbacks);
-        let joined_group_callbacks = Arc::new(joined_group_callbacks);
-        let group_info_update_callbacks = Arc::new(group_info_update_callbacks);
-        let contact_update_callbacks = Arc::new(contact_update_callbacks);
-        let push_name_update_callbacks = Arc::new(push_name_update_callbacks);
-        let self_push_name_updated_callbacks = Arc::new(self_push_name_updated_callbacks);
-        let pin_update_callbacks = Arc::new(pin_update_callbacks);
-        let mute_update_callbacks = Arc::new(mute_update_callbacks);
-        let archive_update_callbacks = Arc::new(archive_update_callbacks);
-        let mark_chat_as_read_update_callbacks = Arc::new(mark_chat_as_read_update_callbacks);
-        let history_sync_callbacks = Arc::new(history_sync_callbacks);
-        let offline_sync_preview_callbacks = Arc::new(offline_sync_preview_callbacks);
-        let offline_sync_completed_callbacks = Arc::new(offline_sync_completed_callbacks);
-        let device_list_update_callbacks = Arc::new(device_list_update_callbacks);
-        let business_status_update_callbacks = Arc::new(business_status_update_callbacks);
-        let stream_replaced_callbacks = Arc::new(stream_replaced_callbacks);
-        let temporary_ban_callbacks = Arc::new(temporary_ban_callbacks);
-        let connect_failure_callbacks = Arc::new(connect_failure_callbacks);
-        let stream_error_callbacks = Arc::new(stream_error_callbacks);
-        let disappearing_mode_changed_callbacks = Arc::new(disappearing_mode_changed_callbacks);
-        let contact_number_changed_callbacks = Arc::new(contact_number_changed_callbacks);
-        let contact_updated_callbacks = Arc::new(contact_updated_callbacks);
-        let star_update_callbacks = Arc::new(star_update_callbacks);
-        let contact_sync_requested_callbacks = Arc::new(contact_sync_requested_callbacks);
+            EventCallbacks::from_dispatcher(py, &dispatcher)
+        }));
         info!("building WhatsApp bot");
         let mut bot = Bot::builder()
             .with_backend(backend)
@@ -353,282 +251,158 @@ impl Tryx {
             .with_http_client(UreqHttpClient::new())
             .on_event(move |event, _client| {
                 let locals = locals.clone();
-                let connected_callbacks = Arc::clone(&connected_callbacks);
-                let disconnected_callbacks = Arc::clone(&disconnected_callbacks);
-                let logout_callbacks = Arc::clone(&logout_callbacks);
-                let pair_success_callbacks = Arc::clone(&pair_success_callbacks);
-                let pair_error_callbacks = Arc::clone(&pair_error_callbacks);
-                let pairing_qr_callbacks = Arc::clone(&pairing_qr_callbacks);
-                let pairing_code_callbacks = Arc::clone(&pairing_code_callbacks);
-                let qr_scanned_without_multidevice_callbacks = Arc::clone(&qr_scanned_without_multidevice_callbacks);
-                let client_outdated_callbacks = Arc::clone(&client_outdated_callbacks);
-                let message_callbacks = Arc::clone(&message_callbacks);
-                let receipt_callbacks = Arc::clone(&receipt_callbacks);
-                let undecryptable_message_callbacks = Arc::clone(&undecryptable_message_callbacks);
-                let notification_callbacks = Arc::clone(&notification_callbacks);
-                let chat_presence_callbacks = Arc::clone(&chat_presence_callbacks);
-                let presence_callbacks = Arc::clone(&presence_callbacks);
-                let picture_update_callbacks = Arc::clone(&picture_update_callbacks);
-                let user_about_update_callbacks = Arc::clone(&user_about_update_callbacks);
-                let joined_group_callbacks = Arc::clone(&joined_group_callbacks);
-                let group_info_update_callbacks = Arc::clone(&group_info_update_callbacks);
-                let contact_update_callbacks = Arc::clone(&contact_update_callbacks);
-                let push_name_update_callbacks = Arc::clone(&push_name_update_callbacks);
-                let self_push_name_updated_callbacks = Arc::clone(&self_push_name_updated_callbacks);
-                let pin_update_callbacks = Arc::clone(&pin_update_callbacks);
-                let mute_update_callbacks = Arc::clone(&mute_update_callbacks);
-                let archive_update_callbacks = Arc::clone(&archive_update_callbacks);
-                let mark_chat_as_read_update_callbacks = Arc::clone(&mark_chat_as_read_update_callbacks);
-                let history_sync_callbacks = Arc::clone(&history_sync_callbacks);
-                let offline_sync_preview_callbacks = Arc::clone(&offline_sync_preview_callbacks);
-                let offline_sync_completed_callbacks = Arc::clone(&offline_sync_completed_callbacks);
-                let device_list_update_callbacks = Arc::clone(&device_list_update_callbacks);
-                let business_status_update_callbacks = Arc::clone(&business_status_update_callbacks);
-                let stream_replaced_callbacks = Arc::clone(&stream_replaced_callbacks);
-                let temporary_ban_callbacks = Arc::clone(&temporary_ban_callbacks);
-                let connect_failure_callbacks = Arc::clone(&connect_failure_callbacks);
-                let stream_error_callbacks = Arc::clone(&stream_error_callbacks);
-                let disappearing_mode_changed_callbacks = Arc::clone(&disappearing_mode_changed_callbacks);
-                let contact_sync_requested_callbacks = Arc::clone(&contact_sync_requested_callbacks);
-                let contact_updated_callbacks = Arc::clone(&contact_updated_callbacks);
-                let contact_number_changed_callbacks = Arc::clone(&contact_number_changed_callbacks);
-                let star_update_callbacks = Arc::clone(&star_update_callbacks);
-                let _tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
+                let callbacks = Arc::clone(&callbacks);
 
                 async move {
                     match event {
                         Event::Connected(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvConnected {})).map_err(|e| e).unwrap();
-                            Self::call_event(connected_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.connected, Python::attach(|py| Py::new(py, EvConnected {})), locals.clone(), "Connected").await;
                         }
                         Event::Disconnected(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvDisconnected {})).map_err(|e| e).unwrap();
-                            Self::call_event(disconnected_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.disconnected, Python::attach(|py| Py::new(py, EvDisconnected {})), locals.clone(), "Disconnected").await;
                         }
                         Event::LoggedOut(logout) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvLoggedOut::new(logout))).map_err(|e| e).unwrap();
-                            Self::call_event(logout_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.logout, Python::attach(|py| Py::new(py, EvLoggedOut::new(logout))), locals.clone(), "LoggedOut").await;
                         }
                         Event::PairSuccess(pair_success) => {
-                            let payload = Python::attach(|py| {
-                                pyo3::Py::new(
-                                    py,
-                                    EvPairSuccess::from(pair_success),
-                                )
-                            })
-                            .map_err(|e| e)
-                            .unwrap();
-                            Self::call_event(pair_success_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.pair_success, Python::attach(|py| Py::new(py, EvPairSuccess::from(pair_success))), locals.clone(), "PairSuccess").await;
                         }
                         Event::PairError(pair_error) => {
-                            let payload = Python::attach(|py| {
-                                pyo3::Py::new(
-                                    py,
-                                    EvPairError::new(
-                                        pair_error.id.into(),
-                                        pair_error.lid.into(),
-                                        pair_error.business_name,
-                                        pair_error.platform,
-                                        pair_error.error,
-                                    ),
-                                )
-                            })
-                            .map_err(|e| e)
-                            .unwrap();
-                            Self::call_event(pair_error_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(
+                                &callbacks.pair_error,
+                                Python::attach(|py| {
+                                    Py::new(
+                                        py,
+                                        EvPairError::new(
+                                            pair_error.id.into(),
+                                            pair_error.lid.into(),
+                                            pair_error.business_name,
+                                            pair_error.platform,
+                                            pair_error.error,
+                                        ),
+                                    )
+                                }),
+                                locals.clone(),
+                                "PairError",
+                            )
+                            .await;
                         }
                         Event::PairingQrCode { code, timeout } => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPairingQrCode::new(code, timeout.as_secs())))
-                                .map_err(|e| e)
-                                .unwrap();
-                            Self::call_event(pairing_qr_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.pairing_qr, Python::attach(|py| Py::new(py, EvPairingQrCode::new(code, timeout.as_secs()))), locals.clone(), "PairingQrCode").await;
                         }
                         Event::PairingCode { code, timeout } => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPairingCode::new(code, timeout.as_secs())))
-                                .map_err(|e| e)
-                                .unwrap();
-                            Self::call_event(pairing_code_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.pairing_code, Python::attach(|py| Py::new(py, EvPairingCode::new(code, timeout.as_secs()))), locals.clone(), "PairingCode").await;
                         }
                         Event::QrScannedWithoutMultidevice(scanned) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvQrScannedWithoutMultidevice::from(scanned)))
-                                .map_err(|e| e)
-                                .unwrap();
-                            Self::call_event(qr_scanned_without_multidevice_callbacks, payload, locals.clone())
-                                .await
-                                .unwrap();
+                            Self::emit_event(&callbacks.qr_scanned_without_multidevice, Python::attach(|py| Py::new(py, EvQrScannedWithoutMultidevice::from(scanned))), locals.clone(), "QrScannedWithoutMultidevice").await;
                         }
                         Event::ClientOutdated(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvClientOutDated {})).map_err(|e| e).unwrap();
-                            Self::call_event(client_outdated_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.client_outdated, Python::attach(|py| Py::new(py, EvClientOutDated {})), locals.clone(), "ClientOutdated").await;
                         }
                         Event::Message(msg, info) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvMessage::new(msg, info))).map_err(|e| e).unwrap();
-                            Self::call_event(message_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.message, Python::attach(|py| Py::new(py, EvMessage::new(*msg, info))), locals.clone(), "Message").await;
                         }
                         Event::Receipt(receipt) => {
-                            let payload = EvReceipt::new(
-                                Arc::new(receipt.source),
-                                receipt.message_ids,
-                                receipt.timestamp,
-                                receipt.r#type,
-                                receipt.message_sender,
-                            );
-                            Self::call_event(receipt_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(
+                                &callbacks.receipt,
+                                Ok(EvReceipt::new(
+                                    receipt.source,
+                                    receipt.message_ids,
+                                    receipt.timestamp,
+                                    receipt.r#type,
+                                    receipt.message_sender,
+                                )),
+                                locals.clone(),
+                                "Receipt",
+                            )
+                            .await;
                         }
                         Event::UndecryptableMessage(undecryptable_message) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvUndecryptableMessage::new(Arc::new(undecryptable_message.info.clone()), undecryptable_message.is_unavailable, undecryptable_message.unavailable_type, undecryptable_message.decrypt_fail_mode)))
-                                .map_err(|e| e)
-                                .unwrap();
-                            Self::call_event(undecryptable_message_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.undecryptable_message, Python::attach(|py| Py::new(py, EvUndecryptableMessage::new(undecryptable_message.info.clone(), undecryptable_message.is_unavailable, undecryptable_message.unavailable_type, undecryptable_message.decrypt_fail_mode))), locals.clone(), "UndecryptableMessage").await;
                         }
                         Event::Notification(notification) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvNotification::new(notification))).map_err(|e| e).unwrap();
-                            Self::call_event(notification_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.notification, Python::attach(|py| Py::new(py, EvNotification::new(notification))), locals.clone(), "Notification").await;
                         }
                         Event::ChatPresence(chat_presence) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvChatPresence::from(chat_presence))).map_err(|e| e).unwrap();
-                            Self::call_event(chat_presence_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.chat_presence, Python::attach(|py| Py::new(py, EvChatPresence::from(chat_presence))), locals.clone(), "ChatPresence").await;
                         }
                         Event::Presence(presence) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPresence::from(presence))).map_err(|e| e).unwrap();
-                            Self::call_event(presence_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.presence, Python::attach(|py| Py::new(py, EvPresence::from(presence))), locals.clone(), "Presence").await;
                         }
                         Event::PictureUpdate(picture_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPictureUpdate::new(picture_update))).map_err(|e| e).unwrap();
-                            Self::call_event(picture_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.picture_update, Python::attach(|py| Py::new(py, EvPictureUpdate::new(picture_update))), locals.clone(), "PictureUpdate").await;
                         }
                         Event::UserAboutUpdate(user_about) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvUserAboutUpdate::new(user_about))).map_err(|e| e).unwrap();
-                            Self::call_event(user_about_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.user_about_update, Python::attach(|py| Py::new(py, EvUserAboutUpdate::new(user_about))), locals.clone(), "UserAboutUpdate").await;
                         }
                         Event::JoinedGroup(joined_group) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvJoinedGroup::new(joined_group))).map_err(|e| e).unwrap();
-                            Self::call_event(joined_group_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.joined_group, Python::attach(|py| Py::new(py, EvJoinedGroup::new(joined_group))), locals.clone(), "JoinedGroup").await;
                         }
                         Event::GroupUpdate(group_info) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvGroupUpdate::new(group_info))).map_err(|e| e).unwrap();
-                            Self::call_event(group_info_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.group_info_update, Python::attach(|py| Py::new(py, EvGroupUpdate::new(group_info))), locals.clone(), "GroupUpdate").await;
                         }
                         Event::ContactUpdate(contact_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactUpdate::new(contact_update))).map_err(|e| e).unwrap();
-                            Self::call_event(contact_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.contact_update, Python::attach(|py| Py::new(py, EvContactUpdate::new(contact_update))), locals.clone(), "ContactUpdate").await;
                         }
                         Event::PushNameUpdate(pushname) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPushNameUpdate::new(pushname.jid.into(), (*pushname.message.as_ref()).clone().into(), pushname.old_push_name.into(), pushname.new_push_name))).map_err(|e| e).unwrap();
-                            Self::call_event(push_name_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.push_name_update, Python::attach(|py| Py::new(py, EvPushNameUpdate::from(pushname))), locals.clone(), "PushNameUpdate").await;
                         }
                         Event::SelfPushNameUpdated(self_push_name_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvSelfPushNameUpdated::from(self_push_name_update))).map_err(|e| e).unwrap();
-                            Self::call_event(self_push_name_updated_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.self_push_name_updated, Python::attach(|py| Py::new(py, EvSelfPushNameUpdated::from(self_push_name_update))), locals.clone(), "SelfPushNameUpdated").await;
                         }
                         Event::PinUpdate(pin_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvPinUpdate::new(pin_update))).map_err(|e| e).unwrap();
-                            Self::call_event(pin_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.pin_update, Python::attach(|py| Py::new(py, EvPinUpdate::new(pin_update))), locals.clone(), "PinUpdate").await;
                         }
                         Event::MuteUpdate(mute_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvMuteUpdate::from(mute_update))).map_err(|e| e).unwrap();
-                            Self::call_event(mute_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.mute_update, Python::attach(|py| Py::new(py, EvMuteUpdate::from(mute_update))), locals.clone(), "MuteUpdate").await;
                         }
                         Event::ArchiveUpdate(archived) => {
-                            let payload = Python::attach(|py| {
-                                pyo3::Py::new(
-                                    py,
-                                    EvArchiveUpdate::new(
-                                        archived.jid.into(),
-                                        archived.timestamp,
-                                        Arc::from(archived.action.clone()),
-                                        archived.from_full_sync,
-                                    ),
-                                )
-                            })
-                            .map_err(|e| e)
-                            .unwrap();
-                            Self::call_event(archive_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.archive_update, Python::attach(|py| Py::new(py, EvArchiveUpdate::from(archived))), locals.clone(), "ArchiveUpdate").await;
                         }
                         Event::MarkChatAsReadUpdate(mark_chat_as_read_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvMarkChatAsReadUpdate::from(mark_chat_as_read_update)))
-                                .map_err(|e| e)
-                                .unwrap();
-                            Self::call_event(mark_chat_as_read_update_callbacks, payload, locals.clone())
-                                .await
-                                .unwrap();
+                            Self::emit_event(&callbacks.mark_chat_as_read_update, Python::attach(|py| Py::new(py, EvMarkChatAsReadUpdate::from(mark_chat_as_read_update))), locals.clone(), "MarkChatAsReadUpdate").await;
                         }
                         Event::HistorySync(history_sync) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvHistorySync::from(history_sync))).map_err(|e| e).unwrap();
-                            Self::call_event(history_sync_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.history_sync, Python::attach(|py| Py::new(py, EvHistorySync::from(history_sync))), locals.clone(), "HistorySync").await;
                         }
                         Event::OfflineSyncPreview(offline_sync_preview) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvOfflineSyncPreview::from(offline_sync_preview))).map_err(|e| e).unwrap();
-                            Self::call_event(offline_sync_preview_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.offline_sync_preview, Python::attach(|py| Py::new(py, EvOfflineSyncPreview::from(offline_sync_preview))), locals.clone(), "OfflineSyncPreview").await;
                         }
                         Event::OfflineSyncCompleted(offline_sync_complete) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvOfflineSyncCompleted::from(offline_sync_complete)))
-                                .map_err(|e| e)
-                                .unwrap();
-                            Self::call_event(offline_sync_completed_callbacks, payload, locals.clone())
-                                .await
-                                .unwrap();
+                            Self::emit_event(&callbacks.offline_sync_completed, Python::attach(|py| Py::new(py, EvOfflineSyncCompleted::from(offline_sync_complete))), locals.clone(), "OfflineSyncCompleted").await;
                         }
                         Event::DeviceListUpdate(device_list_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvDeviceListUpdate::from(device_list_update))).map_err(|e| e).unwrap();
-                            Self::call_event(device_list_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.device_list_update, Python::attach(|py| Py::new(py, EvDeviceListUpdate::from(device_list_update))), locals.clone(), "DeviceListUpdate").await;
                         }
                         Event::BusinessStatusUpdate(business_status_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvBusinessStatusUpdate::from(business_status_update)))
-                                .map_err(|e| e)
-                                .unwrap();
-                            Self::call_event(business_status_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.business_status_update, Python::attach(|py| Py::new(py, EvBusinessStatusUpdate::from(business_status_update))), locals.clone(), "BusinessStatusUpdate").await;
                         }
                         Event::StreamReplaced(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvStreamReplaced {})).map_err(|e| e).unwrap();
-                            Self::call_event(stream_replaced_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.stream_replaced, Python::attach(|py| Py::new(py, EvStreamReplaced {})), locals.clone(), "StreamReplaced").await;
                         }
                         Event::TemporaryBan(temporary_ban) => {
-                            let payload = Python::attach(|py| {
-                                pyo3::Py::new(py, EvTemporaryBan::from_wacore(temporary_ban))
-                            })
-                            .map_err(|e| e)
-                            .unwrap();
-                            Self::call_event(temporary_ban_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.temporary_ban, Python::attach(|py| Py::new(py, EvTemporaryBan::from_wacore(temporary_ban))), locals.clone(), "TemporaryBan").await;
                         }
                         Event::ConnectFailure(connect_failure) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvConnectFailure::new(connect_failure.reason, connect_failure.message, connect_failure.raw))).map_err(|e| e).unwrap();
-                            Self::call_event(connect_failure_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.connect_failure, Python::attach(|py| Py::new(py, EvConnectFailure::new(connect_failure.reason, connect_failure.message, connect_failure.raw))), locals.clone(), "ConnectFailure").await;
                         }
                         Event::StreamError(stream_error) => {
-                            let payload = Python::attach(|py| {
-                                Py::new(py, EvStreamError::new(
-                                    stream_error.code,
-                                    stream_error.raw
-                                ))
-                            }).unwrap();
-                            Self::call_event(stream_error_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.stream_error, Python::attach(|py| Py::new(py, EvStreamError::new(stream_error.code, stream_error.raw))), locals.clone(), "StreamError").await;
                         }
                         Event::ContactNumberChanged(contact_number_changed) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactNumberChanged::new(contact_number_changed.old_jid.into(), contact_number_changed.new_jid.into(), contact_number_changed.old_lid.map(|f|f.into()), contact_number_changed.new_lid.map(|f|f.into()), contact_number_changed.timestamp))).unwrap();
-                            Self::call_event(contact_number_changed_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.contact_number_changed, Python::attach(|py| Py::new(py, EvContactNumberChanged::from(contact_number_changed))), locals.clone(), "ContactNumberChanged").await;
                         }
                         Event::ContactSyncRequested(contact_sync_requested) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactSyncRequested::new(contact_sync_requested.after, contact_sync_requested.timestamp))).unwrap();
-                            Self::call_event(contact_sync_requested_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.contact_sync_requested, Python::attach(|py| Py::new(py, EvContactSyncRequested::from(contact_sync_requested))), locals.clone(), "ContactSyncRequested").await;
                         }
                         Event::ContactUpdated(contact_updated) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvContactUpdated::new(contact_updated.jid, contact_updated.timestamp))).unwrap();
-                            Self::call_event(contact_updated_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.contact_updated, Python::attach(|py| Py::new(py, EvContactUpdated::from(contact_updated))), locals.clone(), "ContactUpdated").await;
                         }
                         Event::StarUpdate(star_update) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvStarUpdate::new(star_update.chat_jid, star_update.participant_jid, star_update.message_id, star_update.from_me, star_update.timestamp, star_update.from_full_sync, star_update.action.starred)  )).unwrap();
-                            Self::call_event(star_update_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.star_update, Python::attach(|py| Py::new(py, EvStarUpdate::from(star_update))), locals.clone(), "StarUpdate").await;
                         }
                         Event::DisappearingModeChanged(disappearing_mode_changed) => {
-                            let payload = Python::attach(|py| {
-                                pyo3::Py::new(py, EvDisappearingModeChanged::new(
-                                    disappearing_mode_changed.from,
-                                    disappearing_mode_changed.duration,
-                                    disappearing_mode_changed.setting_timestamp
-                                ))
-                            }).unwrap();
-                            Self::call_event(disappearing_mode_changed_callbacks, payload, locals.clone()).await.unwrap();
+                            Self::emit_event(&callbacks.disappearing_mode_changed, Python::attach(|py| Py::new(py, EvDisappearingModeChanged::from(disappearing_mode_changed))), locals.clone(), "DisappearingModeChanged").await;
                         }
                 }
             }
@@ -637,25 +411,25 @@ impl Tryx {
             .await
             .map_err(|e| {
                 error!(error = %e, "failed to build bot");
-                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                PyErr::new::<FailedBuildBot, _>(e.to_string())
             })?;
 
         let client = bot.client();
         client_tx
             .send(Some(client))
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            .map_err(|e| PyErr::new::<EventDispatchError, _>(e.to_string()))?;
 
         info!("bot built successfully, starting run loop");
         bot.run()
             .await
             .map_err(|e| {
                 error!(error = %e, "failed to start bot run stream");
-                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                PyErr::new::<EventDispatchError, _>(e.to_string())
             })?
             .await
             .map_err(|e| {
                 error!(error = %e, "bot run stream failed");
-                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                PyErr::new::<EventDispatchError, _>(e.to_string())
             })?;
 
         info!("bot run loop finished");

@@ -1,11 +1,10 @@
-use std::sync::{Arc, Once};
+use std::sync::OnceLock;
 
 use prost::Message as ProstMessage;
 use pyo3::{Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3::types::{PyAnyMethods, PyBytes, PyType};
 use pyo3::types::{PyDateTime};
 use chrono::{DateTime, Utc};
-use std::sync::OnceLock;
 use wacore::types::events::QrScannedWithoutMultidevice;
 use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as WhatsAppLoggedOut }};
 use pyo3::sync::PyOnceLock;
@@ -114,12 +113,15 @@ pub struct PairSuccessData {
 }
 #[pyclass]
 pub struct EvPairSuccess {
-    inner: Arc<wacore::types::events::PairSuccess>,
+    inner: Box<wacore::types::events::PairSuccess>,
     data_cached: OnceLock<Py<PairSuccessData>>,
 }
 impl EvPairSuccess {
     pub fn new(inner: wacore::types::events::PairSuccess) -> Self {
-        Self {inner: Arc::new(inner), data_cached: OnceLock::new() }
+        Self {
+            inner: Box::new(inner),
+            data_cached: OnceLock::new(),
+        }
     }
 }
 #[pymethods]
@@ -138,7 +140,7 @@ impl EvPairSuccess {
 }
 impl From<wacore::types::events::PairSuccess> for EvPairSuccess {
     fn from(event: wacore::types::events::PairSuccess) -> Self {
-        EvPairSuccess::new(Arc::new(event))
+        EvPairSuccess::new(event)
     }
 }
 #[pyclass]
@@ -216,9 +218,10 @@ enum ReceiptType {
     EncRekeyRetry,
     Other
 }
+
 #[pyclass]
 pub struct EvReceipt {
-    inner: Arc<wacore::types::message::MessageSource>,
+    inner: Box<wacore::types::message::MessageSource>,
     source: Option<pyo3::Py<MessageSource>>,
     #[pyo3(get)]
     message_ids: Vec<String>,
@@ -231,7 +234,7 @@ pub struct EvReceipt {
 }
 
 impl EvReceipt {
-    pub fn new(inner: Arc<wacore::types::message::MessageSource>, message_ids: Vec<String>, timestamp: DateTime<Utc>, r#type: wacore::types::presence::ReceiptType,message_sender: Jid)-> Py<Self> {
+    pub fn new(inner: wacore::types::message::MessageSource, message_ids: Vec<String>, timestamp: DateTime<Utc>, r#type: wacore::types::presence::ReceiptType, message_sender: Jid) -> Py<Self> {
         let receipt_type = match r#type {
             wacore::types::presence::ReceiptType::Delivered => ReceiptType::Delivered,
             wacore::types::presence::ReceiptType::Sender => ReceiptType::Sender,
@@ -245,19 +248,19 @@ impl EvReceipt {
             wacore::types::presence::ReceiptType::PeerMsg => ReceiptType::PeerMsg,
             wacore::types::presence::ReceiptType::HistorySync => ReceiptType::HistorySync,
             wacore::types::presence::ReceiptType::EncRekeyRetry => ReceiptType::EncRekeyRetry,
-            wacore::types::presence::ReceiptType::Other(_) => ReceiptType::Other
-            
+            wacore::types::presence::ReceiptType::Other(_) => ReceiptType::Other,
         };
-        Python::attach(|py|{
-            pyo3::Py::new(py, Self{
-                inner,
+        Python::attach(|py| {
+            pyo3::Py::new(py, Self {
+                inner: Box::new(inner),
                 source: None,
                 message_ids,
                 timestamp: PyDateTime::from_timestamp(py, timestamp.naive_utc().and_utc().timestamp_millis() as f64 / 1000.0, None).unwrap().into(),
                 receipt_type: Py::new(py, receipt_type).unwrap(),
                 message_sender: message_sender.into(),
             })
-        }).unwrap()
+        })
+        .unwrap()
     }
 }
 
@@ -294,7 +297,7 @@ enum DecryptFailMode {
 
 #[pyclass]
 pub struct EvUndecryptableMessage {
-    info_inner: Arc<wacore::types::message::MessageInfo>,
+    info_inner: Box<wacore::types::message::MessageInfo>,
     info: Option<pyo3::Py<MessageInfo>>,
     #[pyo3(get)]
     is_unavailable: bool,
@@ -306,7 +309,7 @@ pub struct EvUndecryptableMessage {
 
 impl EvUndecryptableMessage {
     pub fn new(
-        info_inner: Arc<wacore::types::message::MessageInfo>,
+        info_inner: wacore::types::message::MessageInfo,
         is_unavailable: bool,
         unavailable_type: wacore::types::events::UnavailableType,
         decrypt_fail_mode: wacore::types::events::DecryptFailMode,
@@ -321,7 +324,7 @@ impl EvUndecryptableMessage {
         };
 
         Self {
-            info_inner,
+            info_inner: Box::new(info_inner),
             info: None,
             is_unavailable,
             unavailable_type: Python::attach(|py| Py::new(py, py_unavailable_type)).unwrap(),
@@ -413,14 +416,14 @@ impl ChatPresenceMedia {
 
 #[pyclass]
 pub struct EvChatPresence {
-    source: Arc<wacore::types::message::MessageSource>,
+    source: Box<wacore::types::message::MessageSource>,
     source_cache: OnceLock<pyo3::Py<MessageSource>>,
     state: ChatPresence,
     media: ChatPresenceMedia
 }
 
 impl EvChatPresence {
-    pub fn new(source: Arc<wacore::types::message::MessageSource>, state: wacore::types::presence::ChatPresence, media: wacore::types::presence::ChatPresenceMedia) -> Self {
+    pub fn new(source: wacore::types::message::MessageSource, state: wacore::types::presence::ChatPresence, media: wacore::types::presence::ChatPresenceMedia) -> Self {
         let chat_presence_state = match state {
             wacore::types::presence::ChatPresence::Composing => ChatPresence::Composing,
             wacore::types::presence::ChatPresence::Paused => ChatPresence::Paused,
@@ -429,13 +432,18 @@ impl EvChatPresence {
             wacore::types::presence::ChatPresenceMedia::Text => ChatPresenceMedia::Text,
             wacore::types::presence::ChatPresenceMedia::Audio => ChatPresenceMedia::Audio,
         };
-        Self { source, source_cache: OnceLock::new(), state: chat_presence_state, media: chat_presence_media }
+        Self {
+            source: Box::new(source),
+            source_cache: OnceLock::new(),
+            state: chat_presence_state,
+            media: chat_presence_media,
+        }
     }
 }
 
 impl From<wacore::types::events::ChatPresenceUpdate> for EvChatPresence {
     fn from(event: wacore::types::events::ChatPresenceUpdate) -> Self {
-        EvChatPresence::new(Arc::new(event.source), event.state, event.media)
+        EvChatPresence::new(event.source, event.state, event.media)
     }
 }
 
@@ -586,12 +594,12 @@ impl EvUserAboutUpdate {
 
 #[pyclass]
 pub struct LazyConversation {
-    inner: Arc<wacore::types::events::LazyConversation>,
+    inner: Box<wacore::types::events::LazyConversation>,
     parsed: Option<Py<PyAny>>,
 }
 impl LazyConversation {
-    pub fn new(inner: Arc<wacore::types::events::LazyConversation>) -> Self {
-        Self { inner, parsed: None }
+    pub fn new(inner: wacore::types::events::LazyConversation) -> Self {
+        Self { inner: Box::new(inner), parsed: None }
     }
 }
 #[pymethods]
@@ -629,7 +637,7 @@ impl EvJoinedGroup {
         if let Some(ref cached) = self.conversation_cached {
             Ok(cached.clone_ref(py))
         } else {
-            let lazy_conversation = Py::new(py, LazyConversation::new(Arc::new(self.inner.clone()))).unwrap();
+            let lazy_conversation = Py::new(py, LazyConversation::new(self.inner.clone())).unwrap();
             self.conversation_cached = Some(lazy_conversation.clone_ref(py));
             Ok(lazy_conversation)
         }
@@ -640,7 +648,7 @@ impl EvJoinedGroup {
 pub struct EvGroupInfoUpdate;
 
 #[pyclass]
-pub struct EvPushNameUpdate {
+pub struct EvPushNameUpdateData {
     #[pyo3(get)]
     jid: JID,
     #[pyo3(get)]
@@ -650,9 +658,46 @@ pub struct EvPushNameUpdate {
     #[pyo3(get)]
     new_push_name: String,
 }
+
+#[pyclass]
+pub struct EvPushNameUpdate {
+    inner: Box<wacore::types::events::PushNameUpdate>,
+    data_cache: OnceLock<Py<EvPushNameUpdateData>>,
+}
+
 impl EvPushNameUpdate {
-    pub fn new(jid: JID, message: MessageInfo, old_push_name: String, new_push_name: String) -> Self {
-        Self { jid, message: Python::attach(|py| Py::new(py, message).unwrap()), old_push_name, new_push_name }
+    pub fn new(inner: wacore::types::events::PushNameUpdate) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+
+impl From<wacore::types::events::PushNameUpdate> for EvPushNameUpdate {
+    fn from(event: wacore::types::events::PushNameUpdate) -> Self {
+        EvPushNameUpdate::new(event)
+    }
+}
+
+#[pymethods]
+impl EvPushNameUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvPushNameUpdateData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let message = MessageInfo::from((*self.inner.message).clone());
+            let data = EvPushNameUpdateData {
+                jid: self.inner.jid.clone().into(),
+                message: Py::new(py, message)?,
+                old_push_name: self.inner.old_push_name.clone(),
+                new_push_name: self.inner.new_push_name.clone(),
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
     }
 }
 
@@ -691,12 +736,12 @@ impl PinUpdatedata {
 
 #[pyclass]
 pub struct EvPinUpdate {
-    inner: Arc<wacore::types::events::PinUpdate>,
+    inner: Box<wacore::types::events::PinUpdate>,
     data_cached: OnceLock<Py<PinUpdatedata>>,
 }
 impl EvPinUpdate {
     pub fn new(inner: wacore::types::events::PinUpdate) -> Self {
-        Self { inner: Arc::new(inner), data_cached: OnceLock::new() }
+        Self { inner: Box::new(inner), data_cached: OnceLock::new() }
     }
 }
 impl From<wacore::types::events::PinUpdate> for EvPinUpdate {
@@ -727,7 +772,7 @@ pub struct MuteUpdateData {
     jid: Py<JID>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
-    action: Arc<waproto::whatsapp::sync_action_value::MuteAction>,
+    action: Box<waproto::whatsapp::sync_action_value::MuteAction>,
     action_cached: OnceLock<Py<PyAny>>,
     #[pyo3(get)]
     from_full_sync: bool,
@@ -735,7 +780,7 @@ pub struct MuteUpdateData {
 
 impl MuteUpdateData {
     pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MuteAction, from_full_sync: bool) -> Self {
-        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Arc::new(action), action_cached: OnceLock::new(), from_full_sync }
+        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Box::new(action), action_cached: OnceLock::new(), from_full_sync }
     }
 }
 
@@ -758,12 +803,12 @@ impl MuteUpdateData {
 
 #[pyclass]
 pub struct EvMuteUpdate {
-    inner: Arc<wacore::types::events::MuteUpdate>,
+    inner: Box<wacore::types::events::MuteUpdate>,
     data_cached: OnceLock<Py<MuteUpdateData>>,
 }
 impl EvMuteUpdate {
     pub fn new(inner: wacore::types::events::MuteUpdate) -> Self {
-        Self { inner: Arc::new(inner), data_cached: OnceLock::new() }
+        Self { inner: Box::new(inner), data_cached: OnceLock::new() }
     }
 }
 #[pymethods]
@@ -792,14 +837,14 @@ pub struct MarkChatAsReadUpdateData {
     jid: Py<JID>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
-    action: Arc<waproto::whatsapp::sync_action_value::MarkChatAsReadAction>,
+    action: Box<waproto::whatsapp::sync_action_value::MarkChatAsReadAction>,
     action_cached: OnceLock<Py<PyAny>>,
     #[pyo3(get)]
     from_full_sync: bool,
 }
 impl MarkChatAsReadUpdateData {
     pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MarkChatAsReadAction, from_full_sync: bool) -> Self {
-        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Arc::new(action), action_cached: OnceLock::new(), from_full_sync }
+        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Box::new(action), action_cached: OnceLock::new(), from_full_sync }
     }
 }
 #[pymethods]
@@ -820,12 +865,12 @@ impl MarkChatAsReadUpdateData {
 }
 #[pyclass]
 pub struct EvMarkChatAsReadUpdate {
-    inner: Arc<wacore::types::events::MarkChatAsReadUpdate>,
+    inner: Box<wacore::types::events::MarkChatAsReadUpdate>,
     data_cached: OnceLock<Py<MarkChatAsReadUpdateData>>,
 }
 impl EvMarkChatAsReadUpdate {
     pub fn new(inner: wacore::types::events::MarkChatAsReadUpdate) -> Self {
-        Self { inner: Arc::new(inner), data_cached: OnceLock::new() }
+        Self { inner: Box::new(inner), data_cached: OnceLock::new() }
     }
 }
 impl From<wacore::types::events::MarkChatAsReadUpdate> for EvMarkChatAsReadUpdate {
@@ -852,17 +897,17 @@ impl EvMarkChatAsReadUpdate {
 
 #[pyclass]
 pub struct EvHistorySync{
-    inner: Arc<waproto::whatsapp::HistorySync>,
+    inner: Box<waproto::whatsapp::HistorySync>,
     proto_cached: OnceLock<Py<PyAny>>,
 }
 impl EvHistorySync {
-    pub fn new(inner: Arc<waproto::whatsapp::HistorySync>) -> Self {
-        Self { inner, proto_cached: OnceLock::new() }
+    pub fn new(inner: waproto::whatsapp::HistorySync) -> Self {
+        Self { inner: Box::new(inner), proto_cached: OnceLock::new() }
     }
 }
 impl From<waproto::whatsapp::HistorySync> for EvHistorySync {
     fn from(event: waproto::whatsapp::HistorySync) -> Self {
-        EvHistorySync::new(Arc::new(event))
+        EvHistorySync::new(event)
     }
 }
 #[pymethods]
@@ -901,7 +946,7 @@ impl OfflineSyncData {
 }
 #[pyclass]
 pub struct EvOfflineSyncPreview {
-    inner: Arc<wacore::types::events::OfflineSyncPreview>,
+    inner: Box<wacore::types::events::OfflineSyncPreview>,
     data_cached: OnceLock<Py<OfflineSyncData>>,
 }
 #[pymethods]
@@ -919,13 +964,13 @@ impl EvOfflineSyncPreview {
     }
 }
 impl EvOfflineSyncPreview {
-    pub fn new(inner: Arc<wacore::types::events::OfflineSyncPreview>) -> Self {
-        Self { inner, data_cached: OnceLock::new() }
+    pub fn new(inner: wacore::types::events::OfflineSyncPreview) -> Self {
+        Self { inner: Box::new(inner), data_cached: OnceLock::new() }
     }
 }
 impl From<wacore::types::events::OfflineSyncPreview> for EvOfflineSyncPreview {
     fn from(event: wacore::types::events::OfflineSyncPreview) -> Self {
-        EvOfflineSyncPreview::new(Arc::new(event))
+        EvOfflineSyncPreview::new(event)
     }
 }
 #[pyclass]
@@ -941,18 +986,18 @@ impl OfflineSyncCompletedData {
 
 #[pyclass]
 pub struct EvOfflineSyncCompleted{
-    inner: Arc<wacore::types::events::OfflineSyncCompleted>,
+    inner: Box<wacore::types::events::OfflineSyncCompleted>,
     data_cached: OnceLock<Py<OfflineSyncCompletedData>>,
 }
 
 impl EvOfflineSyncCompleted {
-    pub fn new(inner: Arc<wacore::types::events::OfflineSyncCompleted>) -> Self {
-        Self { inner, data_cached: OnceLock::new() }
+    pub fn new(inner: wacore::types::events::OfflineSyncCompleted) -> Self {
+        Self { inner: Box::new(inner), data_cached: OnceLock::new() }
     }
 }
 impl From<wacore::types::events::OfflineSyncCompleted> for EvOfflineSyncCompleted {
     fn from(event: wacore::types::events::OfflineSyncCompleted) -> Self {
-        EvOfflineSyncCompleted::new(Arc::new(event))
+        EvOfflineSyncCompleted::new(event)
     }
 }
 #[pymethods]
@@ -1001,17 +1046,17 @@ pub struct DeviceListUpdateData {
 
 #[pyclass]
 pub struct EvDeviceListUpdate {
-    inner: Arc<wacore::types::events::DeviceListUpdate>,
+    inner: Box<wacore::types::events::DeviceListUpdate>,
     data_cached: OnceLock<Py<DeviceListUpdateData>>,
 }
 impl EvDeviceListUpdate {
-    pub fn new(inner: Arc<wacore::types::events::DeviceListUpdate>) -> Self {
-        Self { inner, data_cached: OnceLock::new() }
+    pub fn new(inner: wacore::types::events::DeviceListUpdate) -> Self {
+        Self { inner: Box::new(inner), data_cached: OnceLock::new() }
     }
 }
 impl From<wacore::types::events::DeviceListUpdate> for EvDeviceListUpdate {
     fn from(event: wacore::types::events::DeviceListUpdate) -> Self {
-        EvDeviceListUpdate::new(Arc::new(event))
+        EvDeviceListUpdate::new(event)
     }
 }
 #[pymethods]
@@ -1090,17 +1135,17 @@ impl BusinessStatusUpdateData {
 
 #[pyclass]
 pub struct EvBusinessStatusUpdate{
-    inner: Arc<wacore::types::events::BusinessStatusUpdate>,
+    inner: Box<wacore::types::events::BusinessStatusUpdate>,
     data_cached: OnceLock<Py<BusinessStatusUpdateData>>,
 }
 impl EvBusinessStatusUpdate {
-    pub fn new(inner: Arc<wacore::types::events::BusinessStatusUpdate>) -> Self {
-        Self { inner, data_cached: OnceLock::new() }
+    pub fn new(inner: wacore::types::events::BusinessStatusUpdate) -> Self {
+        Self { inner: Box::new(inner), data_cached: OnceLock::new() }
     }
 }
 impl From<wacore::types::events::BusinessStatusUpdate> for EvBusinessStatusUpdate {
     fn from(event: wacore::types::events::BusinessStatusUpdate) -> Self {
-        EvBusinessStatusUpdate::new(Arc::new(event))
+        EvBusinessStatusUpdate::new(event)
     }
 }
 #[pymethods]
@@ -1246,14 +1291,9 @@ pub struct EvMessage {
     message_proto: Option<Py<PyAny>>,
 }
 impl EvMessage {
-    pub fn new(inner: Box<waproto::whatsapp::Message>, message_info: WhatsappMessageInfo) -> Self {
-        let info = MessageInfo {
-            inner: Arc::new(message_info.clone()),
-            id: message_info.id.clone(),
-            r#type: message_info.r#type.clone(),
-            push_name: message_info.push_name.clone(),
-        };
-        Self { inner, message_info: info, message_proto: None }
+    pub fn new(inner: waproto::whatsapp::Message, message_info: WhatsappMessageInfo) -> Self {
+        let info = MessageInfo::from(message_info);
+        Self { inner: Box::new(inner), message_info: info, message_proto: None }
     }
 }
 #[pymethods]
@@ -1324,49 +1364,79 @@ pub fn connect_failure_reason_to_string(reason: &ConnectFailureReason) -> String
 
 #[pyclass]
 pub struct EvArchiveUpdate {
-    #[pyo3(get)]
-    jid: JID,
-    timestamp: DateTime<Utc>,
-    action: Arc<waproto::whatsapp::sync_action_value::ArchiveChatAction>,
-    #[pyo3(get)]
-    from_full_sync: bool,
-    action_cache: Option<Py<PyAny>>,
-}
-impl EvArchiveUpdate {
-    pub fn new(jid: JID, timestamp: DateTime<Utc>, action: Arc<waproto::whatsapp::sync_action_value::ArchiveChatAction>, from_full_sync: bool) -> Self {
-        Self {
-            jid,
-            timestamp,
-            action,
-            from_full_sync,
-            action_cache: None,
-        }
-    }
-}
-#[pymethods]
-impl EvArchiveUpdate {
-    #[getter]
-    fn timestamp(&self, py: Python<'_>) -> PyResult<pyo3::Py<PyDateTime>> {
-        let dt = self.timestamp.naive_utc();
-        let py_dt = PyDateTime::from_timestamp(py, dt.and_utc().timestamp_millis() as f64 /1000.0, None).map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("Failed to convert timestamp: {}", e)))?;
-        Ok(py_dt.into())
-    }
-    #[getter]
-    fn action(&mut self, py: Python<'_>) -> PyResult<Py<PyAny>> {
-        if let Some(ref cache) = self.action_cache {
-            Ok(cache.clone_ref(py))
-        } else {
-            let proto_instance = from_string_to_python_proto(py, get_proto_sync_action_value_from_string(py)?, self.action.as_ref().encode_to_vec().as_slice())?;
-            self.action_cache = Some(proto_instance.clone_ref(py));
-            Ok(proto_instance)
-        }
-
-    }
-
+    inner: Box<wacore::types::events::ArchiveUpdate>,
+    data_cache: OnceLock<Py<EvArchiveUpdateData>>,
 }
 
 #[pyclass]
-pub struct EvDisappearingModeChanged {
+pub struct EvArchiveUpdateData {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    action: Box<waproto::whatsapp::sync_action_value::ArchiveChatAction>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+    action_cache: OnceLock<Py<PyAny>>,
+}
+impl EvArchiveUpdate {
+    pub fn new(inner: wacore::types::events::ArchiveUpdate) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+
+impl From<wacore::types::events::ArchiveUpdate> for EvArchiveUpdate {
+    fn from(event: wacore::types::events::ArchiveUpdate) -> Self {
+        EvArchiveUpdate::new(event)
+    }
+}
+
+#[pymethods]
+impl EvArchiveUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvArchiveUpdateData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)?
+                .into();
+            let data = EvArchiveUpdateData {
+                jid: self.inner.jid.clone().into(),
+                timestamp,
+                action: Box::new((*self.inner.action).clone()),
+                from_full_sync: self.inner.from_full_sync,
+                action_cache: OnceLock::new(),
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
+
+#[pymethods]
+impl EvArchiveUpdateData {
+    #[getter]
+    fn action(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(cache) = self.action_cache.get() {
+            Ok(cache.clone_ref(py))
+        } else {
+            let proto_instance = from_string_to_python_proto(
+                py,
+                get_proto_sync_action_value_from_string(py)?,
+                self.action.as_ref().encode_to_vec().as_slice(),
+            )?;
+            self.action_cache.set(proto_instance.clone_ref(py)).ok();
+            Ok(proto_instance)
+        }
+    }
+}
+
+#[pyclass]
+pub struct EvDisappearingModeChangedData {
     #[pyo3(get)]
     from: JID,
     #[pyo3(get)]
@@ -1375,14 +1445,48 @@ pub struct EvDisappearingModeChanged {
     setting_timestamp: u64
 }
 
+#[pyclass]
+pub struct EvDisappearingModeChanged {
+    inner: Box<wacore::types::events::DisappearingModeChanged>,
+    data_cache: OnceLock<Py<EvDisappearingModeChangedData>>,
+}
+
 impl EvDisappearingModeChanged {
-    pub fn new(from: Jid, duration: u32, setting_timestamp: u64) -> Self {
-        Self { from: from.into(), duration, setting_timestamp }
+    pub fn new(inner: wacore::types::events::DisappearingModeChanged) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+
+impl From<wacore::types::events::DisappearingModeChanged> for EvDisappearingModeChanged {
+    fn from(event: wacore::types::events::DisappearingModeChanged) -> Self {
+        EvDisappearingModeChanged::new(event)
+    }
+}
+
+#[pymethods]
+impl EvDisappearingModeChanged {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvDisappearingModeChangedData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let data = EvDisappearingModeChangedData {
+                from: self.inner.from.clone().into(),
+                duration: self.inner.duration,
+                setting_timestamp: self.inner.setting_timestamp,
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
     }
 }
 
 #[pyclass]
-pub struct EvContactNumberChanged {
+pub struct EvContactNumberChangedData {
     #[pyo3(get)]
     old_jid: JID,
     #[pyo3(get)]
@@ -1395,59 +1499,160 @@ pub struct EvContactNumberChanged {
     timestamp: Py<PyDateTime>,
 }
 
+#[pyclass]
+pub struct EvContactNumberChanged {
+    inner: Box<wacore::types::events::ContactNumberChanged>,
+    data_cache: OnceLock<Py<EvContactNumberChangedData>>,
+}
+
 impl EvContactNumberChanged {
-    pub fn new(old_jid: Jid, new_jid: Jid, old_lid: Option<Jid>, new_lid: Option<Jid>, timestamp: DateTime<Utc>) -> Self {
-        let timestamp = Python::attach(|py| {
-            PyDateTime::from_timestamp(
-                py,
-                (timestamp.timestamp_millis() as f64) / 1000.0,
-                None
-            ).unwrap().into()
-        });
+    pub fn new(inner: wacore::types::events::ContactNumberChanged) -> Self {
         Self {
-            old_jid: old_jid.into(),
-            new_jid: new_jid.into(),
-            old_lid: old_lid.map(|j| j.into()),
-            new_lid: new_lid.map(|j| j.into()),
-            timestamp,
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+
+impl From<wacore::types::events::ContactNumberChanged> for EvContactNumberChanged {
+    fn from(event: wacore::types::events::ContactNumberChanged) -> Self {
+        EvContactNumberChanged::new(event)
+    }
+}
+
+#[pymethods]
+impl EvContactNumberChanged {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvContactNumberChangedData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let timestamp = PyDateTime::from_timestamp(
+                py,
+                (self.inner.timestamp.timestamp_millis() as f64) / 1000.0,
+                None,
+            )
+            ?
+            .into();
+            let data = EvContactNumberChangedData {
+                old_jid: self.inner.old_jid.clone().into(),
+                new_jid: self.inner.new_jid.clone().into(),
+                old_lid: self.inner.old_lid.clone().map(|j| j.into()),
+                new_lid: self.inner.new_lid.clone().map(|j| j.into()),
+                timestamp,
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
         }
     }
 }
 
 #[pyclass]
-pub struct EvContactSyncRequested{
+pub struct EvContactSyncRequestedData {
     #[pyo3(get)]
     after: Option<Py<PyDateTime>>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
 }
+
+#[pyclass]
+pub struct EvContactSyncRequested {
+    inner: Box<wacore::types::events::ContactSyncRequested>,
+    data_cache: OnceLock<Py<EvContactSyncRequestedData>>,
+}
+
 impl EvContactSyncRequested {
-    pub fn new(after: Option<DateTime<Utc>>, timestamp: DateTime<Utc>) -> Self {
-        Python::attach(|py| {
-            let after = after.map(|dt| PyDateTime::from_timestamp(py, (dt.timestamp_millis() as f64) / 1000.0, None).unwrap().into());
-            let timestamp = PyDateTime::from_timestamp(py, (timestamp.timestamp_millis() as f64) / 1000.0, None).unwrap().into();
-            Self { after, timestamp }
-        })
+    pub fn new(inner: wacore::types::events::ContactSyncRequested) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+
+impl From<wacore::types::events::ContactSyncRequested> for EvContactSyncRequested {
+    fn from(event: wacore::types::events::ContactSyncRequested) -> Self {
+        EvContactSyncRequested::new(event)
+    }
+}
+
+#[pymethods]
+impl EvContactSyncRequested {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvContactSyncRequestedData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let after = self
+                .inner
+                .after
+                .map(|dt| PyDateTime::from_timestamp(py, (dt.timestamp_millis() as f64) / 1000.0, None).map(|v| v.into()))
+                .transpose()?;
+            let timestamp =
+                PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)
+                    ?
+                    .into();
+            let data = EvContactSyncRequestedData { after, timestamp };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
     }
 }
 
 #[pyclass]
-pub struct EvContactUpdated {
+pub struct EvContactUpdatedData {
     #[pyo3(get)]
     jid: JID,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
 }
 
+#[pyclass]
+pub struct EvContactUpdated {
+    inner: Box<wacore::types::events::ContactUpdated>,
+    data_cache: OnceLock<Py<EvContactUpdatedData>>,
+}
+
 impl EvContactUpdated {
-    pub fn new(jid: Jid, timestamp: DateTime<Utc>) -> Self {
-        let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, (timestamp.timestamp_millis() as f64) / 1000.0, None).unwrap().into());
-        Self { jid: jid.into(), timestamp }
+    pub fn new(inner: wacore::types::events::ContactUpdated) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+
+impl From<wacore::types::events::ContactUpdated> for EvContactUpdated {
+    fn from(event: wacore::types::events::ContactUpdated) -> Self {
+        EvContactUpdated::new(event)
+    }
+}
+
+#[pymethods]
+impl EvContactUpdated {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvContactUpdatedData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)
+                ?
+                .into();
+            let data = EvContactUpdatedData {
+                jid: self.inner.jid.clone().into(),
+                timestamp,
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
     }
 }
 
 #[pyclass]
-pub struct EvStarUpdate {
+pub struct EvStarUpdateData {
     #[pyo3(get)]
     chat_jid: JID,
     #[pyo3(get)]
@@ -1464,10 +1669,50 @@ pub struct EvStarUpdate {
     starred: Option<bool>,
 }
 
+#[pyclass]
+pub struct EvStarUpdate {
+    inner: Box<wacore::types::events::StarUpdate>,
+    data_cache: OnceLock<Py<EvStarUpdateData>>,
+}
+
 impl EvStarUpdate {
-    pub fn new(chat_jid: Jid, participant_jid: Option<Jid>, message_id: String, from_me: bool, timestamp: DateTime<Utc>, from_full_sync: bool, starred: Option<bool>) -> Self {
-        let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, (timestamp.timestamp_millis() as f64) / 1000.0, None).unwrap().into());
-        Self { chat_jid: chat_jid.into(), participant_jid: participant_jid.map(|j| j.into()), message_id, from_me, timestamp, from_full_sync, starred }
+    pub fn new(inner: wacore::types::events::StarUpdate) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+
+impl From<wacore::types::events::StarUpdate> for EvStarUpdate {
+    fn from(event: wacore::types::events::StarUpdate) -> Self {
+        EvStarUpdate::new(event)
+    }
+}
+
+#[pymethods]
+impl EvStarUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvStarUpdateData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)
+                ?
+                .into();
+            let data = EvStarUpdateData {
+                chat_jid: self.inner.chat_jid.clone().into(),
+                participant_jid: self.inner.participant_jid.clone().map(|j| j.into()),
+                message_id: self.inner.message_id.clone(),
+                from_me: self.inner.from_me,
+                timestamp,
+                from_full_sync: self.inner.from_full_sync,
+                starred: self.inner.action.starred,
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
     }
 }
 
@@ -1692,7 +1937,7 @@ struct ContactUpdateData {
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
     action_cache: OnceLock<Py<PyAny>>,
-    action: Arc<waproto::whatsapp::sync_action_value::ContactAction>,
+    action: Box<waproto::whatsapp::sync_action_value::ContactAction>,
     #[pyo3(get)]
     from_full_sync: bool,
 }
@@ -1713,7 +1958,7 @@ impl ContactUpdateData {
 
 #[pyclass]
 pub struct EvContactUpdate{
-    inner: Arc<wacore::types::events::ContactUpdate>,
+    inner: Box<wacore::types::events::ContactUpdate>,
     contact_cache: OnceLock<Py<ContactUpdateData>>,
 
 }   
@@ -1721,7 +1966,7 @@ pub struct EvContactUpdate{
 impl EvContactUpdate {
     pub fn new(inner: wacore::types::events::ContactUpdate) -> Self {
         Self {
-            inner:Arc::new(inner),
+            inner: Box::new(inner),
             contact_cache: OnceLock::new(),
         }
     }
@@ -1737,7 +1982,7 @@ impl EvContactUpdate {
             let data = ContactUpdateData {
                 jid: self.inner.jid.clone().into(),
                 timestamp,
-                action: Arc::from(self.inner.action.clone()),
+                action: self.inner.action.clone(),
                 from_full_sync: self.inner.from_full_sync,
                 action_cache: OnceLock::new(),
             };

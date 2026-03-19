@@ -40,6 +40,7 @@ use self::events::types::{
     EvUserAboutUpdate,
 };
 use self::backend::SqliteBackend;
+use self::exceptions::{EventDispatchError, FailedBuildBot, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
 use self::types::{JID, MessageInfo, UploadResponse};
 use self::wacore::download::MediaType;
 
@@ -94,6 +95,14 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     let backend_module = PyModule::new(_py.py(), "backend")?;
     backend_module.add_class::<SqliteBackend>()?;
     _py.add_submodule(&backend_module)?;
+
+    let exceptions_module = PyModule::new(_py.py(), "exceptions")?;
+    exceptions_module.add_class::<FailedBuildBot>()?;
+    exceptions_module.add_class::<EventDispatchError>()?;
+    exceptions_module.add_class::<PyPayloadBuildError>()?;
+    exceptions_module.add_class::<UnsupportedBackend>()?;
+    exceptions_module.add_class::<UnsupportedEventType>()?;
+    _py.add_submodule(&exceptions_module)?;
 
     let types_module = PyModule::new(_py.py(), "types")?;
     types_module.add_class::<JID>()?;
