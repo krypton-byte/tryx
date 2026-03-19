@@ -413,12 +413,7 @@ impl Tryx {
                             let payload = Python::attach(|py| {
                                 pyo3::Py::new(
                                     py,
-                                    EvPairSuccess::new(
-                                        pair_success.id.into(),
-                                        pair_success.lid.into(),
-                                        pair_success.business_name,
-                                        pair_success.platform,
-                                    ),
+                                    EvPairSuccess::from(pair_success),
                                 )
                             })
                             .map_err(|e| e)
@@ -578,8 +573,8 @@ impl Tryx {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvDeviceListUpdate::from(device_list_update))).map_err(|e| e).unwrap();
                             Self::call_event(device_list_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::BusinessStatusUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvBusinessStatusUpdate {}))
+                        Event::BusinessStatusUpdate(business_status_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvBusinessStatusUpdate::from(business_status_update)))
                                 .map_err(|e| e)
                                 .unwrap();
                             Self::call_event(business_status_update_callbacks, payload, locals.clone()).await.unwrap();

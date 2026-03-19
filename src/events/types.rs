@@ -12,7 +12,7 @@ use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
 use crate::types::{JID, MessageInfo, MessageSource};
 use crate::wacore::node::Node;
-use crate::wacore::stanza::KeyIndexInfo;
+use crate::wacore::stanza::{BusinessSubscription, KeyIndexInfo};
 static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static LAZY_CONVERSATION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
@@ -88,7 +88,6 @@ pub struct EvConnected;
 #[pyclass]
 pub struct EvDisconnected;
 
-
 #[pyclass]
 pub struct EvLoggedOut{
     #[pyo3(get)]
@@ -103,7 +102,7 @@ impl EvLoggedOut {
 }
 
 #[pyclass]
-pub struct EvPairSuccess {
+pub struct PairSuccessData {
     #[pyo3(get)]
     id: JID,
     #[pyo3(get)]
@@ -113,12 +112,35 @@ pub struct EvPairSuccess {
     #[pyo3(get)]
     platform: String,
 }
+#[pyclass]
+pub struct EvPairSuccess {
+    inner: Arc<wacore::types::events::PairSuccess>,
+    data_cached: OnceLock<Py<PairSuccessData>>,
+}
 impl EvPairSuccess {
-    pub fn new(id: JID, lid: JID, business_name: String, platform: String) -> Self {
-        Self { id, lid, business_name, platform }
+    pub fn new(inner: wacore::types::events::PairSuccess) -> Self {
+        Self {inner: Arc::new(inner), data_cached: OnceLock::new() }
     }
 }
-
+#[pymethods]
+impl EvPairSuccess {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> Py<PairSuccessData> {
+        if let Some(ref data) = self.data_cached.get() {
+            data.clone_ref(py)
+        } else {
+            let new_data = PairSuccessData { id: self.inner.id.clone().into(), lid: self.inner.lid.clone().into(), business_name: self.inner.business_name.clone(), platform: self.inner.platform.clone() };
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            py_data
+        }
+     }
+}
+impl From<wacore::types::events::PairSuccess> for EvPairSuccess {
+    fn from(event: wacore::types::events::PairSuccess) -> Self {
+        EvPairSuccess::new(Arc::new(event))
+    }
+}
 #[pyclass]
 pub struct EvPairError {
     #[pyo3(get)]
@@ -1022,13 +1044,90 @@ impl EvDeviceListUpdate {
         }
     }
 }
+#[pyclass]
+enum BusinessStatusUpdateType {
+    RemovedAsBusiness,
+    VerifiedNameChanged,
+    ProfileUpdated,
+    ProductsUpdated,
+    CollectionsUpdated,
+    SubscriptionsUpdated,
+    Unknown,
+}
+#[pyclass]
+pub struct BusinessStatusUpdateData {
+    #[pyo3(get)]
+    jid: JID,
+    #[pyo3(get)]
+    update_type: Py<BusinessStatusUpdateType>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    #[pyo3(get)]
+    target_jid: Option<Py<JID>>,
+    #[pyo3(get)]
+    hash: Option<String>,
+    #[pyo3(get)]
+    product_ids: Vec<String>,
+    #[pyo3(get)]
+    collection_ids: Vec<String>,
+    #[pyo3(get)]
+    subscriptions: Vec<Py<BusinessSubscription>>,
+}
+impl BusinessStatusUpdateData {
+    pub fn new(jid: JID, update_type: BusinessStatusUpdateType, timestamp: i64, target_jid: Option<JID>, hash: Option<String>, product_ids: Vec<String>, collection_ids: Vec<String>, subscriptions: Vec<BusinessSubscription>) -> Self {
+        Self {
+            jid,
+            update_type: Python::attach(|py| Py::new(py, update_type).unwrap()),
+            timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp as f64, None).unwrap().into()),
+            target_jid: target_jid.map(|j| Python::attach(|py| Py::new(py, JID::from(j)).unwrap())),
+            hash,
+            product_ids,
+            collection_ids,
+            subscriptions: subscriptions.into_iter().map(|s| Python::attach(|py| Py::new(py, s).unwrap())).collect(),
+        }
+    }
+}
 
 #[pyclass]
-pub struct EvBusinessStatusUpdate;
-
+pub struct EvBusinessStatusUpdate{
+    inner: Arc<wacore::types::events::BusinessStatusUpdate>,
+    data_cached: OnceLock<Py<BusinessStatusUpdateData>>,
+}
+impl EvBusinessStatusUpdate {
+    pub fn new(inner: Arc<wacore::types::events::BusinessStatusUpdate>) -> Self {
+        Self { inner, data_cached: OnceLock::new() }
+    }
+}
+impl From<wacore::types::events::BusinessStatusUpdate> for EvBusinessStatusUpdate {
+    fn from(event: wacore::types::events::BusinessStatusUpdate) -> Self {
+        EvBusinessStatusUpdate::new(Arc::new(event))
+    }
+}
+#[pymethods]
+impl EvBusinessStatusUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> Py<BusinessStatusUpdateData> {
+        if let Some(ref data) = self.data_cached.get() {
+            data.clone_ref(py)
+        } else {
+            let update_type = match self.inner.update_type {
+                wacore::types::events::BusinessUpdateType::RemovedAsBusiness => BusinessStatusUpdateType::RemovedAsBusiness,
+                wacore::types::events::BusinessUpdateType::VerifiedNameChanged => BusinessStatusUpdateType::VerifiedNameChanged,
+                wacore::types::events::BusinessUpdateType::ProfileUpdated => BusinessStatusUpdateType::ProfileUpdated,
+                wacore::types::events::BusinessUpdateType::ProductsUpdated => BusinessStatusUpdateType::ProductsUpdated,
+                wacore::types::events::BusinessUpdateType::CollectionsUpdated => BusinessStatusUpdateType::CollectionsUpdated,
+                wacore::types::events::BusinessUpdateType::SubscriptionsUpdated => BusinessStatusUpdateType::SubscriptionsUpdated,
+                wacore::types::events::BusinessUpdateType::Unknown => BusinessStatusUpdateType::Unknown,
+            };
+            let new_data = BusinessStatusUpdateData::new(self.inner.jid.clone().into(), update_type, self.inner.timestamp, self.inner.target_jid.clone().map(|j| j.into()), self.inner.hash.clone(), self.inner.product_ids.clone(), self.inner.collection_ids.clone(), self.inner.subscriptions.iter().map(|s| s.clone().into()).collect());
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            py_data
+        }
+    }
+}
 #[pyclass]
 pub struct EvStreamReplaced;
-
 #[pyclass(from_py_object)]
 #[derive(Clone)]
 enum TempBanReason {
