@@ -16,6 +16,8 @@ static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static LAZY_CONVERSATION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static CONTACT_UPDATE_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static MARK_CHAT_AS_READ_UPDATE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static HISTORY_SYNC_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 fn get_proto_import(py: Python<'_>, import: &str, attr: &str) -> PyResult<Py<PyType>>{
     let module = py.import(import)?;
     let message_type = module.getattr(attr)?.cast_into::<PyType>()?;
@@ -46,6 +48,24 @@ fn get_proto_contact_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, Py
         get_proto_import(py, "tryx.waproto.whatsapp_pb2", "ContactAction")
     })?;
     Ok(contact_action)
+}
+fn get_proto_mute_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
+    let mute_action = SYNC_ACTION_VALUE.get_or_try_init(py, || -> PyResult<Py<PyType>> {
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "MuteAction")
+    })?;
+    Ok(mute_action)
+}
+fn get_proto_mark_chat_as_read_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
+    let mark_chat_as_read_action = MARK_CHAT_AS_READ_UPDATE_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "MarkChatAsReadAction")
+    })?;
+    Ok(mark_chat_as_read_action)
+}
+fn get_proto_history_sync_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
+    let history_sync = HISTORY_SYNC_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "HistorySync")
+    })?;
+    Ok(history_sync)
 }
 fn from_string_to_python_proto(py: Python<'_>, proto_class: &Py<PyType>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
     let proto_instance = proto_class.bind(py).call0()?;
@@ -630,7 +650,7 @@ impl From<wacore::types::events::SelfPushNameUpdated> for EvSelfPushNameUpdated 
 }
 
 #[pyclass]
-pub struct EvPinUpdatedata {
+pub struct PinUpdatedata {
     #[pyo3(get)]
     jid: Py<JID>,
     #[pyo3(get)]
@@ -640,7 +660,7 @@ pub struct EvPinUpdatedata {
     #[pyo3(get)]
     from_full_sync: bool,
 }
-impl EvPinUpdatedata {
+impl PinUpdatedata {
     pub fn new(jid: Jid, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::PinAction, from_full_sync: bool) -> Self {
         Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), pinned: action.pinned, from_full_sync }
     }
@@ -649,7 +669,7 @@ impl EvPinUpdatedata {
 #[pyclass]
 pub struct EvPinUpdate {
     inner: Arc<wacore::types::events::PinUpdate>,
-    data_cached: OnceLock<Py<EvPinUpdatedata>>,
+    data_cached: OnceLock<Py<PinUpdatedata>>,
 }
 impl EvPinUpdate {
     pub fn new(inner: wacore::types::events::PinUpdate) -> Self {
@@ -664,11 +684,11 @@ impl From<wacore::types::events::PinUpdate> for EvPinUpdate {
 #[pymethods]
 impl EvPinUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvPinUpdatedata>> {
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<PinUpdatedata>> {
         if let Some(ref data) = self.data_cached.get() {
             Ok(data.clone_ref(py))
         } else {
-            let new_data = EvPinUpdatedata::new(self.inner.jid.clone(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
+            let new_data = PinUpdatedata::new(self.inner.jid.clone(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached.set(py_data.clone_ref(py)).ok();
             Ok(py_data)
@@ -676,18 +696,201 @@ impl EvPinUpdate {
     }
 }
 
-#[pyclass]
-pub struct EvMuteUpdate;
+
 
 #[pyclass]
-pub struct EvMarkChatAsReadUpdate;
+pub struct MuteUpdateData {
+    #[pyo3(get)]
+    jid: Py<JID>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    action: Arc<waproto::whatsapp::sync_action_value::MuteAction>,
+    action_cached: OnceLock<Py<PyAny>>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+}
+
+impl MuteUpdateData {
+    pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MuteAction, from_full_sync: bool) -> Self {
+        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Arc::new(action), action_cached: OnceLock::new(), from_full_sync }
+    }
+}
+
+#[pymethods]
+impl MuteUpdateData {
+    #[getter]
+    fn action(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(cached) = self.action_cached.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let proto_type = get_proto_mute_action_proto_type(py)?;
+            let mut proto_bytes = Vec::new();
+            self.action.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode MuteAction proto: {}", e)))?;
+            let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
+            self.action_cached.set(parsed_proto.clone_ref(py)).ok();
+            Ok(parsed_proto)
+        }
+    }
+}
 
 #[pyclass]
-pub struct EvHistorySync;
+pub struct EvMuteUpdate {
+    inner: Arc<wacore::types::events::MuteUpdate>,
+    data_cached: OnceLock<Py<MuteUpdateData>>,
+}
+impl EvMuteUpdate {
+    pub fn new(inner: wacore::types::events::MuteUpdate) -> Self {
+        Self { inner: Arc::new(inner), data_cached: OnceLock::new() }
+    }
+}
+#[pymethods]
+impl EvMuteUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<MuteUpdateData>> {
+        if let Some(ref data) = self.data_cached.get() {
+            Ok(data.clone_ref(py))
+        } else {
+            let new_data = MuteUpdateData::new(self.inner.jid.clone().into(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
+impl From<wacore::types::events::MuteUpdate> for EvMuteUpdate {
+    fn from(event: wacore::types::events::MuteUpdate) -> Self {
+        EvMuteUpdate::new(event)
+    }
+}
 
 #[pyclass]
-pub struct EvOfflineSyncPreview;
+pub struct MarkChatAsReadUpdateData {
+    #[pyo3(get)]
+    jid: Py<JID>,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    action: Arc<waproto::whatsapp::sync_action_value::MarkChatAsReadAction>,
+    action_cached: OnceLock<Py<PyAny>>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+}
+impl MarkChatAsReadUpdateData {
+    pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MarkChatAsReadAction, from_full_sync: bool) -> Self {
+        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Arc::new(action), action_cached: OnceLock::new(), from_full_sync }
+    }
+}
+#[pymethods]
+impl MarkChatAsReadUpdateData {
+    #[getter]
+    fn action(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(cached) = self.action_cached.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let proto_type = get_proto_mark_chat_as_read_action_proto_type(py)?;
+            let mut proto_bytes = Vec::new();
+            self.action.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode MarkChatAsReadAction proto: {}", e)))?;
+            let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
+            self.action_cached.set(parsed_proto.clone_ref(py)).ok();
+            Ok(parsed_proto)
+        }
+    }
+}
+#[pyclass]
+pub struct EvMarkChatAsReadUpdate {
+    inner: Arc<wacore::types::events::MarkChatAsReadUpdate>,
+    data_cached: OnceLock<Py<MarkChatAsReadUpdateData>>,
+}
+impl EvMarkChatAsReadUpdate {
+    pub fn new(inner: wacore::types::events::MarkChatAsReadUpdate) -> Self {
+        Self { inner: Arc::new(inner), data_cached: OnceLock::new() }
+    }
+}
+impl From<wacore::types::events::MarkChatAsReadUpdate> for EvMarkChatAsReadUpdate {
+    fn from(event: wacore::types::events::MarkChatAsReadUpdate) -> Self {
+        EvMarkChatAsReadUpdate::new(event)
+    }
+}
+#[pymethods]
+impl EvMarkChatAsReadUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<MarkChatAsReadUpdateData>> {
+        if let Some(ref data) = self.data_cached.get() {
+            Ok(data.clone_ref(py))
+        } else {
+            let new_data = MarkChatAsReadUpdateData::new(JID::from(self.inner.jid.clone()), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
+            let py_data = Py::new(py, new_data).unwrap();
+            self.data_cached.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
 
+
+
+#[pyclass]
+pub struct EvHistorySync{
+    inner: Arc<waproto::whatsapp::HistorySync>,
+    proto_cached: OnceLock<Py<PyAny>>,
+}
+impl EvHistorySync {
+    pub fn new(inner: Arc<waproto::whatsapp::HistorySync>) -> Self {
+        Self { inner, proto_cached: OnceLock::new() }
+    }
+}
+impl From<waproto::whatsapp::HistorySync> for EvHistorySync {
+    fn from(event: waproto::whatsapp::HistorySync) -> Self {
+        EvHistorySync::new(Arc::new(event))
+    }
+}
+#[pymethods]
+impl EvHistorySync {
+    #[getter]
+    fn proto(&mut self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(ref proto) = self.proto_cached.get() {
+            Ok(proto.clone_ref(py))
+        } else {
+            let proto_type = get_proto_history_sync_proto_type(py)?;
+            let mut proto_bytes = Vec::new();
+            self.inner.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode HistorySync proto: {}", e)))?;
+            let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
+            self.proto_cached.set(parsed_proto.clone_ref(py)).ok();
+            Ok(parsed_proto)
+        }
+    }
+}
+#[pyclass]
+pub struct OfflineSyncData {
+    #[pyo3(get)]
+    total: i32,
+    #[pyo3(get)]
+    app_data_changes: i32,
+    #[pyo3(get)]
+    messages: i32,
+    #[pyo3(get)]
+    notifications: i32,
+    #[pyo3(get)]
+    receipts: i32,
+}
+impl OfflineSyncData {
+    pub fn new(total: i32, app_data_changes: i32, messages: i32, notifications: i32, receipts: i32) -> Self {
+        Self { total, app_data_changes, messages, notifications, receipts }
+    }
+}
+#[pyclass]
+pub struct EvOfflineSyncPreview {
+    inner: Arc<wacore::types::events::OfflineSyncPreview>,
+    data_cached: OnceLock<Py<OfflineSyncData>>,
+}
+impl EvOfflineSyncPreview {
+    pub fn new(inner: Arc<wacore::types::events::OfflineSyncPreview>) -> Self {
+        Self { inner, data_cached: OnceLock::new() }
+    }
+}
+impl From<wacore::types::events::OfflineSyncPreview> for EvOfflineSyncPreview {
+    fn from(event: wacore::types::events::OfflineSyncPreview) -> Self {
+        EvOfflineSyncPreview::new(Arc::new(event))
+    }
+}
 #[pyclass]
 pub struct EvOfflineSyncCompleted;
 

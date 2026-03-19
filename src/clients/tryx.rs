@@ -530,8 +530,8 @@ impl Tryx {
                             let payload = Python::attach(|py| pyo3::Py::new(py, EvPinUpdate::new(pin_update))).map_err(|e| e).unwrap();
                             Self::call_event(pin_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::MuteUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvMuteUpdate {})).map_err(|e| e).unwrap();
+                        Event::MuteUpdate(mute_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvMuteUpdate::from(mute_update))).map_err(|e| e).unwrap();
                             Self::call_event(mute_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::ArchiveUpdate(archived) => {
@@ -550,20 +550,20 @@ impl Tryx {
                             .unwrap();
                             Self::call_event(archive_update_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::MarkChatAsReadUpdate(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvMarkChatAsReadUpdate {}))
+                        Event::MarkChatAsReadUpdate(mark_chat_as_read_update) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvMarkChatAsReadUpdate::from(mark_chat_as_read_update)))
                                 .map_err(|e| e)
                                 .unwrap();
                             Self::call_event(mark_chat_as_read_update_callbacks, payload, locals.clone())
                                 .await
                                 .unwrap();
                         }
-                        Event::HistorySync(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvHistorySync {})).map_err(|e| e).unwrap();
+                        Event::HistorySync(history_sync) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvHistorySync::from(history_sync))).map_err(|e| e).unwrap();
                             Self::call_event(history_sync_callbacks, payload, locals.clone()).await.unwrap();
                         }
-                        Event::OfflineSyncPreview(_) => {
-                            let payload = Python::attach(|py| pyo3::Py::new(py, EvOfflineSyncPreview {})).map_err(|e| e).unwrap();
+                        Event::OfflineSyncPreview(offline_sync_preview) => {
+                            let payload = Python::attach(|py| pyo3::Py::new(py, EvOfflineSyncPreview::from(offline_sync_preview))).map_err(|e| e).unwrap();
                             Self::call_event(offline_sync_preview_callbacks, payload, locals.clone()).await.unwrap();
                         }
                         Event::OfflineSyncCompleted(_) => {
