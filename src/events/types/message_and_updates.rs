@@ -224,7 +224,7 @@ pub struct EvArchiveUpdate {
 #[pyclass]
 pub struct EvArchiveUpdateData {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
     action: Box<waproto::whatsapp::sync_action_value::ArchiveChatAction>,
@@ -257,7 +257,7 @@ impl EvArchiveUpdate {
             let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)?
                 .into();
             let data = EvArchiveUpdateData {
-                jid: self.inner.jid.clone().into(),
+                jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 timestamp,
                 action: Box::new((*self.inner.action).clone()),
                 from_full_sync: self.inner.from_full_sync,
@@ -291,7 +291,7 @@ impl EvArchiveUpdateData {
 #[pyclass]
 pub struct EvDisappearingModeChangedData {
     #[pyo3(get)]
-    from: JID,
+    from: Py<JID>,
     #[pyo3(get)]
     duration: u32,
     #[pyo3(get)]
@@ -327,7 +327,7 @@ impl EvDisappearingModeChanged {
             Ok(cached.clone_ref(py))
         } else {
             let data = EvDisappearingModeChangedData {
-                from: self.inner.from.clone().into(),
+                from: Py::new(py, JID::from(self.inner.from.clone())).unwrap(),
                 duration: self.inner.duration,
                 setting_timestamp: self.inner.setting_timestamp,
             };
@@ -341,13 +341,13 @@ impl EvDisappearingModeChanged {
 #[pyclass]
 pub struct EvContactNumberChangedData {
     #[pyo3(get)]
-    old_jid: JID,
+    old_jid: Py<JID>,
     #[pyo3(get)]
-    new_jid: JID,
+    new_jid: Py<JID>,
     #[pyo3(get)]
-    old_lid: Option<JID>,
+    old_lid: Option<Py<JID>>,
     #[pyo3(get)]
-    new_lid: Option<JID>,
+    new_lid: Option<Py<JID>>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
 }
@@ -388,10 +388,10 @@ impl EvContactNumberChanged {
             ?
             .into();
             let data = EvContactNumberChangedData {
-                old_jid: self.inner.old_jid.clone().into(),
-                new_jid: self.inner.new_jid.clone().into(),
-                old_lid: self.inner.old_lid.clone().map(|j| j.into()),
-                new_lid: self.inner.new_lid.clone().map(|j| j.into()),
+                old_jid: Py::new(py, JID::from(self.inner.old_jid.clone())).unwrap(),
+                new_jid: Py::new(py, JID::from(self.inner.new_jid.clone())).unwrap(),
+                old_lid: self.inner.old_lid.clone().map(|j| Py::new(py, JID::from(j)).unwrap()),
+                new_lid: self.inner.new_lid.clone().map(|j| Py::new(py, JID::from(j)).unwrap()),
                 timestamp,
             };
             let py_data = Py::new(py, data)?;
@@ -457,7 +457,7 @@ impl EvContactSyncRequested {
 #[pyclass]
 pub struct EvContactUpdatedData {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
 }
@@ -494,7 +494,7 @@ impl EvContactUpdated {
                 ?
                 .into();
             let data = EvContactUpdatedData {
-                jid: self.inner.jid.clone().into(),
+                jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 timestamp,
             };
             let py_data = Py::new(py, data)?;
@@ -507,9 +507,9 @@ impl EvContactUpdated {
 #[pyclass]
 pub struct EvStarUpdateData {
     #[pyo3(get)]
-    chat_jid: JID,
+    chat_jid: Py<JID>,
     #[pyo3(get)]
-    participant_jid: Option<JID>,
+    participant_jid: Option<Py<JID>>,
     #[pyo3(get)]
     message_id: String,
     #[pyo3(get)]
@@ -554,8 +554,8 @@ impl EvStarUpdate {
                 ?
                 .into();
             let data = EvStarUpdateData {
-                chat_jid: self.inner.chat_jid.clone().into(),
-                participant_jid: self.inner.participant_jid.clone().map(|j| j.into()),
+                chat_jid: Py::new(py, JID::from(self.inner.chat_jid.clone())).unwrap(),
+                participant_jid: self.inner.participant_jid.clone().map(|j| Py::new(py, JID::from(j)).unwrap()),
                 message_id: self.inner.message_id.clone(),
                 from_me: self.inner.from_me,
                 timestamp,
@@ -572,9 +572,9 @@ impl EvStarUpdate {
 #[pyclass]
 struct GroupParticipant {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
-    phone_number: Option<JID>
+    phone_number: Option<Py<JID>>
 }
 
 #[pyclass]
@@ -656,11 +656,11 @@ enum GroupNotificationAction {
 #[pyclass]
 pub struct GroupUpdateData{
     #[pyo3(get)]
-    group_jid: JID,
+    group_jid: Py<JID>,
     #[pyo3(get)]
-    participant: Option<JID>,
+    participant: Option<Py<JID>>,
     #[pyo3(get)]
-    participant_pn: Option<JID>,
+    participant_pn: Option<Py<JID>>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
     #[pyo3(get)]
@@ -686,8 +686,8 @@ impl EvGroupUpdate {
         if let Some(ref data) = self.data_cache.get() {
             Ok(data.clone_ref(py))
         } else {
-            let participant = self.inner.participant.as_ref().map(|p| p.clone().into());
-            let participant_pn = self.inner.participant_pn.as_ref().map(|pn| pn.clone().into());
+            let participant = self.inner.participant.as_ref().map(|p| Py::new(py, JID::from(p.clone())).unwrap());
+            let participant_pn = self.inner.participant_pn.as_ref().map(|pn| Py::new(py, JID::from(pn.clone())).unwrap());
             let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into());
 
             let py_group_participants = |participants: &[wacore::stanza::groups::GroupParticipantInfo]| {
@@ -695,8 +695,8 @@ impl EvGroupUpdate {
                     .iter()
                     .map(|p| {
                         let group_participant = GroupParticipant {
-                            jid: p.jid.clone().into(),
-                            phone_number: p.phone_number.as_ref().map(|pn| pn.clone().into()),
+                            jid: Py::new(py, JID::from(p.jid.clone())).unwrap(),
+                            phone_number: p.phone_number.as_ref().map(|pn| Py::new(py, JID::from(pn.clone())).unwrap()),
                         };
                         Py::new(py, group_participant).unwrap()
                     })
@@ -768,7 +768,7 @@ impl EvGroupUpdate {
             };
             let action = Py::new(py, action)?;
             let data = GroupUpdateData {
-                group_jid: self.inner.group_jid.clone().into(),
+                group_jid: Py::new(py, JID::from(self.inner.group_jid.clone())).unwrap(),
                 participant,
                 participant_pn,
                 timestamp,
@@ -786,7 +786,7 @@ impl EvGroupUpdate {
 #[pyclass]
 struct ContactUpdateData {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
     timestamp: Py<PyDateTime>,
     action_cache: OnceLock<Py<PyAny>>,
@@ -833,7 +833,7 @@ impl EvContactUpdate {
         } else {
             let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into());
             let data = ContactUpdateData {
-                jid: self.inner.jid.clone().into(),
+                jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 timestamp,
                 action: self.inner.action.clone(),
                 from_full_sync: self.inner.from_full_sync,

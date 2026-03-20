@@ -6,8 +6,7 @@ use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsApp
 use prost::Message;
 
 
-#[pyclass(skip_from_py_object)]
-#[derive(Clone)]
+#[pyclass]
 pub struct JID {
     inner: Arc<WhatsAppJID>,
 }
@@ -156,13 +155,13 @@ struct MsgMetaInfo {
     #[pyo3(get)]
     target_id: Option<String>,
     #[pyo3(get)]
-    target_sender: Option<JID>,
+    target_sender: Option<pyo3::Py<JID>>,
     #[pyo3(get)]
     deprecated_lid_session: Option<bool>,
     #[pyo3(get)]
     thread_message_id: Option<String>,
     #[pyo3(get)]
-    thread_message_sender_jid: Option<JID>,
+    thread_message_sender_jid: Option<pyo3::Py<JID>>,
 }
 
 #[pyclass(skip_from_py_object)]
@@ -250,14 +249,14 @@ impl MessageInfo {
         }
     }
     #[getter]
-    fn meta_info(&self) -> MsgMetaInfo{
+    fn meta_info(&self, py: Python<'_>) -> MsgMetaInfo{
         MsgMetaInfo {
             target_id: match self.inner.meta_info.target_id {
                 Some(ref s) => Some(s.clone()),
                 None => None,
             },
             target_sender: match self.inner.meta_info.target_sender {
-                Some(ref jid) => Some(JID { inner: Arc::new(jid.clone()) }),
+                Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
             },
             deprecated_lid_session: self.inner.meta_info.deprecated_lid_session,
@@ -266,7 +265,7 @@ impl MessageInfo {
                 None => None,
             },
             thread_message_sender_jid: match self.inner.meta_info.thread_message_sender_jid {
-                Some(ref jid) => Some(JID { inner: Arc::new(jid.clone()) }),
+                Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
             },
         }
@@ -292,7 +291,7 @@ impl MessageInfo {
         }
     }
     #[getter]
-    fn device_sent_meta(&self) -> Option<DeviceSentMeta> {
+    fn device_sent_meta(&self, py: Python<'_>) -> Option<DeviceSentMeta> {
         self.inner.device_sent_meta.as_ref().map(|meta| DeviceSentMeta {
             destination_jid: meta.destination_jid.clone(),
             phash: meta.phash.clone(),

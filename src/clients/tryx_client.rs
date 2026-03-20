@@ -1,5 +1,5 @@
 use std::sync::{Arc};
-use pyo3::{Bound, PyAny, pyclass, pymethods};
+use pyo3::{Bound, IntoPyObjectExt, PyAny, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -11,6 +11,7 @@ use whatsapp_rust::Client;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, UploadResponse};
 use crate::wacore::download::MediaType;
+use crate::wacore::iq::usync::IsOnWhatsAppResult;
 #[pyclass]
 pub struct TryxClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
@@ -20,6 +21,111 @@ pub struct TryxClient {
 impl TryxClient {
     fn is_connected(&self) -> bool {
         self.client_rx.borrow().is_some()
+    }
+    // fn download_media_to_writter<'py>(&self, py: Python<'py>, message: Py<PyAny>, path: String) -> PyResult<Bound<'py, PyAny>> {
+    //     let client = self.client_rx.borrow().clone().ok_or_else(|| {
+    //         PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+    //     })?;
+    //     let message_type_name = message
+    //         .getattr(py, "DESCRIPTOR")
+    //         .and_then(|descriptor| descriptor.getattr(py, "name"))
+    //         .and_then(|name| name.extract::<String>(py))
+    //         .unwrap_or_default();
+    //     let serialized: Vec<u8> = message
+    //         .call_method0(py, "SerializeToString")?
+    //         .extract(py)?;
+
+    //     let locals = get_current_locals(py)?;
+    //     future_into_py_with_locals(py, locals, async move {
+    //         match message_type_name.as_str() {
+    //             "ImageMessage" => {
+    //                 let media = wa::ImageMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
+    //                         format!("Failed to decode ImageMessage: {}", e),
+    //                     )
+    //                 })?;
+    //                 client.download_to_writer(&media, path).await
+    //             }
+    //             "VideoMessage" => {
+    //                 let media = wa::VideoMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
+    //                         format!("Failed to decode VideoMessage: {}", e),
+    //                     )
+    //                 })?;
+    //                 client.download_to_writer(&media, path).await
+    //             }
+    //             "DocumentMessage" => {
+    //                 let media = wa::DocumentMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
+    //                         format!("Failed to decode DocumentMessage: {}", e),
+    //                     )
+    //                 })?;
+    //                 client.download_to_writer(&media, path).await
+    //             }
+    //             "AudioMessage" => {
+    //                 let media = wa::AudioMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
+    //                         format!("Failed to decode AudioMessage: {}", e),
+    //                     )
+    //                 })?;
+    //                 client.download_to_writer(&media, path).await
+    //             }
+    //             "StickerMessage" => {
+    //                 let media = wa::StickerMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
+    //                         format!("Failed to decode StickerMessage: {}", e),
+    //                     )
+    //                 })?;
+    //                 client.download_to_writer(&media, path).await
+    //             }
+    //             _ => {
+    //                 // Fallback path for unknown wrappers from Python side.
+    //                 if let Ok(media) = wa::ImageMessage::decode(serialized.as_slice()) {
+    //                     client.download_to_writer(&media, path).await
+    //                 } else if let Ok(media) = wa::VideoMessage::decode(serialized.as_slice()) {
+    //                     client.download_to_writer(&media, path).await
+    //                 } else if let Ok(media) = wa::DocumentMessage::decode(serialized.as_slice()) {
+    //                     client.download_to_writer(&media, path).await
+    //                 } else if let Ok(media) = wa::AudioMessage::decode(serialized.as_slice()) {
+    //                     client.download_to_writer(&media, path).await
+    //                 } else if let Ok(media) = wa::StickerMessage::decode(serialized.as_slice()) {
+    //                     client.download_to_writer(&media, path).await
+    //                 } else {
+    //                     return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+    //                         "Failed to decode message as supported media message",
+    //                     ));
+    //                 }
+    //             }
+    //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+    fn is_on_whatsapp<'py>(&self, py: Python<'py>, jid: Vec<Py<JID>>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+
+        // Convert JID to &[&str]
+        let jid_str: Vec<String> = jid
+            .into_iter()
+            .map(|jid| {
+                let s_jid = jid.borrow(py);
+                let user_jid = s_jid.as_whatsapp_jid();
+                user_jid.user_base().to_string()
+            })
+            .collect();
+        
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals::<_,Vec<IsOnWhatsAppResult>>(py, locals, async move {
+            let jid_slice: Vec<&str> = jid_str.iter().map(String::as_str).collect();
+            let jid_sliced = jid_slice.as_slice();
+            let response = client
+                .contacts()
+                .is_on_whatsapp(jid_sliced)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let response_py = response.into_iter().map(|res| {
+                IsOnWhatsAppResult::new(res.jid.into(), res.is_registered)
+            }).collect::<Vec<_>>();
+            Ok(response_py)
+        })
     }
     fn download_media<'py>(&self, py: Python<'py>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {

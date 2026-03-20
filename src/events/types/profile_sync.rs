@@ -1,7 +1,7 @@
 #[pyclass]
 pub struct EvPushNameUpdateData {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
     message: Py<MessageInfo>,
     #[pyo3(get)]
@@ -40,7 +40,7 @@ impl EvPushNameUpdate {
         } else {
             let message = MessageInfo::from((*self.inner.message).clone());
             let data = EvPushNameUpdateData {
-                jid: self.inner.jid.clone().into(),
+                jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 message: Py::new(py, message)?,
                 old_push_name: self.inner.old_push_name.clone(),
                 new_push_name: self.inner.new_push_name.clone(),
@@ -382,9 +382,9 @@ struct DeviceNottificationInfo {
 #[pyclass]
 pub struct DeviceListUpdateData {
     #[pyo3(get)]
-    user: JID,
+    user: Py<JID>,
     #[pyo3(get)]
-    lid_user: Option<JID>,
+    lid_user: Option<Py<JID>>,
     #[pyo3(get)]
     update_type: Py<DeviceListUpdateType>,
     #[pyo3(get)]
@@ -427,8 +427,8 @@ impl EvDeviceListUpdate {
             }).collect();
             let key_index = self.inner.key_index.clone().map(|k| Py::new(py, KeyIndexInfo::new(k.timestamp, k.signed_bytes)).unwrap());
             let new_data = DeviceListUpdateData {
-                user: self.inner.user.clone().into(),
-                lid_user: self.inner.lid_user.clone().map(|u| u.into()),
+                user: Py::new(py, JID::from(self.inner.user.clone())).unwrap(),
+                lid_user: self.inner.lid_user.clone().map(|u| Py::new(py, JID::from(u)).unwrap()),
                 update_type: Python::attach(|py| Py::new(py, update_type).unwrap()),
                 devices,
                 key_index,
@@ -453,7 +453,7 @@ enum BusinessStatusUpdateType {
 #[pyclass]
 pub struct BusinessStatusUpdateData {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
     update_type: Py<BusinessStatusUpdateType>,
     #[pyo3(get)]
@@ -472,7 +472,7 @@ pub struct BusinessStatusUpdateData {
 impl BusinessStatusUpdateData {
     pub fn new(jid: JID, update_type: BusinessStatusUpdateType, timestamp: i64, target_jid: Option<JID>, hash: Option<String>, product_ids: Vec<String>, collection_ids: Vec<String>, subscriptions: Vec<BusinessSubscription>) -> Self {
         Self {
-            jid,
+            jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()),
             update_type: Python::attach(|py| Py::new(py, update_type).unwrap()),
             timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp as f64, None).unwrap().into()),
             target_jid: target_jid.map(|j| Python::attach(|py| Py::new(py, JID::from(j)).unwrap())),

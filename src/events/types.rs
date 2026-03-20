@@ -103,9 +103,9 @@ impl EvLoggedOut {
 #[pyclass]
 pub struct PairSuccessData {
     #[pyo3(get)]
-    id: JID,
+    id: Py<JID>,
     #[pyo3(get)]
-    lid: JID,
+    lid: Py<JID>,
     #[pyo3(get)]
     business_name: String,
     #[pyo3(get)]
@@ -131,7 +131,7 @@ impl EvPairSuccess {
         if let Some(ref data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
-            let new_data = PairSuccessData { id: self.inner.id.clone().into(), lid: self.inner.lid.clone().into(), business_name: self.inner.business_name.clone(), platform: self.inner.platform.clone() };
+            let new_data = PairSuccessData { id: Py::new(py, JID::from(self.inner.id.clone())).unwrap(), lid: Py::new(py, JID::from(self.inner.lid.clone())).unwrap(), business_name: self.inner.business_name.clone(), platform: self.inner.platform.clone() };
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data
@@ -146,9 +146,9 @@ impl From<wacore::types::events::PairSuccess> for EvPairSuccess {
 #[pyclass]
 pub struct EvPairError {
     #[pyo3(get)]
-    id: JID,
+    id: Py<JID>,
     #[pyo3(get)]
-    lid: JID,
+    lid: Py<JID>,
     #[pyo3(get)]
     business_name: String,
     #[pyo3(get)]
@@ -158,7 +158,9 @@ pub struct EvPairError {
 }
 impl EvPairError {
     pub fn new(id: JID, lid: JID, business_name: String, platform: String, error: String) -> Self {
-        Self { id, lid, business_name, platform, error }
+        Python::attach(|py|{
+            Self { id: Py::new(py, id).unwrap(), lid: Py::new(py, lid).unwrap(), business_name, platform, error }
+        })
     }
 }
 #[pyclass]
@@ -230,7 +232,7 @@ pub struct EvReceipt {
     #[pyo3(get)]
     receipt_type: Py<ReceiptType>,
     #[pyo3(get)]
-    message_sender: JID
+    message_sender: Py<JID>
 }
 
 impl EvReceipt {
@@ -257,7 +259,7 @@ impl EvReceipt {
                 message_ids,
                 timestamp: PyDateTime::from_timestamp(py, timestamp.naive_utc().and_utc().timestamp_millis() as f64 / 1000.0, None).unwrap().into(),
                 receipt_type: Py::new(py, receipt_type).unwrap(),
-                message_sender: message_sender.into(),
+                message_sender: Py::new(py, JID::from(message_sender.clone())).unwrap(),
             })
         })
         .unwrap()
@@ -480,7 +482,7 @@ impl EvChatPresence {
 #[pyclass]
 pub struct EvPresence {
     #[pyo3(get)]
-    from: JID,
+    from: Py<JID>,
     #[pyo3(get)]
     unavailable: bool,
     #[pyo3(get)]
@@ -488,8 +490,10 @@ pub struct EvPresence {
 }
 impl EvPresence {
     pub fn new(from: Jid, unavailable: bool, last_seen: Option<DateTime<Utc>>) -> Self {
-        let py_last_seen = last_seen.map(|dt| Python::attach(|py| PyDateTime::from_timestamp(py, dt.timestamp() as f64, None).unwrap().into()));
-        Self { from: from.into(), unavailable, last_seen: py_last_seen }
+        Python::attach(|py|{
+            let py_last_seen = last_seen.map(|dt| PyDateTime::from_timestamp(py, dt.timestamp() as f64, None).unwrap().into());
+            Self { from: Py::new(py, JID::from(from)).unwrap(), unavailable, last_seen: py_last_seen }
+        })
     }
 }
 
@@ -502,9 +506,9 @@ impl From<wacore::types::events::PresenceUpdate> for EvPresence {
 #[pyclass]
 pub struct PictureUpdateData {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
-    author: Option<JID>,
+    author: Option<Py<JID>>,
     #[pyo3(get)]
     timestamp: Option<Py<PyDateTime>>,
     #[pyo3(get)]
@@ -536,8 +540,8 @@ impl EvPictureUpdate {
             data.clone_ref(py)
         } else {
             let new_data = PictureUpdateData {
-                jid: self.inner.jid.clone().into(),
-                author: self.inner.author.clone().map(|a| a.into()),
+                jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
+                author: self.inner.author.clone().map(|a| Py::new(py, JID::from(a)).unwrap()),
                 timestamp: Some(Python::attach(|py| {
                         PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind()
                     })),
@@ -554,7 +558,7 @@ impl EvPictureUpdate {
 #[pyclass]
 pub struct UserAboutUpdateData {
     #[pyo3(get)]
-    jid: JID,
+    jid: Py<JID>,
     #[pyo3(get)]
     status: String,
     #[pyo3(get)]
@@ -584,7 +588,7 @@ impl EvUserAboutUpdate {
         if let Some(ref data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
-            let new_data = UserAboutUpdateData { jid: self.inner.jid.clone().into(), status: self.inner.status.clone(), timestamp: Some(Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind())) };
+            let new_data = UserAboutUpdateData { jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(), status: self.inner.status.clone(), timestamp: Some(Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind())) };
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data

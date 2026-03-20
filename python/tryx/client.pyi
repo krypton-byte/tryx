@@ -45,3 +45,4 @@ class TryxClient:
         text: str,
         quoted: MessageProto | None = None,
     ) -> str: ...
+    
