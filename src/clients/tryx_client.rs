@@ -187,8 +187,8 @@ impl TryxClient {
             let quote = q.bind(py).borrow();
             let msg = quote.inner.as_ref();
             build_quote_context(
-                quote.message_info.id.clone(),
-                quote.message_info.inner.source.chat.clone(),
+                quote.inner_message_info.id.clone(),
+                quote.inner_message_info.source.chat.clone(),
                 msg,
             )
         });
@@ -235,8 +235,8 @@ impl TryxClient {
             let quote = q.bind(py).borrow();
             let msg = quote.inner.as_ref();
             build_quote_context(
-                quote.message_info.id.clone(),
-                quote.message_info.inner.source.chat.clone(),
+                quote.inner_message_info.id.clone(),
+                quote.inner_message_info.source.chat.clone(),
                 msg,
             )
         });

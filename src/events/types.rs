@@ -6,6 +6,7 @@ use pyo3::types::{PyAnyMethods, PyBytes, PyType};
 use pyo3::types::{PyDateTime};
 use chrono::{DateTime, Utc};
 use wacore::types::events::QrScannedWithoutMultidevice;
+use whatsapp_rust::message;
 use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as WhatsAppLoggedOut }};
 use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
@@ -1284,20 +1285,19 @@ impl EvStreamError {
     }
 }
 #[pyclass]
-pub struct EvMessage {
-    pub inner: Box<waproto::whatsapp::Message>,
-    #[pyo3(get)]
-    pub message_info: MessageInfo,
-    message_proto: Option<Py<PyAny>>,
+pub struct MessageData {
+    inner: Box<waproto::whatsapp::Message>,
+    inner_message_info: Box<wacore::types::message::MessageInfo>,
+    message_info: OnceLock<Py<MessageInfo>>,
+    message_proto: OnceLock<Py<PyAny>>,
 }
-impl EvMessage {
-    pub fn new(inner: waproto::whatsapp::Message, message_info: WhatsappMessageInfo) -> Self {
-        let info = MessageInfo::from(message_info);
-        Self { inner: Box::new(inner), message_info: info, message_proto: None }
+impl MessageData {
+    pub fn new(inner: Box<waproto::whatsapp::Message>, inner_message_info: Box<wacore::types::message::MessageInfo>) -> Self {
+        Self { inner: inner, inner_message_info: inner_message_info, message_info: OnceLock::new(), message_proto: OnceLock::new() }
     }
 }
 #[pymethods]
-impl EvMessage {
+impl MessageData {
     #[getter]
     fn conversation(&self) -> Option<&str> {
         self.inner.conversation.as_deref()
@@ -1321,7 +1321,7 @@ impl EvMessage {
     }
     #[getter]
     fn raw_proto(&mut self, py: Python) -> PyResult<Py<PyAny>> {
-        match self.message_proto {
+        match self.message_proto.get() {
             Some(ref proto) => Ok(proto.clone_ref(py)),
             None => {
                 let mut buffer = Vec::new();
@@ -1332,13 +1332,40 @@ impl EvMessage {
 
                 let new_proto = parse_message_proto(py, &buffer)?;
                 let out_proto = new_proto.clone_ref(py);
-                self.message_proto = Some(new_proto);
-                Ok(out_proto.clone_ref(py))
+                self.message_proto.set(out_proto.clone_ref(py)).unwrap();
+                Ok(out_proto)
             },
         }
     }
     fn __repr__(&self) -> String {
-        format!("Message(id='{}', type='{}', push_name='{}')", self.message_info.id, self.message_info.r#type, self.message_info.push_name)
+        format!("Message(conversation={:?}, caption={:?})", self.conversation(), self.caption())
+    }
+}     
+
+
+#[pyclass]
+pub struct EvMessage {
+    pub inner: Box<waproto::whatsapp::Message>,
+    pub inner_message_info: Box<wacore::types::message::MessageInfo>,
+    pub data_cache: OnceLock<Py<MessageData>>,
+}
+impl EvMessage {
+    pub fn new(inner: waproto::whatsapp::Message, message_info: WhatsappMessageInfo) -> Self {
+        Self { inner: Box::new(inner), inner_message_info: Box::new(message_info), data_cache: OnceLock::new() }
+    }
+}
+#[pymethods]
+impl EvMessage {
+    #[getter]
+    fn data(&mut self, py: Python) -> PyResult<Py<MessageData>> {
+        if let Some(ref data) = self.data_cache.get() {
+            Ok(data.clone_ref(py))
+        } else {
+            let new_data = MessageData::new(Box::clone(&self.inner), Box::clone(&self.inner_message_info));
+            let py_data = Py::new(py, new_data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
     }
 }
 
