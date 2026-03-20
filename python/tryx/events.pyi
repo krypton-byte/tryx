@@ -1,22 +1,23 @@
-from .types import JID, MessageInfo
-from .waproto.whatsapp_pb2 import Message as MessageProto
+from datetime import datetime
+from .types import JID, MessageInfo, MessageSource
+from .waproto.whatsapp_pb2 import Conversation, HistorySync, Message as MessageProto, SyncActionValue
 
-
-class EvConnected:
-    pass
-
-class EvDisconnected:
-    pass
+class EvConnected: ...
+class EvDisconnected: ...
 
 class EvLoggedOut:
     on_connect: bool
     reason: str
 
-class EvPairSuccess:
+class PairSuccessData:
     id: JID
     lid: JID
     business_name: str
     platform: str
+
+class EvPairSuccess:
+    @property
+    def data(self) -> PairSuccessData: ...
 
 class EvPairError:
     id: JID
@@ -29,15 +30,271 @@ class EvPairingQrCode:
     code: str
     timeout: int
 
-class EvMessage:
+class EvPairingCode:
+    code: str
+    timeout: int
+
+class EvQrScannedWithoutMultidevice: ...
+class EvClientOutDated: ...
+class EvStreamReplaced: ...
+
+class EvTemporaryBan:
+    code: object
+    expires_in_seconds: int
+    description: str
+
+class EvConnectFailure:
+    reason: str
+    message: str
+    @property
+    def node(self) -> object | None: ...
+
+class EvStreamError:
+    code: str
+    @property
+    def node(self) -> object | None: ...
+
+class EvReceipt:
+    message_ids: list[str]
+    timestamp: datetime
+    receipt_type: object
+    message_sender: JID
+    @property
+    def source(self) -> MessageSource | None: ...
+
+class EvUndecryptableMessage:
+    is_unavailable: bool
+    unavailable_type: object
+    decrypt_fail_mode: object
+    @property
+    def info(self) -> MessageInfo | None: ...
+
+class MessageData:
     conversation: str | None
     caption: str | None
-    message_info: MessageInfo
-
+    @property
+    def message_info(self) -> MessageInfo: ...
     def get_extended_text_message(self) -> str | None: ...
     def get_text(self) -> str | None: ...
     @property
     def raw_proto(self) -> MessageProto: ...
 
-class EvQrScannedWithoutMultidevice:
-    pass
+class EvMessage:
+    @property
+    def data(self) -> MessageData: ...
+
+class EvNotification:
+    @property
+    def node(self) -> object: ...
+
+class EvChatPresence:
+    @property
+    def source(self) -> object: ...
+    @property
+    def state(self) -> object: ...
+    @property
+    def media(self) -> object: ...
+
+class EvPresence:
+    from_jid: JID
+    unavailable: bool
+    last_seen: int | None
+
+class PictureUpdateData:
+    jid: JID
+    author: JID
+    remove: bool
+    timestamp: datetime
+
+class EvPictureUpdate:
+    @property
+    def data(self) -> PictureUpdateData: ...
+
+class UserAboutUpdateData:
+    jid: JID
+    about: str
+
+class EvUserAboutUpdate:
+    @property
+    def data(self) -> UserAboutUpdateData: ...
+
+class LazyConversation:
+    @property
+    def conversation(self) -> Conversation | None: ...
+
+class EvJoinedGroup:
+    @property
+    def data(self) -> LazyConversation: ...
+
+class EvGroupInfoUpdate: ...
+
+class EvPushNameUpdateData:
+    jid: JID
+    message: MessageInfo
+    old_push_name: str
+    new_push_name: str
+
+class EvPushNameUpdate:
+    @property
+    def data(self) -> EvPushNameUpdateData: ...
+
+class EvSelfPushNameUpdated:
+    from_server: bool
+    old_name: str
+    new_name: str
+
+class PinUpdatedata:
+    jid: JID
+    timestamp: datetime
+    pinned: bool | None
+    from_full_sync: bool
+
+class EvPinUpdate:
+    @property
+    def data(self) -> PinUpdatedata: ...
+
+class MuteUpdateData:
+    jid: JID
+    timestamp: datetime
+    from_full_sync: bool
+    @property
+    def action(self) -> SyncActionValue: ...
+
+class EvMuteUpdate:
+    @property
+    def data(self) -> MuteUpdateData: ...
+
+class MarkChatAsReadUpdateData:
+    jid: JID
+    timestamp: datetime
+    from_full_sync: bool
+    @property
+    def action(self) -> SyncActionValue: ...
+
+class EvMarkChatAsReadUpdate:
+    @property
+    def data(self) -> MarkChatAsReadUpdateData: ...
+
+class EvHistorySync:
+    @property
+    def proto(self) -> HistorySync: ...
+
+class OfflineSyncData:
+    total: int
+    app_data_changes: int
+    messages: int
+    notifications: int
+    receipts: int
+
+class EvOfflineSyncPreview:
+    @property
+    def data(self) -> OfflineSyncData: ...
+
+class OfflineSyncCompletedData:
+    count: int
+
+class EvOfflineSyncCompleted:
+    @property
+    def data(self) -> OfflineSyncCompletedData: ...
+
+class DeviceListUpdateData:
+    user: JID
+    lid_user: JID | None
+    update_type: object
+    devices: list[object]
+    key_index: object | None
+    contact_hash: str | None
+
+class EvDeviceListUpdate:
+    @property
+    def data(self) -> DeviceListUpdateData: ...
+
+class BusinessStatusUpdateData:
+    jid: JID
+    update_type: object
+    timestamp: datetime
+    target_jid: JID | None
+    hash: str | None
+    product_ids: list[str]
+    collection_ids: list[str]
+    subscriptions: list[object]
+
+class EvBusinessStatusUpdate:
+    @property
+    def data(self) -> BusinessStatusUpdateData: ...
+
+class EvArchiveUpdateData:
+    jid: JID
+    timestamp: datetime
+    from_full_sync: bool
+    @property
+    def action(self) -> SyncActionValue: ...
+
+class EvArchiveUpdate:
+    @property
+    def data(self) -> EvArchiveUpdateData: ...
+
+class EvDisappearingModeChangedData:
+    from_: JID
+    duration: int
+    setting_timestamp: int
+
+class EvDisappearingModeChanged:
+    @property
+    def data(self) -> EvDisappearingModeChangedData: ...
+
+class EvContactNumberChangedData:
+    old_jid: JID
+    new_jid: JID
+    old_lid: JID | None
+    new_lid: JID | None
+    timestamp: datetime
+
+class EvContactNumberChanged:
+    @property
+    def data(self) -> EvContactNumberChangedData: ...
+
+class EvContactSyncRequestedData:
+    after: datetime | None
+    timestamp: datetime
+
+class EvContactSyncRequested:
+    @property
+    def data(self) -> EvContactSyncRequestedData: ...
+
+class EvContactUpdatedData:
+    jid: JID
+    timestamp: datetime
+
+class EvContactUpdated:
+    @property
+    def data(self) -> EvContactUpdatedData: ...
+
+class EvStarUpdateData:
+    chat_jid: JID
+    participant_jid: JID | None
+    message_id: str
+    from_me: bool
+    timestamp: datetime
+    from_full_sync: bool
+    starred: bool | None
+
+class EvStarUpdate:
+    @property
+    def data(self) -> EvStarUpdateData: ...
+
+class GroupUpdateData:
+    group_jid: JID
+    participant: JID | None
+    participant_pn: JID | None
+    timestamp: datetime
+    is_lid_addressing_mode: bool
+    action: object
+
+class EvGroupUpdate:
+    @property
+    def data(self) -> GroupUpdateData: ...
+
+class EvContactUpdate:
+    @property
+    def data(self) -> object: ...

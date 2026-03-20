@@ -5,4 +5,4 @@ for name in dir(events):  # type: ignore
     if isinstance(obj, type):
         globals()[name] = obj
 
-__all__ = [name for name in dir(events) if isinstance(getattr(events, name), type)]  # type: ignore
+__all__ = sorted(name for name, obj in globals().items() if isinstance(obj, type))

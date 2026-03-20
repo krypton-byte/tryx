@@ -160,7 +160,7 @@ impl Node {
 }
 impl Node {
     pub fn to_node_builder(&self, py: Python<'_>) -> NodeBuilder {
-        let mut builder = NodeBuilder::new(self.tag.clone());
+        let mut builder = NodeBuilder::new(&self.tag);
 
         if let Some(content) = &self.content {
             let content_ref = content.bind(py).borrow();
@@ -189,10 +189,11 @@ impl Node {
             let value_ref = attr_ref.value.bind(py).borrow();
 
             builder = match &value_ref.inner {
-                NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone(), s.clone()),
+                NodeValueEnum::String(s) => builder.attr(&attr_ref.key, s.clone()),
                 NodeValueEnum::Jid(jid) => {
                     let jid_ref = jid.bind(py).borrow();
-                    builder.jid_attr(attr_ref.key.clone(), jid_ref.as_whatsapp_jid())
+                    builder.attr(&attr_ref.key.clone(), jid_ref.__repr__()) // Atau gunakan metode lain untuk mendapatkan representasi JID yang sesuai
+                    //builder.jid_attr(attr_ref.key.clone(), jid_ref.as_whatsapp_jid())
                 }
             };
         }
