@@ -160,8 +160,9 @@ impl Node {
 }
 impl Node {
     pub fn to_node_builder(&self, py: Python<'_>) -> NodeBuilder {
-        let mut builder = NodeBuilder::new(&self.tag);
+        let mut builder = NodeBuilder::new_dynamic(self.tag.clone());
 
+        // Handle content if present
         if let Some(content) = &self.content {
             let content_ref = content.bind(py).borrow();
             match &content_ref.inner {
@@ -184,16 +185,17 @@ impl Node {
             };
         }
 
+        // Handle attributes
+        
         for attr in &self.attrs {
             let attr_ref = attr.bind(py).borrow();
             let value_ref = attr_ref.value.bind(py).borrow();
 
             builder = match &value_ref.inner {
-                NodeValueEnum::String(s) => builder.attr(&attr_ref.key, s.clone()),
+                NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone(), s.clone()),
                 NodeValueEnum::Jid(jid) => {
                     let jid_ref = jid.bind(py).borrow();
-                    builder.attr(&attr_ref.key.clone(), jid_ref.__repr__()) // Atau gunakan metode lain untuk mendapatkan representasi JID yang sesuai
-                    //builder.jid_attr(attr_ref.key.clone(), jid_ref.as_whatsapp_jid())
+                    builder.attr(attr_ref.key.clone(), jid_ref.__repr__()) // Use appropriate JID representation
                 }
             };
         }
@@ -203,51 +205,42 @@ impl Node {
 
     pub fn from_node(node: &wacore_binary::node::Node) -> Self {
         let attrs = Python::attach(|py| {
-            node.attrs.iter().map(|(k, v)| {
-                let value = match v {
-                    wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.clone()),
-                    wacore_binary::node::NodeValue::Jid(jid) => NodeValue::jid(Py::new(py, JID::from(jid.clone())).unwrap()),
-                };
-                Py::new(py, Attrs::new(k.clone(), Py::new(py, value).unwrap())).unwrap()
-            }).collect::<Vec<_>>()
+            node.attrs
+                .iter()
+                .map(|(k, v)| {
+                    let value = match v {
+                        wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.clone()),
+                        wacore_binary::node::NodeValue::Jid(jid) => {
+                            NodeValue::jid(Py::new(py, JID::from(jid.clone())).unwrap())
+                        }
+                    };
+                    Py::new(py, Attrs::new(k.to_string(), Py::new(py, value).unwrap())).unwrap()
+                })
+                .collect::<Vec<_>>()
         });
+
         let content = node.content.as_ref().map(|c| {
             Python::attach(|py| {
                 let content_enum = match c {
                     wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b.clone()),
                     wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.clone()),
                     wacore_binary::node::NodeContent::Nodes(n) => {
-                        let nodes = n.iter().map(Self::from_node).map(|node| Py::new(py, node).unwrap()).collect();
+                        let nodes = n
+                            .iter()
+                            .map(Self::from_node)
+                            .map(|node| Py::new(py, node).unwrap())
+                            .collect();
                         NodeContentEnum::Nodes(nodes)
                     }
                 };
                 Py::new(py, NodeContent { inner: content_enum }).unwrap()
             })
         });
-        Self {
-            tag: node.tag.clone(),
-            attrs: attrs,
-            content: content,
-        }
-    }
 
-    // pub fn from_node(node: wacore_binary::node::Node) -> Self {
-    //     let content = if let Some(c) = node.content {
-    //         Python::attach(|py| Some(Py::new(py, NodeContent {
-    //             inner: NodeContentEnum::Bytes(Py::new(py, c).unwrap()),
-    //         }).unwrap()))
-    //     } else {
-    //         None
-    //     };
-    //     Self {
-    //         tag: node.tag,
-    //         attrs: Vec::new(),
-    //         content: None,
-    //     }
-    // }
-    pub fn to_node(self) -> wacore_binary::node::Node {
-        Python::attach(|py|{
-            self.to_node_builder(py).build()
-        })
+        Self {
+            tag: node.tag.to_string(),
+            attrs,
+            content,
+        }
     }
 }

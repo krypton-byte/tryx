@@ -404,6 +404,10 @@ impl Tryx {
                         Event::DisappearingModeChanged(disappearing_mode_changed) => {
                             Self::emit_event(&callbacks.disappearing_mode_changed, Python::attach(|py| Py::new(py, EvDisappearingModeChanged::from(disappearing_mode_changed))), locals.clone(), "DisappearingModeChanged").await;
                         }
+                        Event::NewsletterLiveUpdate(newsletter_live_update) => {
+                            // No current Python event for this, skipping
+                            debug!("received NewsletterLiveUpdate event, but no Python event defined for it, skipping");
+                        }
                 }
             }
             })

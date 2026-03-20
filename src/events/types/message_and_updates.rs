@@ -850,3 +850,72 @@ impl From<wacore::types::events::ContactUpdate> for EvContactUpdate {
         EvContactUpdate::new(event)
     }
 }
+#[pyclass]
+struct NewsletterLiveUpdateReaction {
+    #[pyo3(get)]
+    code: String,
+    #[pyo3(get)]
+    count: u64,
+}
+
+#[pyclass]
+struct NewsletterUpdateMessage {
+        #[pyo3(get)]
+        server_id: u64,
+        #[pyo3(get)]
+        reactions: Vec<Py<NewsletterLiveUpdateReaction>>
+}
+
+#[pyclass]
+struct NewsletterLiveUpdateData {
+    newsletter_jid: JID,
+    #[pyo3(get)]
+    messages: Vec<Py<NewsletterUpdateMessage>>,
+}
+impl NewsletterLiveUpdateData {
+    fn new(newsletter_jid: JID, messages: Vec<Py<NewsletterUpdateMessage>>) -> Self {
+        Self { newsletter_jid, messages }
+    }
+}
+    #[pyclass]
+pub struct EvNewsletterLiveUpdate {
+    inner: Box<wacore::types::events::NewsletterLiveUpdate>,
+    data_cache: OnceLock<Py<NewsletterLiveUpdateData>>,
+}
+impl EvNewsletterLiveUpdate {
+    pub fn new(inner: wacore::types::events::NewsletterLiveUpdate) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+#[pymethods]
+impl EvNewsletterLiveUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<NewsletterLiveUpdateData>> {
+        if let Some(ref cache) = self.data_cache.get() {
+            Ok(cache.clone_ref(py))
+        } else {
+            let messages = self.inner.messages.iter().map(|msg| {
+                let reactions = msg.reactions.iter().map(|r| {
+                    Py::new(py, NewsletterLiveUpdateReaction { code: r.code.clone(), count: r.count }).unwrap()
+                }).collect();
+                Py::new(py, NewsletterUpdateMessage { server_id: msg.server_id, reactions }).unwrap()
+            }).collect();
+            let data = NewsletterLiveUpdateData::new(
+                self.inner.newsletter_jid.clone().into(),
+                messages,
+            );
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
+
+impl From<wacore::types::events::NewsletterLiveUpdate> for EvNewsletterLiveUpdate {
+    fn from(event: wacore::types::events::NewsletterLiveUpdate) -> Self {
+        EvNewsletterLiveUpdate::new(event)
+    }
+}

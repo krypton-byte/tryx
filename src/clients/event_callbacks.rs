@@ -45,6 +45,7 @@ pub struct EventCallbacks {
     pub contact_sync_requested: CallbackList,
     pub contact_updated: CallbackList,
     pub star_update: CallbackList,
+    pub newsletter_live_update: CallbackList,
 }
 
 impl EventCallbacks {
@@ -90,6 +91,7 @@ impl EventCallbacks {
             contact_sync_requested: dispatcher.contact_sync_requested_handlers(py),
             contact_updated: dispatcher.contact_updated_handlers(py),
             star_update: dispatcher.star_update_handlers(py),
+            newsletter_live_update: dispatcher.newsletter_live_update_handlers(py),
         }
     }
 }

@@ -39,7 +39,7 @@ use super::types::{
     EvUndecryptableMessage,
     EvUserAboutUpdate,
 };
-use crate::events::types::EvDisappearingModeChanged;
+use crate::events::types::{EvContactSyncRequested, EvContactUpdated, EvDisappearingModeChanged, EvNewsletterLiveUpdate, EvStarUpdate};
 use crate::exceptions::UnsupportedEventType;
 
 #[pyclass]
@@ -84,6 +84,7 @@ pub struct Dispatcher {
     contact_sync_requested: Vec<Py<PyAny>>,
     contact_updated: Vec<Py<PyAny>>,
     star_update: Vec<Py<PyAny>>,
+    newsletter_live_update: Vec<Py<PyAny>>,
 }
 
 #[derive(Clone, Copy)]
@@ -127,6 +128,7 @@ enum DispatchEvent {
     ContactSyncRequested,
     ContactUpdated,
     StarUpdate,
+    NewsletterLiveUpdate,
 }
 
 impl Dispatcher {
@@ -179,6 +181,7 @@ impl Dispatcher {
             contact_sync_requested: Vec::new(),
             contact_updated: Vec::new(),
             star_update: Vec::new(),
+            newsletter_live_update: Vec::new(),
         }
     }
 
@@ -243,6 +246,12 @@ impl Dispatcher {
     pub fn client_outdated_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         let handlers = Self::cloned_handlers(py, &self.client_outdated);
         debug!(handlers = handlers.len(), "collected client outdated handlers");
+        handlers
+    }
+
+    pub fn newsletter_live_update_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.newsletter_live_update);
+        debug!(handlers = handlers.len(), "collected newsletter live update handlers");
         handlers
     }
 
@@ -446,6 +455,11 @@ impl Dispatcher {
             DispatchEvent::ContactSyncRequested => &self.contact_sync_requested,
             DispatchEvent::ContactUpdated => &self.contact_updated,
             DispatchEvent::StarUpdate => &self.star_update,
+            DispatchEvent::NewsletterLiveUpdate => &self.newsletter_live_update,
+            DispatchEvent::ContactSyncRequested => &self.contact_sync_requested,
+            DispatchEvent::ContactUpdated => &self.contact_updated,
+            DispatchEvent::StarUpdate => &self.star_update,
+            DispatchEvent::NewsletterLiveUpdate => &self.newsletter_live_update,
         }
     }
 }
@@ -491,6 +505,7 @@ fn dispatch_event_name(event: DispatchEvent) -> &'static str {
         DispatchEvent::ContactSyncRequested => "contact_sync_requested",
         DispatchEvent::ContactUpdated => "contact_updated",
         DispatchEvent::StarUpdate => "star_update",
+        DispatchEvent::NewsletterLiveUpdate => "newsletter_live_update",
     }
 }
 
@@ -570,6 +585,14 @@ fn dispatch_event_from_type(py: Python, event_type: &Bound<PyAny>) -> PyResult<D
         Ok(DispatchEvent::StreamError)
     }else if event_type.is_subclass(&EvDisappearingModeChanged::type_object(py))? {
         Ok(DispatchEvent::DisappearingModeChanged)
+    } else if event_type.is_subclass(&EvContactSyncRequested::type_object(py))? {
+        Ok(DispatchEvent::ContactSyncRequested)
+    } else if event_type.is_subclass(&EvContactUpdated::type_object(py))? {
+        Ok(DispatchEvent::ContactUpdated)
+    } else if event_type.is_subclass(&EvStarUpdate::type_object(py))? {
+        Ok(DispatchEvent::StarUpdate)
+    } else if event_type.is_subclass(&EvNewsletterLiveUpdate::type_object(py))? {
+        Ok(DispatchEvent::NewsletterLiveUpdate)
     } else {
         Err(PyErr::new::<UnsupportedEventType, _>("Unsupported event type"))
     }
@@ -645,6 +668,7 @@ impl Dispatcher {
             DispatchEvent::ContactSyncRequested => self.contact_sync_requested.push(func.clone_ref(py)),
             DispatchEvent::ContactUpdated => self.contact_updated.push(func.clone_ref(py)),
             DispatchEvent::StarUpdate => self.star_update.push(func.clone_ref(py)),
+            DispatchEvent::NewsletterLiveUpdate => self.newsletter_live_update.push(func.clone_ref(py)),
         }
 
         let total_handlers = self.handlers_for_event(event).len();
@@ -672,5 +696,6 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected star update handlers");
         handlers
     }
+
 }
 
