@@ -191,11 +191,16 @@ impl Node {
             let attr_ref = attr.bind(py).borrow();
             let value_ref = attr_ref.value.bind(py).borrow();
 
+            // Ensure the key lives long enough for the builder which expects '&'static str'.
+            // Minimal overhead: leak the owned String (intentional small leak for static lifetime).
+            let key_owned = attr_ref.key.clone();
+            let key_static: &'static str = Box::leak(key_owned.into_boxed_str());
+
             builder = match &value_ref.inner {
-                NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone().as_str(), s.clone()),
+                NodeValueEnum::String(s) => builder.attr(key_static, s.clone()),
                 NodeValueEnum::Jid(jid) => {
                     let jid_ref = jid.bind(py).borrow();
-                    builder.attr(attr_ref.key.clone().as_str(), jid_ref.__repr__()) // Use appropriate JID representation
+                    builder.attr(key_static, jid_ref.__repr__()) // Use appropriate JID representation
                 }
             };
         }
