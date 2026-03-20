@@ -45,17 +45,3 @@ class TryxClient:
         text: str,
         quoted: MessageProto | None = None,
     ) -> str: ...
-
-class Nu[T]:
-    X: T
-    pass
-
-K = Nu[int]()
-
-class Test:
-    def on[L: int](
-        self, event_type: Nu[L]
-    ) -> Callable[
-        [Callable[[TryxClient, L], CoroutineType[None, None, Any | None]]],
-        Callable[[TryxClient, L], CoroutineType[None, None, Any | None]],
-    ]: ...

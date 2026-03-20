@@ -15,7 +15,6 @@ backend = SqliteBackend(DB_PATH)
 client = Tryx(backend)
 
 
-
 @client.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     info = event.message_info

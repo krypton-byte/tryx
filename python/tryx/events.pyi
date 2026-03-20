@@ -1,6 +1,11 @@
 from datetime import datetime
 from .types import JID, MessageInfo, MessageSource
-from .waproto.whatsapp_pb2 import Conversation, HistorySync, Message as MessageProto, SyncActionValue
+from .waproto.whatsapp_pb2 import (
+    Conversation,
+    HistorySync,
+    Message as MessageProto,
+    SyncActionValue,
+)
 
 class EvConnected: ...
 class EvDisconnected: ...
