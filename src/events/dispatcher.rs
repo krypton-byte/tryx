@@ -456,10 +456,6 @@ impl Dispatcher {
             DispatchEvent::ContactUpdated => &self.contact_updated,
             DispatchEvent::StarUpdate => &self.star_update,
             DispatchEvent::NewsletterLiveUpdate => &self.newsletter_live_update,
-            DispatchEvent::ContactSyncRequested => &self.contact_sync_requested,
-            DispatchEvent::ContactUpdated => &self.contact_updated,
-            DispatchEvent::StarUpdate => &self.star_update,
-            DispatchEvent::NewsletterLiveUpdate => &self.newsletter_live_update,
         }
     }
 }

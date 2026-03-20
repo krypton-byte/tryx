@@ -192,10 +192,10 @@ impl Node {
             let value_ref = attr_ref.value.bind(py).borrow();
 
             builder = match &value_ref.inner {
-                NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone(), s.clone()),
+                NodeValueEnum::String(s) => builder.attr(attr_ref.key.clone().as_str(), s.clone()),
                 NodeValueEnum::Jid(jid) => {
                     let jid_ref = jid.bind(py).borrow();
-                    builder.attr(attr_ref.key.clone(), jid_ref.__repr__()) // Use appropriate JID representation
+                    builder.attr(attr_ref.key.clone().as_str(), jid_ref.__repr__()) // Use appropriate JID representation
                 }
             };
         }

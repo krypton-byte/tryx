@@ -291,7 +291,7 @@ impl MessageInfo {
         }
     }
     #[getter]
-    fn device_sent_meta(&self, py: Python<'_>) -> Option<DeviceSentMeta> {
+    fn device_sent_meta(&self) -> Option<DeviceSentMeta> {
         self.inner.device_sent_meta.as_ref().map(|meta| DeviceSentMeta {
             destination_jid: meta.destination_jid.clone(),
             phash: meta.phash.clone(),
