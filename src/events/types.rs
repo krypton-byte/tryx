@@ -18,6 +18,8 @@ static LAZY_CONVERSATION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static CONTACT_UPDATE_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static MARK_CHAT_AS_READ_UPDATE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static HISTORY_SYNC_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static DELETE_CHAT_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+
 fn get_proto_import(py: Python<'_>, import: &str, attr: &str) -> PyResult<Py<PyType>>{
     let module = py.import(import)?;
     let message_type = module.getattr(attr)?.cast_into::<PyType>()?;
@@ -66,6 +68,12 @@ fn get_proto_history_sync_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyEr
         get_proto_import(py, "tryx.waproto.whatsapp_pb2", "HistorySync")
     })?;
     Ok(history_sync)
+}
+fn get_proto_delete_chat_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
+    let delete_chat_action = DELETE_CHAT_ACTION_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
+        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "DeleteChatAction")
+    })?;
+    Ok(delete_chat_action)
 }
 fn from_string_to_python_proto(py: Python<'_>, proto_class: &Py<PyType>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
     let proto_instance = proto_class.bind(py).call0()?;

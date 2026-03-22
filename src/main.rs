@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use whatsapp_rust::TokioRuntime;
 use whatsapp_rust::bot::Bot;
 use whatsapp_rust::store::SqliteStore;
 use whatsapp_rust_tokio_transport::TokioWebSocketTransportFactory;
@@ -29,6 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => {}
             }
         })
+        .with_runtime(TokioRuntime)
         .build();
         let mut bot2 = bot.await?;
         let _g = bot2.client();

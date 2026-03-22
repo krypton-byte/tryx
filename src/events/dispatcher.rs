@@ -39,7 +39,7 @@ use super::types::{
     EvUndecryptableMessage,
     EvUserAboutUpdate,
 };
-use crate::events::types::{EvContactSyncRequested, EvContactUpdated, EvDisappearingModeChanged, EvNewsletterLiveUpdate, EvStarUpdate};
+use crate::events::types::{EvContactSyncRequested, EvContactUpdated, EvDeleteChatUpdate, EvDisappearingModeChanged, EvNewsletterLiveUpdate, EvStarUpdate};
 use crate::exceptions::UnsupportedEventType;
 
 #[pyclass]
@@ -85,6 +85,7 @@ pub struct Dispatcher {
     contact_updated: Vec<Py<PyAny>>,
     star_update: Vec<Py<PyAny>>,
     newsletter_live_update: Vec<Py<PyAny>>,
+    delete_chat_update: Vec<Py<PyAny>>,
 }
 
 #[derive(Clone, Copy)]
@@ -129,6 +130,7 @@ enum DispatchEvent {
     ContactUpdated,
     StarUpdate,
     NewsletterLiveUpdate,
+    DeleteChatUpdate,
 }
 
 impl Dispatcher {
@@ -182,6 +184,7 @@ impl Dispatcher {
             contact_updated: Vec::new(),
             star_update: Vec::new(),
             newsletter_live_update: Vec::new(),
+            delete_chat_update: Vec::new(),
         }
     }
 
@@ -456,6 +459,7 @@ impl Dispatcher {
             DispatchEvent::ContactUpdated => &self.contact_updated,
             DispatchEvent::StarUpdate => &self.star_update,
             DispatchEvent::NewsletterLiveUpdate => &self.newsletter_live_update,
+            DispatchEvent::DeleteChatUpdate => &self.delete_chat_update,
         }
     }
 }
@@ -502,6 +506,7 @@ fn dispatch_event_name(event: DispatchEvent) -> &'static str {
         DispatchEvent::ContactUpdated => "contact_updated",
         DispatchEvent::StarUpdate => "star_update",
         DispatchEvent::NewsletterLiveUpdate => "newsletter_live_update",
+        DispatchEvent::DeleteChatUpdate => "delete_chat_update",
     }
 }
 
@@ -589,6 +594,8 @@ fn dispatch_event_from_type(py: Python, event_type: &Bound<PyAny>) -> PyResult<D
         Ok(DispatchEvent::StarUpdate)
     } else if event_type.is_subclass(&EvNewsletterLiveUpdate::type_object(py))? {
         Ok(DispatchEvent::NewsletterLiveUpdate)
+    }else if event_type.is_subclass(&EvDeleteChatUpdate::type_object(py))? {
+        Ok(DispatchEvent::DeleteChatUpdate)
     } else {
         Err(PyErr::new::<UnsupportedEventType, _>("Unsupported event type"))
     }
@@ -665,6 +672,7 @@ impl Dispatcher {
             DispatchEvent::ContactUpdated => self.contact_updated.push(func.clone_ref(py)),
             DispatchEvent::StarUpdate => self.star_update.push(func.clone_ref(py)),
             DispatchEvent::NewsletterLiveUpdate => self.newsletter_live_update.push(func.clone_ref(py)),
+            DispatchEvent::DeleteChatUpdate => self.delete_chat_update.push(func.clone_ref(py)),
         }
 
         let total_handlers = self.handlers_for_event(event).len();
@@ -693,5 +701,10 @@ impl Dispatcher {
         handlers
     }
 
-}
+    pub fn delete_chat_update_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.delete_chat_update);
+        debug!(handlers = handlers.len(), "collected delete chat update handlers");
+        handlers
+    }
 
+}

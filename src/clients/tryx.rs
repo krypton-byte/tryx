@@ -9,7 +9,7 @@ use tokio::runtime;
 use tokio::sync::watch;
 use tokio::time::{Duration, interval};
 use wacore::types::events::Event;
-use whatsapp_rust::Client;
+use whatsapp_rust::{Client, TokioRuntime};
 use whatsapp_rust::bot::Bot;
 use whatsapp_rust::store::Backend;
 use whatsapp_rust_tokio_transport::TokioWebSocketTransportFactory;
@@ -20,7 +20,7 @@ use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
 use crate::events::types::{
-    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
+    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeleteChatUpdate, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
 };
 use crate::exceptions::{EventDispatchError, FailedBuildBot, UnsupportedBackend};
 use crate::events::dispatcher::Dispatcher;
@@ -381,7 +381,7 @@ impl Tryx {
                             Self::emit_event(&callbacks.stream_replaced, Python::attach(|py| Py::new(py, EvStreamReplaced {})), locals.clone(), "StreamReplaced").await;
                         }
                         Event::TemporaryBan(temporary_ban) => {
-                            Self::emit_event(&callbacks.temporary_ban, Python::attach(|py| Py::new(py, EvTemporaryBan::from_wacore(temporary_ban))), locals.clone(), "TemporaryBan").await;
+                            Self::emit_event(&callbacks.temporary_ban, Python::attach(|py| Py::new(py, EvTemporaryBan::from(temporary_ban))), locals.clone(), "TemporaryBan").await;
                         }
                         Event::ConnectFailure(connect_failure) => {
                             Self::emit_event(&callbacks.connect_failure, Python::attach(|py| Py::new(py, EvConnectFailure::new(connect_failure.reason, connect_failure.message, connect_failure.raw))), locals.clone(), "ConnectFailure").await;
@@ -408,9 +408,16 @@ impl Tryx {
                             // No current Python event for this, skipping
                             Self::emit_event(&callbacks.newsletter_live_update, Python::attach(|py| Py::new(py, EvNewsletterLiveUpdate::from(newsletter_live_update))), locals.clone(), "NewsletterLiveUpdate").await;
                         }
+                        Event::DeleteChatUpdate(delete_chat_update) => {
+                            Self::emit_event(&callbacks.delete_chat_update, Python::attach(|py| Py::new(py, EvDeleteChatUpdate::from(delete_chat_update))), locals.clone(), "DeleteChatUpdate").await;
+                        }
+                        Event::DeleteMessageForMeUpdate(delete_message_for_me_update) => {
+
+                        }
                 }
             }
             })
+            .with_runtime(TokioRuntime)
             .build()
             .await
             .map_err(|e| {

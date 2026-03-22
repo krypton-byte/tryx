@@ -1,7 +1,7 @@
 #[pyclass]
 pub struct EvStreamReplaced;
-#[pyclass(from_py_object)]
-#[derive(Clone)]
+
+#[pyclass]
 enum TempBanReason {
     SentToTooManyPeople,
     SentBlockedNyUser,
@@ -11,43 +11,90 @@ enum TempBanReason {
 }
 
 #[pyclass]
-pub struct EvTemporaryBan {
+pub struct EvTemporaryData {
     #[pyo3(get)]
-    code: TempBanReason,
+    code: Py<TempBanReason>,
     #[pyo3(get)]
-    expires_in_seconds: u64,
-    #[pyo3(get)]
-    description: String,
+    expire: Py<PyDateTime>,
+}
+impl EvTemporaryData {
+    pub fn new(code: Py<TempBanReason>, expire: Py<PyDateTime>) -> Self {
+        Self { code, expire}
+    }
 }
 
+#[pyclass]
+pub struct EvTemporaryBan {
+    pub inner: Box<wacore::types::events::TemporaryBan>,
+    pub data_cache: OnceLock<Py<EvTemporaryData>>,
+}
 impl EvTemporaryBan {
-    pub fn from_wacore(value: wacore::types::events::TemporaryBan) -> Self {
-        let code = match value.code {
-            wacore::types::events::TempBanReason::SentToTooManyPeople => {
-                TempBanReason::SentToTooManyPeople
-            }
-            wacore::types::events::TempBanReason::BlockedByUsers => {
-                TempBanReason::SentBlockedNyUser
-            }
-            wacore::types::events::TempBanReason::CreatedTooManyGroups => {
-                TempBanReason::CreateTooManyGroups
-            }
-            wacore::types::events::TempBanReason::SentTooManySameMessage => {
-                TempBanReason::SentTooManySameMessage
-            }
-            wacore::types::events::TempBanReason::BroadcastList => {
-                TempBanReason::Unknown
-            }
-            wacore::types::events::TempBanReason::Unknown(_) => TempBanReason::Unknown,
-        };
-
+    pub fn new(inner: wacore::types::events::TemporaryBan) -> Self {
         Self {
-            code,
-            expires_in_seconds: value.expire.num_seconds().max(0) as u64,
-            description: value.code.to_string(),
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
         }
     }
 }
+impl From<wacore::types::events::TemporaryBan> for EvTemporaryBan {
+    fn from(event: wacore::types::events::TemporaryBan) -> Self {
+        EvTemporaryBan::new(event)
+    }
+}
+#[pymethods]
+impl EvTemporaryBan {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<EvTemporaryData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let code = match self.inner.code {
+                wacore::types::events::TempBanReason::SentToTooManyPeople => TempBanReason::SentToTooManyPeople,
+                wacore::types::events::TempBanReason::BlockedByUsers => TempBanReason::SentBlockedNyUser,
+                wacore::types::events::TempBanReason::CreatedTooManyGroups => TempBanReason::CreateTooManyGroups,
+                wacore::types::events::TempBanReason::SentTooManySameMessage => TempBanReason::SentTooManySameMessage,
+                wacore::types::events::TempBanReason::BroadcastList | wacore::types::events::TempBanReason::Unknown(_) => TempBanReason::Unknown,
+            };
+            let expire = Utc::now() + self.inner.expire;
+            let py_expire = PyDateTime::from_timestamp(py, (expire.timestamp_millis() as f64) / 1000.0, None)?.into();
+            let data = EvTemporaryData::new(Py::new(py, code)?, py_expire);
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
+
+// impl EvTemporaryBan {
+//     pub fn from_wacore(value: wacore::types::events::TemporaryBan) -> Self {
+//         let code = match value.code {
+//             wacore::types::events::TempBanReason::SentToTooManyPeople => {
+//                 TempBanReason::SentToTooManyPeople
+//             }
+//             wacore::types::events::TempBanReason::BlockedByUsers => {
+//                 TempBanReason::SentBlockedNyUser
+//             }
+//             wacore::types::events::TempBanReason::CreatedTooManyGroups => {
+//                 TempBanReason::CreateTooManyGroups
+//             }
+//             wacore::types::events::TempBanReason::SentTooManySameMessage => {
+//                 TempBanReason::SentTooManySameMessage
+//             }
+//             wacore::types::events::TempBanReason::BroadcastList => {
+//                 TempBanReason::Unknown
+//             }
+//             wacore::types::events::TempBanReason::Unknown(_) => TempBanReason::Unknown,
+//         };
+
+//         Python::attach(|py| {
+//             Py::new(py, EvTemporaryBan {
+//                 code: Py::new(py, code).unwrap(),
+//                 expires_in_seconds: value.expires_in_seconds,
+//                 description: value.description,
+//             })
+//         })
+//     }
+// }
 
 
 #[pyclass]
@@ -144,6 +191,17 @@ impl MessageData {
     fn get_text(&self) -> Option<&str> {
         self.inner.conversation.as_deref()
             .or_else(|| self.inner.extended_text_message.as_ref().and_then(|etm| etm.text.as_deref()))
+    }
+    #[getter]
+    fn message_info(&self, py: Python) -> PyResult<Py<MessageInfo>> {
+        if let Some(info) = self.message_info.get() {
+            Ok(info.clone_ref(py))
+        } else {
+            let info = MessageInfo::from(*self.inner_message_info.clone());
+            let py_info = Py::new(py, info)?;
+            self.message_info.set(py_info.clone_ref(py)).ok();
+            Ok(py_info)
+        }
     }
     #[getter]
     fn raw_proto(&mut self, py: Python) -> PyResult<Py<PyAny>> {
@@ -917,5 +975,70 @@ impl EvNewsletterLiveUpdate {
 impl From<wacore::types::events::NewsletterLiveUpdate> for EvNewsletterLiveUpdate {
     fn from(event: wacore::types::events::NewsletterLiveUpdate) -> Self {
         EvNewsletterLiveUpdate::new(event)
+    }
+}
+
+#[pyclass]
+struct DeleteChatUpdateData {
+    jid: Py<JID>,
+    delete_media: bool,
+    timestamp: Py<PyDateTime>,
+    action_cache: OnceLock<Py<PyAny>>,
+    action: Box<waproto::whatsapp::sync_action_value::DeleteChatAction>,
+    from_full_sync: bool,
+}
+
+#[pymethods]
+impl DeleteChatUpdateData {
+    #[getter]
+    fn action(&mut self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(cache) = self.action_cache.get() {
+            Ok(cache.clone_ref(py))
+        } else {
+            let proto_instance = from_string_to_python_proto(py, get_proto_delete_chat_action_proto_type(py)?, self.action.as_ref().encode_to_vec().as_slice())?;
+            self.action_cache.set(proto_instance.clone_ref(py)).ok();
+            Ok(proto_instance)
+        }
+    }
+}
+
+#[pyclass]
+pub struct EvDeleteChatUpdate {
+    inner: Box<wacore::types::events::DeleteChatUpdate>,
+    data_cache: OnceLock<Py<DeleteChatUpdateData>>,
+}
+impl EvDeleteChatUpdate {
+    pub fn new(inner: wacore::types::events::DeleteChatUpdate) -> Self {
+        Self {
+            inner: Box::new(inner),
+            data_cache: OnceLock::new(),
+        }
+    }
+}
+impl From<wacore::types::events::DeleteChatUpdate> for EvDeleteChatUpdate {
+    fn from(event: wacore::types::events::DeleteChatUpdate) -> Self {
+        EvDeleteChatUpdate::new(event)
+    }
+}
+#[pymethods]
+impl EvDeleteChatUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<DeleteChatUpdateData>> {
+        if let Some(ref cache) = self.data_cache.get() {
+            Ok(cache.clone_ref(py))
+        } else {
+            let dtime = PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None)?.unbind();
+            let data = DeleteChatUpdateData {
+                jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
+                delete_media: self.inner.delete_media,
+                timestamp: dtime,
+                action: self.inner.action.clone(),
+                from_full_sync: self.inner.from_full_sync,
+                action_cache: OnceLock::new(),
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
     }
 }
