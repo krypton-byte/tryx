@@ -1,22 +1,13 @@
-class BuildBotError(Exception):
-    """Raised when the bot fails to build properly."""
+from ._tryx import exceptions as _exceptions  # type: ignore
 
-    pass
+for name in dir(_exceptions):  # type: ignore
+    obj = getattr(_exceptions, name)  # type: ignore
+    if isinstance(obj, type):
+        globals()[name] = obj
 
+# Backward-compatible aliases for older Python API names.
+BuildBotError = FailedBuildBot
+UnsupportedEventTypeError = UnsupportedEventType
+UnsupportedBackendError = UnsupportedBackend
 
-class FailedToDecodeProtoError(Exception):
-    """Raised when the bot fails to decode a protocol buffer."""
-
-    pass
-
-
-class UnsupportedEventTypeError(Exception):
-    """Raised when an unsupported event type is encountered."""
-
-    pass
-
-
-class UnsupportedBackendError(Exception):
-    """Raised when an unsupported backend is encountered."""
-
-    pass
+__all__ = sorted(name for name, obj in globals().items() if isinstance(obj, type))

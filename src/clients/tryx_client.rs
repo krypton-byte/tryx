@@ -1,4 +1,5 @@
 use std::sync::{Arc};
+use pyo3::types::PyDict;
 use pyo3::{Bound, PyAny, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
@@ -11,7 +12,7 @@ use whatsapp_rust::Client;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, ProfilePicture, UploadResponse};
 use crate::wacore::download::MediaType;
-use crate::wacore::iq::usync::IsOnWhatsAppResult;
+use crate::wacore::iq::usync::{IsOnWhatsAppResult, UserInfo};
 #[pyclass]
 pub struct TryxClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
@@ -97,6 +98,36 @@ impl TryxClient {
     //                 }
     //             }
     //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+    fn get_user_info<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let locals = get_current_locals(py)?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        future_into_py_with_locals::<_, Py<PyDict>>(py, locals, async move {
+            let info = client
+                .contacts()
+                .get_user_info(&[jid_value])
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+
+            Python::attach(|py| {
+                let dict = PyDict::new(py);
+                for (jid, info) in info {
+                    let contact_jid = jid.clone();
+                    let contact_info = UserInfo::new(
+                        contact_jid.into(),
+                        info.lid.as_ref().map(|l| JID::from(l.clone())),
+                        info.status,
+                        info.picture_id,
+                        info.is_business,
+                    );
+                    dict.set_item(JID::from(jid), contact_info)?;
+                }
+                Ok(dict.unbind())
+            })
+        })
+    }
     fn get_profile_picture<'py>(&self, py: Python<'py>, jid: Py<JID>, preview: bool) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")

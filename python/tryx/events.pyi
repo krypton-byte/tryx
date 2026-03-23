@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from .types import JID, MessageInfo, MessageSource
 from .waproto.whatsapp_pb2 import (
     Conversation,
@@ -43,21 +44,24 @@ class EvQrScannedWithoutMultidevice: ...
 class EvClientOutDated: ...
 class EvStreamReplaced: ...
 
-class EvTemporaryBan:
+class EvTemporaryData:
     code: object
-    expires_in_seconds: int
-    description: str
+    expire: datetime
+
+class EvTemporaryBan:
+    @property
+    def data(self) -> EvTemporaryData: ...
 
 class EvConnectFailure:
     reason: str
     message: str
     @property
-    def node(self) -> object | None: ...
+    def node(self) -> Any | None: ...
 
 class EvStreamError:
     code: str
     @property
-    def node(self) -> object | None: ...
+    def node(self) -> Any | None: ...
 
 class EvReceipt:
     message_ids: list[str]
@@ -90,26 +94,27 @@ class EvMessage:
 
 class EvNotification:
     @property
-    def node(self) -> object: ...
+    def node(self) -> Any: ...
 
 class EvChatPresence:
     @property
-    def source(self) -> object: ...
+    def source(self) -> MessageSource: ...
     @property
-    def state(self) -> object: ...
+    def state(self) -> str: ...
     @property
-    def media(self) -> object: ...
+    def media(self) -> str: ...
 
 class EvPresence:
-    from_jid: JID
+    from_: JID
     unavailable: bool
-    last_seen: int | None
+    last_seen: datetime | None
 
 class PictureUpdateData:
     jid: JID
-    author: JID
-    remove: bool
-    timestamp: datetime
+    author: JID | None
+    removed: bool
+    timestamp: datetime | None
+    picture_id: str | None
 
 class EvPictureUpdate:
     @property
@@ -117,7 +122,8 @@ class EvPictureUpdate:
 
 class UserAboutUpdateData:
     jid: JID
-    about: str
+    status: str
+    timestamp: datetime | None
 
 class EvUserAboutUpdate:
     @property
@@ -163,7 +169,7 @@ class MuteUpdateData:
     timestamp: datetime
     from_full_sync: bool
     @property
-    def action(self) -> SyncActionValue: ...
+    def action(self) -> Any: ...
 
 class EvMuteUpdate:
     @property
@@ -174,7 +180,7 @@ class MarkChatAsReadUpdateData:
     timestamp: datetime
     from_full_sync: bool
     @property
-    def action(self) -> SyncActionValue: ...
+    def action(self) -> Any: ...
 
 class EvMarkChatAsReadUpdate:
     @property
@@ -233,7 +239,7 @@ class EvArchiveUpdateData:
     timestamp: datetime
     from_full_sync: bool
     @property
-    def action(self) -> SyncActionValue: ...
+    def action(self) -> Any: ...
 
 class EvArchiveUpdate:
     @property
@@ -302,4 +308,37 @@ class EvGroupUpdate:
 
 class EvContactUpdate:
     @property
-    def data(self) -> object: ...
+    def data(self) -> Any: ...
+
+class EvNewsletterLiveUpdateData:
+    newsletter_jid: JID
+    messages: list[Any]
+
+class EvNewsletterLiveUpdate:
+    @property
+    def data(self) -> EvNewsletterLiveUpdateData: ...
+
+class EvDeleteChatUpdateData:
+    jid: JID
+    delete_media: bool
+    timestamp: datetime
+    from_full_sync: bool
+    @property
+    def action(self) -> Any: ...
+
+class EvDeleteChatUpdate:
+    @property
+    def data(self) -> EvDeleteChatUpdateData: ...
+
+class DeleteMessageForMeUpdateData:
+    chat_jid: JID
+    participant_jid: JID | None
+    message_id: str
+    from_me: bool
+    timestamp: datetime
+    action: Any
+    from_full_sync: bool
+
+class EvDeleteMessageForMeUpdate:
+    @property
+    def data(self) -> DeleteMessageForMeUpdateData: ...

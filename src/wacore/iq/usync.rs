@@ -26,6 +26,8 @@ impl From<wacore::iq::usync::IsOnWhatsAppResult> for IsOnWhatsAppResult {
     }
 }
 
+
+
 #[pyclass]
 pub struct ContactInfo {
     #[pyo3(get)]

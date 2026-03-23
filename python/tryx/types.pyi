@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 from .waproto.whatsapp_pb2 import VerifiedNameCertificate
 
@@ -10,6 +11,13 @@ class JID:
 class MessageSource:
     sender: JID
     chat: JID
+    is_from_me: bool
+    is_group: bool
+    addressing_mode: Literal["pn", "lid"] | None
+    sender_alt: JID | None
+    recipient_alt: JID | None
+    broadcast_list_owner: JID | None
+    recipient: JID | None
 
 class MsgBotInfo:
     @property
@@ -46,15 +54,17 @@ class MessageInfo:
     @property
     def multicast(self) -> bool: ...
     @property
-    def server_id(self) -> str | None: ...
+    def server_id(self) -> int: ...
     @property
-    def media_type(self) -> str | None: ...
+    def timestamp(self) -> datetime: ...
+    @property
+    def media_type(self) -> str: ...
     @property
     def edit(self) -> str: ...
     @property
     def bot_info(self) -> MsgBotInfo | None: ...
     @property
-    def meta_info(self) -> MsgMetaInfo | None: ...
+    def meta_info(self) -> MsgMetaInfo: ...
     @property
     def verified_name(self) -> VerifiedNameCertificate | None: ...
     @property
@@ -68,8 +78,14 @@ class UploadResponse:
     @property
     def media_key(self) -> bytes: ...
     @property
-    def file_enc_sha256(self) -> str: ...
+    def file_enc_sha256(self) -> bytes: ...
     @property
-    def file_sha256(self) -> str: ...
+    def file_sha256(self) -> bytes: ...
     @property
     def file_length(self) -> int: ...
+
+class ProfilePicture:
+    id: str
+    url: str
+    direct_path: str | None
+    hash: str | None
