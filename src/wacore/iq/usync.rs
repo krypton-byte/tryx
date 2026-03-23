@@ -98,9 +98,9 @@ impl UserInfo {
     pub fn new(
         jid: JID,
         lid: Option<JID>,
+        is_business: bool,
         status: Option<String>,
         picture_id: Option<String>,
-        is_business: bool,
     ) -> Self {
         Python::attach(|py| {
             Self {
@@ -119,9 +119,10 @@ impl From<wacore::iq::usync::UserInfo> for UserInfo {
         UserInfo::new(
             info.jid.into(),
             info.lid.map(Into::into),
+            info.is_business,
             info.status,
             info.picture_id,
-            info.is_business,
+
         )
     }
 }

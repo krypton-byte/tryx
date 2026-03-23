@@ -12,7 +12,7 @@ use whatsapp_rust::Client;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, ProfilePicture, UploadResponse};
 use crate::wacore::download::MediaType;
-use crate::wacore::iq::usync::{IsOnWhatsAppResult, UserInfo};
+use crate::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
 #[pyclass]
 pub struct TryxClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
@@ -98,6 +98,28 @@ impl TryxClient {
     //                 }
     //             }
     //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+    fn get_info<'py>(&self, py: Python<'py>, phones: Vec<String>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals::<_, Vec<Py<ContactInfo>>>(py, locals, async move {
+            let phone_vec: Vec<&str> = phones.iter().map(String::as_str).collect();
+            let phones_slice = phone_vec.as_slice();
+            let info = client
+                .contacts()
+                .get_info(phones_slice)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let d= Python::attach(|py| {
+                let result = info.into_iter().map(|info| {
+                    Py::new(py, ContactInfo::from(info)).unwrap()
+                }).collect::<Vec<_>>();
+                result
+            });
+            Ok(d)
+        })
+    }
     fn get_user_info<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
@@ -110,7 +132,6 @@ impl TryxClient {
                 .get_user_info(&[jid_value])
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-
             Python::attach(|py| {
                 let dict = PyDict::new(py);
                 for (jid, info) in info {
@@ -118,9 +139,9 @@ impl TryxClient {
                     let contact_info = UserInfo::new(
                         contact_jid.into(),
                         info.lid.as_ref().map(|l| JID::from(l.clone())),
+                        info.is_business,
                         info.status,
                         info.picture_id,
-                        info.is_business,
                     );
                     dict.set_item(JID::from(jid), contact_info)?;
                 }
