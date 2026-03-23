@@ -81,7 +81,14 @@ pub struct PinUpdatedata {
 }
 impl PinUpdatedata {
     pub fn new(jid: Jid, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::PinAction, from_full_sync: bool) -> Self {
-        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), pinned: action.pinned, from_full_sync }
+        Python::attach(|py| {
+            Self {
+                jid: Py::new(py, JID::from(jid)).unwrap(),
+                timestamp: PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into(),
+                pinned: action.pinned,
+                from_full_sync,
+            }
+        })
     }
 }
 
@@ -131,7 +138,15 @@ pub struct MuteUpdateData {
 
 impl MuteUpdateData {
     pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MuteAction, from_full_sync: bool) -> Self {
-        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Box::new(action), action_cached: OnceLock::new(), from_full_sync }
+        Python::attach(|py| {
+            Self {
+                jid: Py::new(py, JID::from(jid)).unwrap(),
+                timestamp: PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into(),
+                action: Box::new(action),
+                action_cached: OnceLock::new(),
+                from_full_sync,
+            }
+        })
     }
 }
 
@@ -195,7 +210,15 @@ pub struct MarkChatAsReadUpdateData {
 }
 impl MarkChatAsReadUpdateData {
     pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MarkChatAsReadAction, from_full_sync: bool) -> Self {
-        Self { jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()), timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into()), action: Box::new(action), action_cached: OnceLock::new(), from_full_sync }
+        Python::attach(|py| {
+            Self {
+                jid: Py::new(py, JID::from(jid)).unwrap(),
+                timestamp: PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into(),
+                action: Box::new(action),
+                action_cached: OnceLock::new(),
+                from_full_sync,
+            }
+        })
     }
 }
 #[pymethods]
@@ -429,7 +452,7 @@ impl EvDeviceListUpdate {
             let new_data = DeviceListUpdateData {
                 user: Py::new(py, JID::from(self.inner.user.clone())).unwrap(),
                 lid_user: self.inner.lid_user.clone().map(|u| Py::new(py, JID::from(u)).unwrap()),
-                update_type: Python::attach(|py| Py::new(py, update_type).unwrap()),
+                update_type: Py::new(py, update_type).unwrap(),
                 devices,
                 key_index,
                 contact_hash: self.inner.contact_hash.clone(),
@@ -471,16 +494,18 @@ pub struct BusinessStatusUpdateData {
 }
 impl BusinessStatusUpdateData {
     pub fn new(jid: JID, update_type: BusinessStatusUpdateType, timestamp: i64, target_jid: Option<JID>, hash: Option<String>, product_ids: Vec<String>, collection_ids: Vec<String>, subscriptions: Vec<BusinessSubscription>) -> Self {
-        Self {
-            jid: Python::attach(|py| Py::new(py, JID::from(jid)).unwrap()),
-            update_type: Python::attach(|py| Py::new(py, update_type).unwrap()),
-            timestamp: Python::attach(|py| PyDateTime::from_timestamp(py, timestamp as f64, None).unwrap().into()),
-            target_jid: target_jid.map(|j| Python::attach(|py| Py::new(py, JID::from(j)).unwrap())),
-            hash,
-            product_ids,
-            collection_ids,
-            subscriptions: subscriptions.into_iter().map(|s| Python::attach(|py| Py::new(py, s).unwrap())).collect(),
-        }
+        Python::attach(|py| {
+            Self {
+                jid: Py::new(py, JID::from(jid)).unwrap(),
+                update_type: Py::new(py, update_type).unwrap(),
+                timestamp: PyDateTime::from_timestamp(py, timestamp as f64, None).unwrap().into(),
+                target_jid: target_jid.map(|j| Py::new(py, JID::from(j)).unwrap()),
+                hash,
+                product_ids,
+                collection_ids,
+                subscriptions: subscriptions.into_iter().map(|s| Py::new(py, s).unwrap()).collect(),
+            }
+        })
     }
 }
 

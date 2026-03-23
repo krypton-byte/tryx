@@ -34,6 +34,7 @@ impl NodeValue {
     pub fn set_jid(&mut self, value: pyo3::Py<JID>) {
         self.inner = NodeValueEnum::Jid(value);
     }
+
     #[getter]
     pub fn value(&self, py: Python<'_>) -> Py<PyAny> {
         match &self.inner {
@@ -41,6 +42,7 @@ impl NodeValue {
             NodeValueEnum::Jid(jid) => jid.clone_ref(py).into_any(),
         }
     }
+
     #[setter]
     pub fn set_value(&mut self, value: Py<PyAny>) {
         Python::attach(|py| {
@@ -82,12 +84,11 @@ pub struct NodeContent {
 impl NodeContent {
     #[getter]
     fn value(&self, py: Python<'_>) -> Py<PyAny> {
-        let result = match &self.inner {
+        match &self.inner {
             NodeContentEnum::Bytes(b) => b.into_py_any(py).unwrap(),
             NodeContentEnum::String(s) => s.into_py_any(py).unwrap(),
             NodeContentEnum::Nodes(n) => n.into_py_any(py).unwrap(),
-        };
-        result
+        }
     }
 
     pub fn is_bytes(&self) -> bool {
@@ -112,25 +113,22 @@ impl NodeContent {
     }
 }
 
-
 #[pyclass]
 pub struct Attrs {
     #[pyo3(get, set)]
     pub key: String,
     #[pyo3(get, set)]
     pub value: pyo3::Py<NodeValue>, // PyList<NodeValue>
-
 }
+
 #[pymethods]
 impl Attrs {
     #[new]
     fn new(key: String, value: Py<NodeValue>) -> Self {
-        Attrs {
-            key: key,
-            value: value
-        }
+        Attrs { key, value }
     }
 }
+
 #[pyclass]
 pub struct Node {
     #[pyo3(get, set)]
@@ -145,24 +143,14 @@ pub struct Node {
 impl Node {
     #[new]
     pub fn new(tag: String, attrs: Vec<Py<Attrs>>, content: Option<pyo3::Py<NodeContent>>) -> Self {
-        Self { tag, attrs: attrs, content: content }
+        Self { tag, attrs, content }
     }
-
-    // pub fn __repr__(&self, py: Python<'_>) -> String {
-    //     match &self.content {
-    //         Some(c) => {
-    //             let content_ref = c.bind(py).borrow();
-    //             format!("Node(tag={}, content={})", self.tag, content_ref.__repr__())
-    //         }
-    //         None => format!("Node(tag={}, content=None)", self.tag),
-    //     }
-    // }
 }
+
 impl Node {
     pub fn to_node_builder(&self, py: Python<'_>) -> NodeBuilder {
         let mut builder = NodeBuilder::new_dynamic(self.tag.clone());
 
-        // Handle content if present
         if let Some(content) = &self.content {
             let content_ref = content.bind(py).borrow();
             match &content_ref.inner {
@@ -182,11 +170,9 @@ impl Node {
                         .collect::<Vec<_>>();
                     builder = builder.children(nodes_extract);
                 }
-            };
+            }
         }
 
-        // Handle attributes
-        
         for attr in &self.attrs {
             let attr_ref = attr.bind(py).borrow();
             let value_ref = attr_ref.value.bind(py).borrow();
@@ -200,7 +186,7 @@ impl Node {
                 NodeValueEnum::String(s) => builder.attr(key_static, s.clone()),
                 NodeValueEnum::Jid(jid) => {
                     let jid_ref = jid.bind(py).borrow();
-                    builder.attr(key_static, jid_ref.__repr__()) // Use appropriate JID representation
+                    builder.attr(key_static, jid_ref.__repr__())
                 }
             };
         }
@@ -209,8 +195,9 @@ impl Node {
     }
 
     pub fn from_node(node: &wacore_binary::node::Node) -> Self {
-        let attrs = Python::attach(|py| {
-            node.attrs
+        let (attrs, content) = Python::attach(|py| {
+            let attrs = node
+                .attrs
                 .iter()
                 .map(|(k, v)| {
                     let value = match v {
@@ -221,11 +208,9 @@ impl Node {
                     };
                     Py::new(py, Attrs::new(k.to_string(), Py::new(py, value).unwrap())).unwrap()
                 })
-                .collect::<Vec<_>>()
-        });
+                .collect::<Vec<_>>();
 
-        let content = node.content.as_ref().map(|c| {
-            Python::attach(|py| {
+            let content = node.content.as_ref().map(|c| {
                 let content_enum = match c {
                     wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b.clone()),
                     wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.clone()),
@@ -239,7 +224,9 @@ impl Node {
                     }
                 };
                 Py::new(py, NodeContent { inner: content_enum }).unwrap()
-            })
+            });
+
+            (attrs, content)
         });
 
         Self {

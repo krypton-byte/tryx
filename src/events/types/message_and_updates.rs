@@ -808,7 +808,7 @@ impl EvGroupUpdate {
         } else {
             let participant = self.inner.participant.as_ref().map(|p| Py::new(py, JID::from(p.clone())).unwrap());
             let participant_pn = self.inner.participant_pn.as_ref().map(|pn| Py::new(py, JID::from(pn.clone())).unwrap());
-            let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into());
+            let timestamp = PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into();
 
             let py_group_participants = |participants: &[wacore::stanza::groups::GroupParticipantInfo]| {
                 participants
@@ -849,7 +849,7 @@ impl EvGroupUpdate {
                         .as_ref()
                         .map(|o| Py::new(py, JID::from(o.clone())).unwrap());
                     let py_subject_timestamp = subject_time.map(|t| {
-                        Python::attach(|py| PyDateTime::from_timestamp(py, t as f64, None).unwrap().into())
+                        PyDateTime::from_timestamp(py, t as f64, None).unwrap().into()
                     });
                     GroupNotificationAction::Subject { subject: subject.clone(), subject_owner: py_subject_owner, subject_timestamp: py_subject_timestamp }
                 },
@@ -951,7 +951,7 @@ impl EvContactUpdate {
         if let Some(ref cache) = self.contact_cache.get() {
             Ok(cache.clone_ref(py))
         } else {
-            let timestamp = Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into());
+            let timestamp = PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into();
             let data = ContactUpdateData {
                 jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 timestamp,

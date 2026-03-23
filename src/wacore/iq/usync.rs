@@ -22,10 +22,7 @@ impl IsOnWhatsAppResult {
 }
 impl From<wacore::iq::usync::IsOnWhatsAppResult> for IsOnWhatsAppResult {
     fn from(result: wacore::iq::usync::IsOnWhatsAppResult) -> Self {
-        IsOnWhatsAppResult {
-            jid: Python::attach(|py| Py::new(py, JID::from(result.jid)).unwrap()),
-            is_registered: result.is_registered,
-        }
+        IsOnWhatsAppResult::new(result.jid.into(), result.is_registered)
     }
 }
 
@@ -70,16 +67,14 @@ impl ContactInfo {
 
 impl From<wacore::iq::usync::ContactInfo> for ContactInfo {
     fn from(info: wacore::iq::usync::ContactInfo) -> Self {
-        Python::attach(|py|{
-            ContactInfo {
-            jid: Py::new(py, JID::from(info.jid)).unwrap(),
-            lid: info.lid.map(|l| Py::new(py, JID::from(l)).unwrap()),
-            is_registered: info.is_registered,
-            is_business: info.is_business,
-            status: info.status,
-            picture_id: info.picture_id,
-        }
-        })
+        ContactInfo::new(
+            info.jid.into(),
+            info.lid.map(Into::into),
+            info.is_registered,
+            info.is_business,
+            info.status,
+            info.picture_id,
+        )
     }
 }
 
@@ -119,15 +114,13 @@ impl UserInfo {
 
 impl From<wacore::iq::usync::UserInfo> for UserInfo {
     fn from(info: wacore::iq::usync::UserInfo) -> Self {
-        Python::attach(|py| {
-            UserInfo {
-                jid: Py::new(py, JID::from(info.jid)).unwrap(),
-                lid: info.lid.map(|l| Py::new(py, JID::from(l)).unwrap()),
-                status: info.status,
-                picture_id: info.picture_id,
-                is_business: info.is_business,
-            }
-        })
+        UserInfo::new(
+            info.jid.into(),
+            info.lid.map(Into::into),
+            info.status,
+            info.picture_id,
+            info.is_business,
+        )
     }
 }
 

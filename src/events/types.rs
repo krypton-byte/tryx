@@ -285,18 +285,16 @@ impl EvReceipt {
 #[pymethods]
 impl EvReceipt {
     #[getter]
-    fn source(&mut self) -> Option<pyo3::Py<MessageSource>> {
-        Python::attach(|py|{
-            match &self.source {
-                Some(src) => Some(src.clone_ref(py)),
-                None => {
-                    let src = MessageSource::from((*self.inner).clone());
-                    let py_src = Py::new(py, src).unwrap();
-                    self.source = Some(py_src.clone_ref(py));
-                    Some(py_src)
-                }
+    fn source(&mut self, py: Python<'_>) -> Option<pyo3::Py<MessageSource>> {
+        match &self.source {
+            Some(src) => Some(src.clone_ref(py)),
+            None => {
+                let src = MessageSource::from((*self.inner).clone());
+                let py_src = Py::new(py, src).unwrap();
+                self.source = Some(py_src.clone_ref(py));
+                Some(py_src)
             }
-        })
+        }
     }
 }
 
@@ -341,31 +339,31 @@ impl EvUndecryptableMessage {
             wacore::types::events::DecryptFailMode::Hide => DecryptFailMode::Hide,
         };
 
-        Self {
-            info_inner: Box::new(info_inner),
-            info: None,
-            is_unavailable,
-            unavailable_type: Python::attach(|py| Py::new(py, py_unavailable_type)).unwrap(),
-            decrypt_fail_mode: Python::attach(|py| Py::new(py, py_decrypt_fail_mode)).unwrap(),
-        }
+        Python::attach(|py| {
+            Self {
+                info_inner: Box::new(info_inner),
+                info: None,
+                is_unavailable,
+                unavailable_type: Py::new(py, py_unavailable_type).unwrap(),
+                decrypt_fail_mode: Py::new(py, py_decrypt_fail_mode).unwrap(),
+            }
+        })
     }
 }
 
 #[pymethods]
 impl EvUndecryptableMessage {
     #[getter]
-    fn info(&mut self) -> Option<pyo3::Py<MessageInfo>> {
-        Python::attach(|py|{
-            match &self.info {
-                Some(info) => Some(info.clone_ref(py)),
-                None => {
-                    let info = MessageInfo::from((*self.info_inner).clone());
-                    let py_info = Py::new(py, info).unwrap();
-                    self.info = Some(py_info.clone_ref(py));
-                    Some(py_info)
-                }
+    fn info(&mut self, py: Python<'_>) -> Option<pyo3::Py<MessageInfo>> {
+        match &self.info {
+            Some(info) => Some(info.clone_ref(py)),
+            None => {
+                let info = MessageInfo::from((*self.info_inner).clone());
+                let py_info = Py::new(py, info).unwrap();
+                self.info = Some(py_info.clone_ref(py));
+                Some(py_info)
             }
-        })
+        }
     }
 }
 
@@ -558,9 +556,7 @@ impl EvPictureUpdate {
             let new_data = PictureUpdateData {
                 jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 author: self.inner.author.clone().map(|a| Py::new(py, JID::from(a)).unwrap()),
-                timestamp: Some(Python::attach(|py| {
-                        PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind()
-                    })),
+                timestamp: Some(PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind()),
                 removed: self.inner.removed,
                 picture_id: self.inner.picture_id.clone(),
             };
@@ -604,7 +600,7 @@ impl EvUserAboutUpdate {
         if let Some(ref data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
-            let new_data = UserAboutUpdateData { jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(), status: self.inner.status.clone(), timestamp: Some(Python::attach(|py| PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind())) };
+            let new_data = UserAboutUpdateData { jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(), status: self.inner.status.clone(), timestamp: Some(PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind()) };
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data
