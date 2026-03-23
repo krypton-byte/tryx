@@ -9,7 +9,7 @@ use wacore::proto_helpers::build_quote_context;
 use prost::Message;
 use whatsapp_rust::Client;
 use crate::events::types::{EvMessage};
-use crate::types::{JID, UploadResponse};
+use crate::types::{JID, ProfilePicture, UploadResponse};
 use crate::wacore::download::MediaType;
 use crate::wacore::iq::usync::IsOnWhatsAppResult;
 #[pyclass]
@@ -97,6 +97,22 @@ impl TryxClient {
     //                 }
     //             }
     //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+    fn get_profile_picture<'py>(&self, py: Python<'py>, jid: Py<JID>, preview: bool) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let jid_obj = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let pic = client
+                .contacts()
+                .get_profile_picture(&jid_obj, preview)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?.ok_or(PyErr::new::<pyo3::exceptions::PyValueError, _>("Profile picture not found"))?;
+            let retu = ProfilePicture::from(pic);
+            Ok(retu)
+        })
+    }
     fn is_on_whatsapp<'py>(&self, py: Python<'py>, jid: Vec<Py<JID>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")

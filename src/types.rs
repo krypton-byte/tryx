@@ -317,3 +317,27 @@ pub struct UploadResponse {
     #[pyo3(get)]
     pub file_length: u64,
 }
+
+#[pyclass]
+pub struct ProfilePicture {
+    #[pyo3(get)]    
+    id: String,
+    #[pyo3(get)]
+    url: String,
+    #[pyo3(get)]
+    direct_path: Option<String>,
+    #[pyo3(get)]
+    hash: Option<String>,
+}
+
+impl ProfilePicture {
+    pub fn new(id: String, url: String, direct_path: Option<String>, hash: Option<String>) -> Self {
+        Self { id, url, direct_path, hash }
+    }
+}
+
+impl From<wacore::iq::contacts::ProfilePicture> for ProfilePicture {
+    fn from(picture: wacore::iq::contacts::ProfilePicture) -> Self {
+        ProfilePicture::new(picture.id, picture.url, picture.direct_path, picture.hash)
+    }
+}
