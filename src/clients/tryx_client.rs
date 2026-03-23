@@ -113,7 +113,7 @@ impl TryxClient {
             .extract(py)?;
 
         let locals = get_current_locals(py)?;
-        future_into_py_with_locals(py, locals, async move {
+        future_into_py_with_locals::<_, Vec<u8>>(py, locals, async move {
             let download = match message_type_name.as_str() {
                 "ImageMessage" => {
                     let media = wa::ImageMessage::decode(serialized.as_slice()).map_err(|e| {
