@@ -16,6 +16,7 @@ use whatsapp_rust_tokio_transport::TokioWebSocketTransportFactory;
 use whatsapp_rust_ureq_http_client::UreqHttpClient;
 use tokio::signal;
 use tracing::{debug, error, info, warn};
+use super::contacts::ContactClient;
 use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
@@ -54,7 +55,19 @@ impl Tryx {
                 .block_on(backends.connect())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))?;
             let (client_tx, client_rx) = watch::channel(None);
-            let tryx_client = Py::new(py, TryxClient { client_rx })?;
+            let contact_client = Py::new(
+                py,
+                ContactClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
+            let tryx_client = Py::new(
+                py,
+                TryxClient {
+                    client_rx,
+                    contact: contact_client,
+                },
+            )?;
             info!("backend connected and dispatcher initialized");
             Ok(Tryx {
                 backend: Arc::new(store),

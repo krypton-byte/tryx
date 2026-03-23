@@ -22,6 +22,15 @@ class UserInfo:
     is_business: bool
 
 
+class ContactInfo:
+    jid: JID
+    lid: JID | None
+    is_registered: bool
+    is_business: bool
+    status: str | None
+    picture_id: int | None
+
+
 DownloadableMedia = (
     MessageProto.ImageMessage
     | MessageProto.VideoMessage
@@ -44,10 +53,9 @@ class Tryx:
 
 
 class TryxClient:
+    contact: ContactClient
+
     def is_connected(self) -> bool: ...
-    async def get_user_info(self, jid: JID) -> dict[JID, UserInfo]: ...
-    async def get_profile_picture(self, jid: JID, preview: bool) -> ProfilePicture: ...
-    async def is_on_whatsapp(self, jid: list[JID]) -> list[IsOnWhatsAppResult]: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
     async def upload_file(self, path: str, media_type: MediaType) -> UploadResponse: ...
     async def upload(self, data: bytes, media_type: MediaType) -> UploadResponse: ...
@@ -60,4 +68,11 @@ class TryxClient:
         caption: str,
         quoted: EvMessage | None = None,
     ) -> str: ...
+
+
+class ContactClient:
+    async def get_info(self, phones: list[str]) -> list[ContactInfo]: ...
+    async def get_user_info(self, jid: JID) -> dict[JID, UserInfo]: ...
+    async def get_profile_picture(self, jid: JID, preview: bool) -> ProfilePicture: ...
+    async def is_on_whatsapp(self, jid: list[JID]) -> list[IsOnWhatsAppResult]: ...
     

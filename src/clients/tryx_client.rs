@@ -1,5 +1,4 @@
 use std::sync::{Arc};
-use pyo3::types::PyDict;
 use pyo3::{Bound, PyAny, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
@@ -9,13 +8,15 @@ use waproto::whatsapp::message::{self as wa};
 use wacore::proto_helpers::build_quote_context;
 use prost::Message;
 use whatsapp_rust::Client;
+use crate::clients::contacts::ContactClient;
 use crate::events::types::{EvMessage};
-use crate::types::{JID, ProfilePicture, UploadResponse};
+use crate::types::{JID, UploadResponse};
 use crate::wacore::download::MediaType;
-use crate::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
 #[pyclass]
 pub struct TryxClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
+    #[pyo3(get)]
+    pub contact: Py<ContactClient>,
 }
 
 #[pymethods]
@@ -98,103 +99,6 @@ impl TryxClient {
     //                 }
     //             }
     //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
-    fn get_info<'py>(&self, py: Python<'py>, phones: Vec<String>) -> PyResult<Bound<'py, PyAny>> {
-        let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
-        })?;
-        let locals = get_current_locals(py)?;
-        future_into_py_with_locals::<_, Vec<Py<ContactInfo>>>(py, locals, async move {
-            let phone_vec: Vec<&str> = phones.iter().map(String::as_str).collect();
-            let phones_slice = phone_vec.as_slice();
-            let info = client
-                .contacts()
-                .get_info(phones_slice)
-                .await
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            let d= Python::attach(|py| {
-                let result = info.into_iter().map(|info| {
-                    Py::new(py, ContactInfo::from(info)).unwrap()
-                }).collect::<Vec<_>>();
-                result
-            });
-            Ok(d)
-        })
-    }
-    fn get_user_info<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
-        let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
-        })?;
-        let locals = get_current_locals(py)?;
-        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
-        future_into_py_with_locals::<_, Py<PyDict>>(py, locals, async move {
-            let info = client
-                .contacts()
-                .get_user_info(&[jid_value])
-                .await
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            Python::attach(|py| {
-                let dict = PyDict::new(py);
-                for (jid, info) in info {
-                    let contact_jid = jid.clone();
-                    let contact_info = UserInfo::new(
-                        contact_jid.into(),
-                        info.lid.as_ref().map(|l| JID::from(l.clone())),
-                        info.is_business,
-                        info.status,
-                        info.picture_id,
-                    );
-                    dict.set_item(JID::from(jid), contact_info)?;
-                }
-                Ok(dict.unbind())
-            })
-        })
-    }
-    fn get_profile_picture<'py>(&self, py: Python<'py>, jid: Py<JID>, preview: bool) -> PyResult<Bound<'py, PyAny>> {
-        let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
-        })?;
-        let jid_obj = jid.bind(py).borrow().as_whatsapp_jid();
-        let locals = get_current_locals(py)?;
-        future_into_py_with_locals(py, locals, async move {
-            let pic = client
-                .contacts()
-                .get_profile_picture(&jid_obj, preview)
-                .await
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?.ok_or(PyErr::new::<pyo3::exceptions::PyValueError, _>("Profile picture not found"))?;
-            let retu = ProfilePicture::from(pic);
-            Ok(retu)
-        })
-    }
-    fn is_on_whatsapp<'py>(&self, py: Python<'py>, jid: Vec<Py<JID>>) -> PyResult<Bound<'py, PyAny>> {
-        let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
-        })?;
-
-        // Convert JID to &[&str]
-        let jid_str: Vec<String> = jid
-            .into_iter()
-            .map(|jid| {
-                let s_jid = jid.borrow(py);
-                let user_jid = s_jid.as_whatsapp_jid();
-                user_jid.user_base().to_string()
-            })
-            .collect();
-        
-        let locals = get_current_locals(py)?;
-        future_into_py_with_locals::<_,Vec<IsOnWhatsAppResult>>(py, locals, async move {
-            let jid_slice: Vec<&str> = jid_str.iter().map(String::as_str).collect();
-            let jid_sliced = jid_slice.as_slice();
-            let response = client
-                .contacts()
-                .is_on_whatsapp(jid_sliced)
-                .await
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            let response_py = response.into_iter().map(|res| {
-                IsOnWhatsAppResult::new(res.jid.into(), res.is_registered)
-            }).collect::<Vec<_>>();
-            Ok(response_py)
-        })
-    }
     fn download_media<'py>(&self, py: Python<'py>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
