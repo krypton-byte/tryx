@@ -20,7 +20,7 @@ use super::tryx_client::TryxClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
 use crate::events::types::{
-    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeleteChatUpdate, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
+    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeleteChatUpdate, EvDeleteMessageForMeUpdate, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
 };
 use crate::exceptions::{EventDispatchError, FailedBuildBot, UnsupportedBackend};
 use crate::events::dispatcher::Dispatcher;
@@ -412,7 +412,7 @@ impl Tryx {
                             Self::emit_event(&callbacks.delete_chat_update, Python::attach(|py| Py::new(py, EvDeleteChatUpdate::from(delete_chat_update))), locals.clone(), "DeleteChatUpdate").await;
                         }
                         Event::DeleteMessageForMeUpdate(delete_message_for_me_update) => {
-
+                            Self::emit_event(&callbacks.delete_message_for_me_update, Python::attach(|py| Py::new(py, EvDeleteMessageForMeUpdate::from(delete_message_for_me_update))), locals.clone(), "DeleteMessageForMeUpdate").await;
                         }
                 }
             }

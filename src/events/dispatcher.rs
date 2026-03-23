@@ -39,7 +39,7 @@ use super::types::{
     EvUndecryptableMessage,
     EvUserAboutUpdate,
 };
-use crate::events::types::{EvContactSyncRequested, EvContactUpdated, EvDeleteChatUpdate, EvDisappearingModeChanged, EvNewsletterLiveUpdate, EvStarUpdate};
+use crate::events::types::{EvContactSyncRequested, EvContactUpdated, EvDeleteChatUpdate, EvDeleteMessageForMeUpdate, EvDisappearingModeChanged, EvNewsletterLiveUpdate, EvStarUpdate};
 use crate::exceptions::UnsupportedEventType;
 
 #[pyclass]
@@ -86,6 +86,7 @@ pub struct Dispatcher {
     star_update: Vec<Py<PyAny>>,
     newsletter_live_update: Vec<Py<PyAny>>,
     delete_chat_update: Vec<Py<PyAny>>,
+    delete_message_for_me_update: Vec<Py<PyAny>>,
 }
 
 #[derive(Clone, Copy)]
@@ -131,6 +132,7 @@ enum DispatchEvent {
     StarUpdate,
     NewsletterLiveUpdate,
     DeleteChatUpdate,
+    DeleteMessageForMeUpdate,
 }
 
 impl Dispatcher {
@@ -185,6 +187,7 @@ impl Dispatcher {
             star_update: Vec::new(),
             newsletter_live_update: Vec::new(),
             delete_chat_update: Vec::new(),
+            delete_message_for_me_update: Vec::new(),
         }
     }
 
@@ -257,7 +260,6 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected newsletter live update handlers");
         handlers
     }
-
     pub fn receipt_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         let handlers = Self::cloned_handlers(py, &self.receipt);
         debug!(handlers = handlers.len(), "collected receipt handlers");
@@ -341,7 +343,6 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected mute update handlers");
         handlers
     }
-
     pub fn archive_update_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         let handlers = Self::cloned_handlers(py, &self.archive_update);
         debug!(handlers = handlers.len(), "collected archive update handlers");
@@ -460,6 +461,7 @@ impl Dispatcher {
             DispatchEvent::StarUpdate => &self.star_update,
             DispatchEvent::NewsletterLiveUpdate => &self.newsletter_live_update,
             DispatchEvent::DeleteChatUpdate => &self.delete_chat_update,
+            DispatchEvent::DeleteMessageForMeUpdate => &self.delete_message_for_me_update,
         }
     }
 }
@@ -507,6 +509,8 @@ fn dispatch_event_name(event: DispatchEvent) -> &'static str {
         DispatchEvent::StarUpdate => "star_update",
         DispatchEvent::NewsletterLiveUpdate => "newsletter_live_update",
         DispatchEvent::DeleteChatUpdate => "delete_chat_update",
+        DispatchEvent::DeleteMessageForMeUpdate => "delete_message_for_me_update",
+
     }
 }
 
@@ -596,6 +600,8 @@ fn dispatch_event_from_type(py: Python, event_type: &Bound<PyAny>) -> PyResult<D
         Ok(DispatchEvent::NewsletterLiveUpdate)
     }else if event_type.is_subclass(&EvDeleteChatUpdate::type_object(py))? {
         Ok(DispatchEvent::DeleteChatUpdate)
+    } else if event_type.is_subclass(&EvDeleteMessageForMeUpdate::type_object(py))? {
+        Ok(DispatchEvent::DeleteMessageForMeUpdate)
     } else {
         Err(PyErr::new::<UnsupportedEventType, _>("Unsupported event type"))
     }
@@ -673,6 +679,7 @@ impl Dispatcher {
             DispatchEvent::StarUpdate => self.star_update.push(func.clone_ref(py)),
             DispatchEvent::NewsletterLiveUpdate => self.newsletter_live_update.push(func.clone_ref(py)),
             DispatchEvent::DeleteChatUpdate => self.delete_chat_update.push(func.clone_ref(py)),
+            DispatchEvent::DeleteMessageForMeUpdate => self.delete_message_for_me_update.push(func.clone_ref(py)),
         }
 
         let total_handlers = self.handlers_for_event(event).len();
@@ -688,7 +695,11 @@ impl Dispatcher {
         debug!(handlers = handlers.len(), "collected contact sync requested handlers");
         handlers
     }
-
+    pub fn delete_message_for_me_update_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
+        let handlers = Self::cloned_handlers(py, &self.delete_message_for_me_update);
+        debug!(handlers = handlers.len(), "collected delete message for me update handlers");
+        handlers
+    }
     pub fn contact_updated_handlers(&self, py: Python<'_>) -> Vec<Py<PyAny>> {
         let handlers = Self::cloned_handlers(py, &self.contact_updated);
         debug!(handlers = handlers.len(), "collected contact updated handlers");

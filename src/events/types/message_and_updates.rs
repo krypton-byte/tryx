@@ -65,6 +65,68 @@ impl EvTemporaryBan {
     }
 }
 
+#[pyclass]
+pub struct DeleteMessageForMeUpdateData {
+    #[pyo3(get)]
+    chat_jid: Py<JID>,
+    #[pyo3(get)]
+    participant_jid: Option<Py<JID>>,
+    #[pyo3(get)]
+    message_id: String,
+    #[pyo3(get)]
+    from_me: bool,
+    #[pyo3(get)]
+    timestamp: Py<PyDateTime>,
+    #[pyo3(get)]
+    action: Py<PyAny>,
+    #[pyo3(get)]
+    from_full_sync: bool,
+}
+
+#[pyclass]
+pub struct EvDeleteMessageForMeUpdate {
+    inner: Box<wacore::types::events::DeleteMessageForMeUpdate>,
+    data_cache: OnceLock<Py<DeleteMessageForMeUpdateData>>,
+}
+impl EvDeleteMessageForMeUpdate {
+    pub fn new(inner: wacore::types::events::DeleteMessageForMeUpdate) -> Self {
+        Self { inner: Box::new(inner), data_cache: OnceLock::new() }
+    }
+}
+impl From<wacore::types::events::DeleteMessageForMeUpdate> for EvDeleteMessageForMeUpdate {
+    fn from(event: wacore::types::events::DeleteMessageForMeUpdate) -> Self {
+        EvDeleteMessageForMeUpdate::new(event)
+    }
+}
+#[pymethods]
+impl EvDeleteMessageForMeUpdate {
+    #[getter]
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<DeleteMessageForMeUpdateData>> {
+        if let Some(cached) = self.data_cache.get() {
+            Ok(cached.clone_ref(py))
+        } else {
+            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)?.into();
+            let action_proto = from_string_to_python_proto(
+                py,
+                get_proto_delete_message_for_me_action_proto_type(py)?,
+                self.inner.action.encode_to_vec().as_slice(),
+            )?;
+            let data = DeleteMessageForMeUpdateData {
+                chat_jid: Py::new(py, JID::from(self.inner.chat_jid.clone())).unwrap(),
+                participant_jid: self.inner.participant_jid.clone().map(|j| Py::new(py, JID::from(j)).unwrap()),
+                message_id: self.inner.message_id.clone(),
+                from_me: self.inner.from_me,
+                timestamp,
+                action: action_proto,
+                from_full_sync: self.inner.from_full_sync,
+            };
+            let py_data = Py::new(py, data)?;
+            self.data_cache.set(py_data.clone_ref(py)).ok();
+            Ok(py_data)
+        }
+    }
+}
+
 // impl EvTemporaryBan {
 //     pub fn from_wacore(value: wacore::types::events::TemporaryBan) -> Self {
 //         let code = match value.code {
