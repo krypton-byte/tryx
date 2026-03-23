@@ -2,7 +2,7 @@
 pub struct EvStreamReplaced;
 
 #[pyclass]
-enum TempBanReason {
+pub enum TempBanReason {
     SentToTooManyPeople,
     SentBlockedNyUser,
     CreateTooManyGroups,
@@ -988,12 +988,13 @@ struct NewsletterUpdateMessage {
 
 #[pyclass]
 struct NewsletterLiveUpdateData {
-    newsletter_jid: JID,
+    #[pyo3(get)]
+    newsletter_jid: Py<JID>,
     #[pyo3(get)]
     messages: Vec<Py<NewsletterUpdateMessage>>,
 }
 impl NewsletterLiveUpdateData {
-    fn new(newsletter_jid: JID, messages: Vec<Py<NewsletterUpdateMessage>>) -> Self {
+    fn new(newsletter_jid: Py<JID>, messages: Vec<Py<NewsletterUpdateMessage>>) -> Self {
         Self { newsletter_jid, messages }
     }
 }
@@ -1024,7 +1025,7 @@ impl EvNewsletterLiveUpdate {
                 Py::new(py, NewsletterUpdateMessage { server_id: msg.server_id, reactions }).unwrap()
             }).collect();
             let data = NewsletterLiveUpdateData::new(
-                self.inner.newsletter_jid.clone().into(),
+                Py::new(py, JID::from(self.inner.newsletter_jid.clone()))?,
                 messages,
             );
             let py_data = Py::new(py, data)?;
@@ -1042,11 +1043,15 @@ impl From<wacore::types::events::NewsletterLiveUpdate> for EvNewsletterLiveUpdat
 
 #[pyclass]
 struct DeleteChatUpdateData {
+    #[pyo3(get)]
     jid: Py<JID>,
+    #[pyo3(get)]
     delete_media: bool,
+    #[pyo3(get)]
     timestamp: Py<PyDateTime>,
     action_cache: OnceLock<Py<PyAny>>,
     action: Box<waproto::whatsapp::sync_action_value::DeleteChatAction>,
+    #[pyo3(get)]
     from_full_sync: bool,
 }
 

@@ -464,7 +464,7 @@ impl EvDeviceListUpdate {
     }
 }
 #[pyclass]
-enum BusinessStatusUpdateType {
+pub enum BusinessStatusUpdateType {
     RemovedAsBusiness,
     VerifiedNameChanged,
     ProfileUpdated,

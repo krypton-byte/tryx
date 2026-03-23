@@ -1,5 +1,5 @@
 use std::sync::{Arc};
-use pyo3::{Bound, IntoPyObjectExt, PyAny, pyclass, pymethods};
+use pyo3::{Bound, PyAny, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
