@@ -39,6 +39,31 @@ Tryx is split into two layers:
 - Type stubs in `python/tryx/*.pyi`
 - Generated protobuf package in `python/tryx/waproto`
 
+## Native Binding Advantages (Rust + PyO3)
+
+Tryx uses native Rust bindings instead of a pure-Python protocol implementation.
+This gives concrete benefits for this specific project:
+
+- Lower CPU overhead on hot paths such as event parsing and media/protobuf conversion.
+- Better memory behavior because heavy objects stay in Rust and are exposed to Python only when needed.
+- Async safety and runtime control from Tokio while keeping Python application code simple.
+- Ability to cache expensive Python type lookups once (PyOnceLock) and reuse them across events.
+- Cleaner separation: Rust handles protocol/runtime mechanics, Python handles business logic and integrations.
+
+In practical terms, this means Python callbacks remain expressive while most protocol-heavy work stays fast and predictable.
+
+## Centralized PyOnceLock Cache
+
+Event protobuf type caches are centralized in `src/events/proto_cache.rs`.
+
+Why this helps:
+- All static PyOnceLock declarations are in one file.
+- All cache lookup helpers are in one place.
+- Easier maintenance and code search when adding/removing protobuf-backed fields.
+- Lower risk of duplicated cache logic in multiple event files.
+
+The event layer now consumes cache helpers from this module, keeping event structs focused on payload mapping instead of cache plumbing.
+
 ## Concurrency and Overhead Model
 
 Tryx currently uses `watch::Receiver<Option<Arc<Client>>>` to expose the active client across binding objects.
@@ -220,6 +245,7 @@ mypy examples.py
 - Construct Python values inside `Python::attach(...)` after async IO completes.
 - Return owned `Py<T>` from futures when required by `Send` bounds.
 - Keep payload conversion lazy when field access is infrequent.
+- Centralize Python type/proto caches to minimize repeated import/lookups.
 
 ## Troubleshooting
 

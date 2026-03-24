@@ -4,8 +4,6 @@ use pyo3::{PyAny, PyErr, PyResult, Python, exceptions::PyRuntimeError, pyclass, 
 use whatsapp_rust::{Jid as WhatsAppJID};
 use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo};
 use prost::Message;
-
-
 #[pyclass]
 pub struct JID {
     inner: Arc<WhatsAppJID>,

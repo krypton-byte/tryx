@@ -4,12 +4,47 @@ build-backend = "maturin"
 
 [project]
 name = "tryx"
+description = "Rust-powered Python SDK for async WhatsApp automation with typed bindings and event-driven APIs"
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.8"
+keywords = [
+    "whatsapp",
+    "automation",
+    "rust",
+    "pyo3",
+    "async",
+    "tokio",
+    "bot",
+    "protobuf",
+]
+authors = [
+    { name = "krypton-byte" },
+]
+maintainers = [
+    { name = "krypton-byte" },
+]
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
 ]
+urls = { Homepage = "https://github.com/krypton-byte/tryx", Repository = "https://github.com/krypton-byte/tryx", Documentation = "https://github.com/krypton-byte/tryx#readme", Issues = "https://github.com/krypton-byte/tryx/issues" }
 dynamic = ["version"]
 
 [tool.maturin]

@@ -18,6 +18,7 @@ use tokio::signal;
 use tracing::{debug, error, info, warn};
 use super::contacts::ContactClient;
 use super::tryx_client::TryxClient;
+use crate::clients::chat_actions::ChatActionsClient;
 use crate::log::init_logging;
 use crate::backend::{SqliteBackend, BackendBase};
 use crate::events::types::{
@@ -61,13 +62,21 @@ impl Tryx {
                     client_rx: client_rx.clone(),
                 },
             )?;
+            let chat_actions_client = Py::new(
+                py,
+                ChatActionsClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
             let tryx_client = Py::new(
                 py,
                 TryxClient {
                     client_rx,
                     contact: contact_client,
-                },
+                    chat_actions: chat_actions_client,
+                }
             )?;
+            
             info!("backend connected and dispatcher initialized");
             Ok(Tryx {
                 backend: Arc::new(store),

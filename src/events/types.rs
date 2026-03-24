@@ -2,100 +2,26 @@ use std::sync::OnceLock;
 
 use prost::Message as ProstMessage;
 use pyo3::{Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
-use pyo3::types::{PyAnyMethods, PyBytes, PyType};
 use pyo3::types::{PyDateTime};
 use chrono::{DateTime, Utc};
 use wacore::types::events::QrScannedWithoutMultidevice;
 use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as WhatsAppLoggedOut }};
-use pyo3::sync::PyOnceLock;
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
 use crate::types::{JID, MessageInfo, MessageSource};
+use crate::events::proto_cache::{
+    parse_message_proto,
+    parse_proto_bytes as from_string_to_python_proto,
+    proto_contact_action as get_proto_contact_action_proto_type,
+    proto_delete_chat_action as get_proto_delete_chat_action_proto_type,
+    proto_delete_message_for_me_action as get_proto_delete_message_for_me_action_proto_type,
+    proto_history_sync as get_proto_history_sync_proto_type,
+    proto_lazy_conversation as get_lazy_conversation_proto_type,
+    proto_mark_chat_as_read_action as get_proto_mark_chat_as_read_action_proto_type,
+    proto_mute_action as get_proto_mute_action_proto_type,
+    proto_sync_action_value as get_proto_sync_action_value_from_string,
+};
 use crate::wacore::node::Node;
 use crate::wacore::stanza::{BusinessSubscription, KeyIndexInfo};
-static WHATSAPP_MESSAGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-static SYNC_ACTION_VALUE: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-static LAZY_CONVERSATION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-static CONTACT_UPDATE_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-static MARK_CHAT_AS_READ_UPDATE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-static HISTORY_SYNC_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-static DELETE_CHAT_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-static DELETE_MESSAGE_FOR_ME_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
-
-
-fn get_proto_import(py: Python<'_>, import: &str, attr: &str) -> PyResult<Py<PyType>>{
-    let module = py.import(import)?;
-    let message_type = module.getattr(attr)?.cast_into::<PyType>()?;
-    Ok(message_type.unbind())
-}
-
-fn get_proto_message_from_string(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let proto_type = WHATSAPP_MESSAGE_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "Message")
-    })?;
-    Ok(proto_type)
-}
-
-fn get_proto_sync_action_value_from_string(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let proto_type = SYNC_ACTION_VALUE.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "SyncActionValue")
-    })?;
-    Ok(proto_type)
-}
-fn get_lazy_conversation_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let conversation = LAZY_CONVERSATION_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "Conversation")
-    })?;
-    Ok(conversation)
-}
-fn get_proto_contact_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let contact_action = CONTACT_UPDATE_ACTION_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "ContactAction")
-    })?;
-    Ok(contact_action)
-}
-fn get_proto_mute_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let mute_action = SYNC_ACTION_VALUE.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "MuteAction")
-    })?;
-    Ok(mute_action)
-}
-fn get_proto_mark_chat_as_read_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let mark_chat_as_read_action = MARK_CHAT_AS_READ_UPDATE_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "MarkChatAsReadAction")
-    })?;
-    Ok(mark_chat_as_read_action)
-}
-fn get_proto_history_sync_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let history_sync = HISTORY_SYNC_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "HistorySync")
-    })?;
-    Ok(history_sync)
-}
-fn get_proto_delete_chat_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let delete_chat_action = DELETE_CHAT_ACTION_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "DeleteChatAction")
-    })?;
-    Ok(delete_chat_action)
-}
-fn get_proto_delete_message_for_me_action_proto_type(py: Python<'_>) -> Result<&Py<PyType>, PyErr> {
-    let delete_message_for_me_action = DELETE_MESSAGE_FOR_ME_ACTION_PROTO.get_or_try_init(py, || -> PyResult<Py<PyType>> {
-        get_proto_import(py, "tryx.waproto.whatsapp_pb2", "DeleteMessageForMeAction")
-    })?;
-    Ok(delete_message_for_me_action)
-}
-fn from_string_to_python_proto(py: Python<'_>, proto_class: &Py<PyType>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
-    let proto_instance = proto_class.bind(py).call0()?;
-    proto_instance.call_method1("ParseFromString", (PyBytes::new(py, proto_bytes),))?;
-    Ok(proto_instance.into_any().unbind())
-}
-fn parse_message_proto(py: Python<'_>, proto_bytes: &[u8]) -> PyResult<Py<PyAny>> {
-    let proto_type = get_proto_message_from_string(py)?;
-    let proto_instance = proto_type.bind(py).call0()?;
-    proto_instance.call_method1("ParseFromString", (PyBytes::new(py, proto_bytes),))?;
-    Ok(proto_instance.into_any().unbind())
-}
-
-
 
 #[pyclass]
 pub struct EvConnected;
