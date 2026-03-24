@@ -5,6 +5,7 @@ from .events import EvMessage
 from .types import JID, ProfilePicture, UploadResponse
 from .wacore import MediaType
 from .waproto.whatsapp_pb2 import Message as MessageProto
+from .waproto.whatsapp_pb2 import MessageKey, SyncActionMessageRange
 
 EventT = TypeVar("EventT")
 
@@ -54,6 +55,7 @@ class Tryx:
 
 class TryxClient:
     contact: ContactClient
+    chat_actions: ChatActionsClient
 
     def is_connected(self) -> bool: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
@@ -75,4 +77,70 @@ class ContactClient:
     async def get_user_info(self, jid: JID) -> dict[JID, UserInfo]: ...
     async def get_profile_picture(self, jid: JID, preview: bool) -> ProfilePicture: ...
     async def is_on_whatsapp(self, jid: list[JID]) -> list[IsOnWhatsAppResult]: ...
-    
+
+
+class ChatActionsClient:
+    @staticmethod
+    def build_message_key(
+        id: str,
+        remote_jid: JID,
+        from_me: bool,
+        participant: JID | None = None,
+    ) -> MessageKey: ...
+    @staticmethod
+    def build_message_range(
+        last_message_timestamp: int,
+        last_system_message_timestamp: int | None,
+        messages: list[tuple[MessageKey, int]],
+    ) -> SyncActionMessageRange: ...
+    async def archive_chat(
+        self,
+        jid: JID,
+        message_range: SyncActionMessageRange | None = None,
+    ) -> None: ...
+    async def unarchive_chat(
+        self,
+        jid: JID,
+        message_range: SyncActionMessageRange | None = None,
+    ) -> None: ...
+    async def pin_chat(self, jid: JID) -> None: ...
+    async def unpin_chat(self, jid: JID) -> None: ...
+    async def mute_chat(self, jid: JID) -> None: ...
+    async def mute_chat_until(self, jid: JID, mute_end_timestamp_ms: int) -> None: ...
+    async def unmute_chat(self, jid: JID) -> None: ...
+    async def star_message(
+        self,
+        chat_jid: JID,
+        participant_jid: JID | None,
+        message_id: str,
+        from_me: bool,
+    ) -> None: ...
+    async def unstar_message(
+        self,
+        chat_jid: JID,
+        participant_jid: JID | None,
+        message_id: str,
+        from_me: bool,
+    ) -> None: ...
+    async def mark_chat_as_read(
+        self,
+        jid: JID,
+        read: bool,
+        message_range: SyncActionMessageRange | None = None,
+    ) -> None: ...
+    async def delete_chat(
+        self,
+        jid: JID,
+        delete_media: bool,
+        message_range: SyncActionMessageRange | None = None,
+    ) -> None: ...
+    async def delete_message_for_me(
+        self,
+        chat_jid: JID,
+        participant_jid: JID | None,
+        message_id: str,
+        from_me: bool,
+        delete_media: bool,
+        message_timestamp: int | None = None,
+    ) -> None: ...
+

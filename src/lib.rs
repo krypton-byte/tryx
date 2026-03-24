@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 
 use self::clients::tryx_client::TryxClient;
 use self::clients::tryx::Tryx;
+use self::clients::chat_actions::ChatActionsClient;
 use self::clients::contacts::ContactClient;
 use self::events::types::{
     BusinessStatusUpdateData,
@@ -80,6 +81,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     let client_module = PyModule::new(_py.py(), "client")?;
     client_module.add_class::<TryxClient>()?;
     client_module.add_class::<ContactClient>()?;
+    client_module.add_class::<ChatActionsClient>()?;
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;

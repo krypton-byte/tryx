@@ -23,6 +23,7 @@ It combines:
 - Event registration decorator: `@bot.on(EventType)`
 - Messaging API (text, media upload, media download)
 - Dedicated contact namespace: `client.contact.*`
+- Dedicated chat-actions namespace: `client.chat_actions.*`
 - Rich event payload classes with lazy conversion where possible
 
 ## Architecture Overview
@@ -173,6 +174,7 @@ if __name__ == "__main__":
 ### Runtime client
 
 - `TryxClient.contact -> ContactClient`
+- `TryxClient.chat_actions -> ChatActionsClient`
 - `TryxClient.send_message(...)`
 - `TryxClient.send_text(...)`
 - `TryxClient.send_photo(...)`
@@ -186,6 +188,23 @@ if __name__ == "__main__":
 - `ContactClient.get_user_info(jid)`
 - `ContactClient.get_profile_picture(jid, preview)`
 - `ContactClient.is_on_whatsapp(jids)`
+
+### Chat actions namespace
+
+- `ChatActionsClient.archive_chat(jid, message_range=None)`
+- `ChatActionsClient.unarchive_chat(jid, message_range=None)`
+- `ChatActionsClient.pin_chat(jid)`
+- `ChatActionsClient.unpin_chat(jid)`
+- `ChatActionsClient.mute_chat(jid)`
+- `ChatActionsClient.mute_chat_until(jid, mute_end_timestamp_ms)`
+- `ChatActionsClient.unmute_chat(jid)`
+- `ChatActionsClient.star_message(chat_jid, participant_jid, message_id, from_me)`
+- `ChatActionsClient.unstar_message(chat_jid, participant_jid, message_id, from_me)`
+- `ChatActionsClient.mark_chat_as_read(jid, read, message_range=None)`
+- `ChatActionsClient.delete_chat(jid, delete_media, message_range=None)`
+- `ChatActionsClient.delete_message_for_me(chat_jid, participant_jid, message_id, from_me, delete_media, message_timestamp=None)`
+- `ChatActionsClient.build_message_key(...)`
+- `ChatActionsClient.build_message_range(...)`
 
 ## Typing Support
 

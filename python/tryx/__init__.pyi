@@ -1,5 +1,5 @@
 from .backend import BackendBase, SqliteBackend
-from .client import ContactClient, Tryx, TryxClient
+from .client import ChatActionsClient, ContactClient, Tryx, TryxClient
 from .exceptions import (
     BuildBotError,
     EventDispatchError,

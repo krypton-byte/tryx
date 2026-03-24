@@ -11,6 +11,8 @@ static MARK_CHAT_AS_READ_UPDATE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new(
 static HISTORY_SYNC_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static DELETE_CHAT_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 static DELETE_MESSAGE_FOR_ME_ACTION_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static MESSAGE_KEY_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
+static SYNC_ACTION_MESSAGE_RANGE_PROTO: PyOnceLock<Py<PyType>> = PyOnceLock::new();
 
 fn import_proto_type(py: Python<'_>, attr: &str) -> PyResult<Py<PyType>> {
     let module = py.import("tryx.waproto.whatsapp_pb2")?;
@@ -60,6 +62,14 @@ pub fn proto_delete_chat_action(py: Python<'_>) -> PyResult<&'static Py<PyType>>
 
 pub fn proto_delete_message_for_me_action(py: Python<'_>) -> PyResult<&'static Py<PyType>> {
     cached_proto_type(py, &DELETE_MESSAGE_FOR_ME_ACTION_PROTO, "DeleteMessageForMeAction")
+}
+
+pub fn proto_message_key(py: Python<'_>) -> PyResult<&'static Py<PyType>> {
+    cached_proto_type(py, &MESSAGE_KEY_PROTO, "MessageKey")
+}
+
+pub fn proto_sync_action_message_range(py: Python<'_>) -> PyResult<&'static Py<PyType>> {
+    cached_proto_type(py, &SYNC_ACTION_MESSAGE_RANGE_PROTO, "SyncActionMessageRange")
 }
 
 pub fn parse_proto_bytes(
