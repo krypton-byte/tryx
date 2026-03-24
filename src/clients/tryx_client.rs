@@ -11,7 +11,9 @@ use whatsapp_rust::Client;
 use crate::clients::chat_actions::ChatActionsClient;
 use crate::clients::community::CommunityClient;
 use crate::clients::contacts::ContactClient;
+use crate::clients::groups::GroupsClient;
 use crate::clients::newsletter::NewsletterClient;
+use crate::clients::status::StatusClient;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, UploadResponse};
 use crate::wacore::download::MediaType;
@@ -26,6 +28,10 @@ pub struct TryxClient {
     pub community: Py<CommunityClient>,
     #[pyo3(get)]
     pub newsletter: Py<NewsletterClient>,
+    #[pyo3(get)]
+    pub groups: Py<GroupsClient>,
+    #[pyo3(get)]
+    pub status: Py<StatusClient>,
 }
 
 #[pymethods]

@@ -58,6 +58,8 @@ class TryxClient:
     chat_actions: ChatActionsClient
     community: CommunityClient
     newsletter: NewsletterClient
+    groups: GroupsClient
+    status: StatusClient
 
     def is_connected(self) -> bool: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
@@ -335,4 +337,199 @@ class NewsletterClient:
         count: int,
         before: int | None = None,
     ) -> list[NewsletterMessage]: ...
+
+
+class MemberLinkMode:
+    AdminLink: MemberLinkMode
+    AllMemberLink: MemberLinkMode
+
+
+class MemberAddMode:
+    AdminAdd: MemberAddMode
+    AllMemberAdd: MemberAddMode
+
+
+class MembershipApprovalMode:
+    Off: MembershipApprovalMode
+    On: MembershipApprovalMode
+
+
+class GroupParticipantOptions:
+    jid: JID
+    phone_number: JID | None
+    privacy: bytes | None
+
+    def __init__(
+        self,
+        jid: JID,
+        phone_number: JID | None = None,
+        privacy: bytes | None = None,
+    ) -> None: ...
+
+
+class CreateGroupOptions:
+    subject: str
+    participants: list[GroupParticipantOptions]
+    member_link_mode: MemberLinkMode | None
+    member_add_mode: MemberAddMode | None
+    membership_approval_mode: MembershipApprovalMode | None
+    ephemeral_expiration: int | None
+    is_parent: bool
+    closed: bool
+    allow_non_admin_sub_group_creation: bool
+    create_general_chat: bool
+
+    def __init__(
+        self,
+        subject: str,
+        participants: list[GroupParticipantOptions] = [],
+        member_link_mode: MemberLinkMode | None = MemberLinkMode.AdminLink,
+        member_add_mode: MemberAddMode | None = MemberAddMode.AllMemberAdd,
+        membership_approval_mode: MembershipApprovalMode | None = MembershipApprovalMode.Off,
+        ephemeral_expiration: int | None = 0,
+        is_parent: bool = False,
+        closed: bool = False,
+        allow_non_admin_sub_group_creation: bool = False,
+        create_general_chat: bool = False,
+    ) -> None: ...
+
+
+class CreateGroupResult:
+    gid: JID
+
+
+class JoinGroupResult:
+    jid: JID
+    pending_approval: bool
+
+
+class ParticipantChangeResponse:
+    jid: JID
+    status: str | None
+    error: str | None
+
+
+class MembershipRequest:
+    jid: JID
+    request_time: int | None
+
+
+class GroupInfo:
+    participants: list[JID]
+    addressing_mode: str
+    lid_to_pn_map: list[tuple[str, JID]]
+
+
+class GroupsClient:
+    async def query_info(self, jid: JID) -> GroupInfo: ...
+    async def get_participating(self) -> dict[str, GroupMetadata]: ...
+    async def get_metadata(self, jid: JID) -> GroupMetadata: ...
+    async def create_group(self, options: CreateGroupOptions) -> CreateGroupResult: ...
+    async def set_subject(self, jid: JID, subject: str) -> None: ...
+    async def set_description(
+        self,
+        jid: JID,
+        description: str | None = None,
+        prev: str | None = None,
+    ) -> None: ...
+    async def leave(self, jid: JID) -> None: ...
+    async def add_participants(
+        self,
+        jid: JID,
+        participants: list[JID],
+    ) -> list[ParticipantChangeResponse]: ...
+    async def remove_participants(
+        self,
+        jid: JID,
+        participants: list[JID],
+    ) -> list[ParticipantChangeResponse]: ...
+    async def promote_participants(self, jid: JID, participants: list[JID]) -> None: ...
+    async def demote_participants(self, jid: JID, participants: list[JID]) -> None: ...
+    async def get_invite_link(self, jid: JID, reset: bool) -> str: ...
+    async def set_locked(self, jid: JID, locked: bool) -> None: ...
+    async def set_announce(self, jid: JID, announce: bool) -> None: ...
+    async def set_ephemeral(self, jid: JID, expiration: int) -> None: ...
+    async def set_membership_approval(
+        self,
+        jid: JID,
+        mode: MembershipApprovalMode,
+    ) -> None: ...
+    async def join_with_invite_code(self, code: str) -> JoinGroupResult: ...
+    async def join_with_invite_v4(
+        self,
+        group_jid: JID,
+        code: str,
+        expiration: int,
+        admin_jid: JID,
+    ) -> JoinGroupResult: ...
+    async def get_invite_info(self, code: str) -> GroupMetadata: ...
+    async def get_membership_requests(self, jid: JID) -> list[MembershipRequest]: ...
+    async def approve_membership_requests(
+        self,
+        jid: JID,
+        participants: list[JID],
+    ) -> list[ParticipantChangeResponse]: ...
+    async def reject_membership_requests(
+        self,
+        jid: JID,
+        participants: list[JID],
+    ) -> list[ParticipantChangeResponse]: ...
+    async def set_member_add_mode(self, jid: JID, mode: MemberAddMode) -> None: ...
+
+
+class StatusPrivacySetting:
+    Contacts: StatusPrivacySetting
+    AllowList: StatusPrivacySetting
+    DenyList: StatusPrivacySetting
+
+
+class StatusSendOptions:
+    privacy: StatusPrivacySetting
+
+    def __init__(
+        self,
+        privacy: StatusPrivacySetting = StatusPrivacySetting.Contacts,
+    ) -> None: ...
+
+
+class StatusClient:
+    async def send_text(
+        self,
+        text: str,
+        background_argb: int,
+        font: int,
+        recipients: list[JID],
+        options: StatusSendOptions | None = None,
+    ) -> str: ...
+    async def send_image(
+        self,
+        upload: UploadResponse,
+        thumbnail: bytes,
+        recipients: list[JID],
+        caption: str | None = None,
+        options: StatusSendOptions | None = None,
+    ) -> str: ...
+    async def send_video(
+        self,
+        upload: UploadResponse,
+        thumbnail: bytes,
+        duration_seconds: int,
+        recipients: list[JID],
+        caption: str | None = None,
+        options: StatusSendOptions | None = None,
+    ) -> str: ...
+    async def send_raw(
+        self,
+        message: MessageProto,
+        recipients: list[JID],
+        options: StatusSendOptions | None = None,
+    ) -> str: ...
+    async def revoke(
+        self,
+        message_id: str,
+        recipients: list[JID],
+        options: StatusSendOptions | None = None,
+    ) -> str: ...
+    @staticmethod
+    def default_privacy() -> StatusPrivacySetting: ...
 

@@ -18,6 +18,8 @@ use tokio::signal;
 use tracing::{debug, error, info, warn};
 use super::community::CommunityClient;
 use super::contacts::ContactClient;
+use super::groups::GroupsClient;
+use super::status::StatusClient;
 use super::tryx_client::TryxClient;
 use crate::clients::chat_actions::ChatActionsClient;
 use crate::log::init_logging;
@@ -81,6 +83,18 @@ impl Tryx {
                     client_rx: client_rx.clone(),
                 },
             )?;
+            let groups_client = Py::new(
+                py,
+                GroupsClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
+            let status_client = Py::new(
+                py,
+                StatusClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
             let tryx_client = Py::new(
                 py,
                 TryxClient {
@@ -89,6 +103,8 @@ impl Tryx {
                     chat_actions: chat_actions_client,
                     community: community_client,
                     newsletter: newsletter_client,
+                    groups: groups_client,
+                    status: status_client,
                 }
             )?;
             

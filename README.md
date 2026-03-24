@@ -26,6 +26,8 @@ It combines:
 - Dedicated chat-actions namespace: `client.chat_actions.*`
 - Dedicated community namespace: `client.community.*`
 - Dedicated newsletter namespace: `client.newsletter.*`
+- Dedicated groups namespace: `client.groups.*`
+- Dedicated status namespace: `client.status.*`
 - Dedicated helper namespace: `tryx.helpers.*`
 - Rich event payload classes with lazy conversion where possible
 
@@ -179,6 +181,9 @@ if __name__ == "__main__":
 - `TryxClient.contact -> ContactClient`
 - `TryxClient.chat_actions -> ChatActionsClient`
 - `TryxClient.community -> CommunityClient`
+- `TryxClient.newsletter -> NewsletterClient`
+- `TryxClient.groups -> GroupsClient`
+- `TryxClient.status -> StatusClient`
 - `TryxClient.send_message(...)`
 - `TryxClient.send_text(...)`
 - `TryxClient.send_photo(...)`
@@ -236,11 +241,50 @@ if __name__ == "__main__":
 - `NewsletterClient.send_reaction(jid, server_id, reaction)`
 - `NewsletterClient.get_messages(jid, count, before=None)`
 
+### Groups namespace
+
+- `GroupsClient.query_info(jid)`
+- `GroupsClient.get_participating()`
+- `GroupsClient.get_metadata(jid)`
+- `GroupsClient.create_group(options)`
+- `GroupsClient.set_subject(jid, subject)`
+- `GroupsClient.set_description(jid, description=None, prev=None)`
+- `GroupsClient.leave(jid)`
+- `GroupsClient.add_participants(jid, participants)`
+- `GroupsClient.remove_participants(jid, participants)`
+- `GroupsClient.promote_participants(jid, participants)`
+- `GroupsClient.demote_participants(jid, participants)`
+- `GroupsClient.get_invite_link(jid, reset)`
+- `GroupsClient.set_locked(jid, locked)`
+- `GroupsClient.set_announce(jid, announce)`
+- `GroupsClient.set_ephemeral(jid, expiration)`
+- `GroupsClient.set_membership_approval(jid, mode)`
+- `GroupsClient.join_with_invite_code(code)`
+- `GroupsClient.join_with_invite_v4(group_jid, code, expiration, admin_jid)`
+- `GroupsClient.get_invite_info(code)`
+- `GroupsClient.get_membership_requests(jid)`
+- `GroupsClient.approve_membership_requests(jid, participants)`
+- `GroupsClient.reject_membership_requests(jid, participants)`
+- `GroupsClient.set_member_add_mode(jid, mode)`
+
+### Status namespace
+
+- `StatusClient.send_text(text, background_argb, font, recipients, options=None)`
+- `StatusClient.send_image(upload, thumbnail, recipients, caption=None, options=None)`
+- `StatusClient.send_video(upload, thumbnail, duration_seconds, recipients, caption=None, options=None)`
+- `StatusClient.send_raw(message, recipients, options=None)`
+- `StatusClient.revoke(message_id, recipients, options=None)`
+
 ### Helper namespace
 
 - `NewsletterHelpers.parse_message(data)`
 - `NewsletterHelpers.serialize_message(message)`
 - `NewsletterHelpers.build_text_message(text)`
+- `GroupsHelpers.strip_invite_url(code)`
+- `GroupsHelpers.build_participant(...)`
+- `GroupsHelpers.build_create_options(...)`
+- `StatusHelpers.build_send_options(privacy=...)`
+- `StatusHelpers.default_privacy()`
 
 Related typed models:
 
@@ -258,6 +302,18 @@ Related typed models:
 - `NewsletterReactionCount`
 - `NewsletterMetadata`
 - `NewsletterMessage`
+- `MemberLinkMode`
+- `MemberAddMode`
+- `MembershipApprovalMode`
+- `GroupParticipantOptions`
+- `CreateGroupOptions`
+- `CreateGroupResult`
+- `JoinGroupResult`
+- `ParticipantChangeResponse`
+- `MembershipRequest`
+- `GroupInfo`
+- `StatusPrivacySetting`
+- `StatusSendOptions`
 
 ## Typing Support
 

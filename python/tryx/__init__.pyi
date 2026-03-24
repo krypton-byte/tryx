@@ -4,9 +4,20 @@ from .client import (
     CommunityClient,
     CommunitySubgroup,
     ContactClient,
+    CreateGroupOptions,
+    CreateGroupResult,
     CreateCommunityOptions,
     CreateCommunityResult,
+    GroupInfo,
     GroupMetadata,
+    GroupParticipantOptions,
+    GroupsClient,
+    JoinGroupResult,
+    MemberAddMode,
+    MemberLinkMode,
+    MembershipApprovalMode,
+    MembershipRequest,
+    ParticipantChangeResponse,
     GroupParticipant,
     GroupType,
     LinkSubgroupsResult,
@@ -17,6 +28,9 @@ from .client import (
     NewsletterRole,
     NewsletterState,
     NewsletterVerification,
+    StatusClient,
+    StatusPrivacySetting,
+    StatusSendOptions,
     Tryx,
     TryxClient,
     UnlinkSubgroupsResult,
@@ -33,6 +47,6 @@ from .exceptions import (
 )
 from .types import JID, MessageInfo, MessageSource, ProfilePicture, UploadResponse
 from .wacore import MediaType
-from .helpers import NewsletterHelpers
+from .helpers import GroupsHelpers, NewsletterHelpers, StatusHelpers
 
 __all__: list[str]

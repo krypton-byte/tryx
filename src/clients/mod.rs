@@ -6,3 +6,4 @@ pub mod chat_actions;
 pub mod community;
 pub mod newsletter;
 pub mod status;
+pub mod groups;

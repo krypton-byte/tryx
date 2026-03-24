@@ -5,8 +5,12 @@ use self::clients::tryx::Tryx;
 use self::clients::chat_actions::ChatActionsClient;
 use self::clients::community::CommunityClient;
 use self::clients::contacts::ContactClient;
+use self::clients::groups::GroupsClient;
 use self::clients::newsletter::NewsletterClient;
+use self::clients::status::StatusClient;
+use self::helpers::groups::GroupsHelpers;
 use self::helpers::newsletter::NewsletterHelpers;
+use self::helpers::status::StatusHelpers;
 use self::events::types::{
     BusinessStatusUpdateData,
     EvArchiveUpdateData,
@@ -93,6 +97,19 @@ use self::wacore::iq::newsletter::{
     NewsletterState,
     NewsletterVerification,
 };
+use self::wacore::iq::groups::{
+    CreateGroupOptions,
+    CreateGroupResult,
+    GroupInfo,
+    GroupParticipantOptions,
+    JoinGroupResult,
+    MemberAddMode,
+    MemberLinkMode,
+    MembershipApprovalMode,
+    MembershipRequest,
+    ParticipantChangeResponse,
+};
+use self::wacore::iq::status::{StatusPrivacySetting, StatusSendOptions};
 
 /// A Python module implemented in Rust.
 /// 
@@ -105,6 +122,8 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<ChatActionsClient>()?;
     client_module.add_class::<CommunityClient>()?;
     client_module.add_class::<NewsletterClient>()?;
+    client_module.add_class::<GroupsClient>()?;
+    client_module.add_class::<StatusClient>()?;
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;
@@ -122,6 +141,18 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<NewsletterReactionCount>()?;
     client_module.add_class::<NewsletterMetadata>()?;
     client_module.add_class::<NewsletterMessage>()?;
+    client_module.add_class::<MemberLinkMode>()?;
+    client_module.add_class::<MemberAddMode>()?;
+    client_module.add_class::<MembershipApprovalMode>()?;
+    client_module.add_class::<GroupParticipantOptions>()?;
+    client_module.add_class::<CreateGroupOptions>()?;
+    client_module.add_class::<CreateGroupResult>()?;
+    client_module.add_class::<JoinGroupResult>()?;
+    client_module.add_class::<ParticipantChangeResponse>()?;
+    client_module.add_class::<MembershipRequest>()?;
+    client_module.add_class::<GroupInfo>()?;
+    client_module.add_class::<StatusPrivacySetting>()?;
+    client_module.add_class::<StatusSendOptions>()?;
     client_module.add_class::<Tryx>()?;
     _py.add_submodule(&client_module)?;
 
@@ -212,6 +243,8 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
 
     let helpers_module = PyModule::new(_py.py(), "helpers")?;
     helpers_module.add_class::<NewsletterHelpers>()?;
+    helpers_module.add_class::<GroupsHelpers>()?;
+    helpers_module.add_class::<StatusHelpers>()?;
     _py.add_submodule(&helpers_module)?;
     Ok(())
 }
