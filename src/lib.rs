@@ -3,13 +3,21 @@ use pyo3::prelude::*;
 use self::clients::tryx_client::TryxClient;
 use self::clients::tryx::Tryx;
 use self::clients::chat_actions::ChatActionsClient;
+use self::clients::chatstate::ChatstateClient;
 use self::clients::community::CommunityClient;
 use self::clients::contacts::ContactClient;
+use self::clients::blocking::BlockingClient;
 use self::clients::groups::GroupsClient;
 use self::clients::newsletter::NewsletterClient;
+use self::clients::polls::PollsClient;
+use self::clients::presence::PresenceClient;
 use self::clients::status::StatusClient;
+use self::helpers::blocking::BlockingHelpers;
+use self::helpers::chatstate::ChatstateHelpers;
 use self::helpers::groups::GroupsHelpers;
 use self::helpers::newsletter::NewsletterHelpers;
+use self::helpers::polls::PollsHelpers;
+use self::helpers::presence::PresenceHelpers;
 use self::helpers::status::StatusHelpers;
 use self::events::types::{
     BusinessStatusUpdateData,
@@ -110,6 +118,10 @@ use self::wacore::iq::groups::{
     ParticipantChangeResponse,
 };
 use self::wacore::iq::status::{StatusPrivacySetting, StatusSendOptions};
+use self::wacore::iq::chatstate::ChatStateType;
+use self::wacore::iq::blocking::BlocklistEntry;
+use self::wacore::iq::polls::PollOptionResult;
+use self::wacore::iq::presence::PresenceStatus;
 
 /// A Python module implemented in Rust.
 /// 
@@ -124,6 +136,10 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<NewsletterClient>()?;
     client_module.add_class::<GroupsClient>()?;
     client_module.add_class::<StatusClient>()?;
+    client_module.add_class::<ChatstateClient>()?;
+    client_module.add_class::<BlockingClient>()?;
+    client_module.add_class::<PollsClient>()?;
+    client_module.add_class::<PresenceClient>()?;
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;
@@ -153,6 +169,10 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<GroupInfo>()?;
     client_module.add_class::<StatusPrivacySetting>()?;
     client_module.add_class::<StatusSendOptions>()?;
+    client_module.add_class::<ChatStateType>()?;
+    client_module.add_class::<BlocklistEntry>()?;
+    client_module.add_class::<PollOptionResult>()?;
+    client_module.add_class::<PresenceStatus>()?;
     client_module.add_class::<Tryx>()?;
     _py.add_submodule(&client_module)?;
 
@@ -245,6 +265,10 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     helpers_module.add_class::<NewsletterHelpers>()?;
     helpers_module.add_class::<GroupsHelpers>()?;
     helpers_module.add_class::<StatusHelpers>()?;
+    helpers_module.add_class::<ChatstateHelpers>()?;
+    helpers_module.add_class::<BlockingHelpers>()?;
+    helpers_module.add_class::<PollsHelpers>()?;
+    helpers_module.add_class::<PresenceHelpers>()?;
     _py.add_submodule(&helpers_module)?;
     Ok(())
 }

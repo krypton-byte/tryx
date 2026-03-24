@@ -7,3 +7,8 @@ pub mod community;
 pub mod newsletter;
 pub mod status;
 pub mod groups;
+pub mod profile;
+pub mod blocking;
+pub mod polls;
+pub mod chatstate;
+pub mod presence;

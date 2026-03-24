@@ -9,10 +9,14 @@ use wacore::proto_helpers::build_quote_context;
 use prost::Message;
 use whatsapp_rust::Client;
 use crate::clients::chat_actions::ChatActionsClient;
+use crate::clients::chatstate::ChatstateClient;
 use crate::clients::community::CommunityClient;
 use crate::clients::contacts::ContactClient;
+use crate::clients::blocking::BlockingClient;
 use crate::clients::groups::GroupsClient;
 use crate::clients::newsletter::NewsletterClient;
+use crate::clients::polls::PollsClient;
+use crate::clients::presence::PresenceClient;
 use crate::clients::status::StatusClient;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, UploadResponse};
@@ -32,6 +36,14 @@ pub struct TryxClient {
     pub groups: Py<GroupsClient>,
     #[pyo3(get)]
     pub status: Py<StatusClient>,
+    #[pyo3(get)]
+    pub chatstate: Py<ChatstateClient>,
+    #[pyo3(get)]
+    pub blocking: Py<BlockingClient>,
+    #[pyo3(get)]
+    pub polls: Py<PollsClient>,
+    #[pyo3(get)]
+    pub presence: Py<PresenceClient>,
 }
 
 #[pymethods]

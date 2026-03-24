@@ -18,7 +18,11 @@ use tokio::signal;
 use tracing::{debug, error, info, warn};
 use super::community::CommunityClient;
 use super::contacts::ContactClient;
+use super::chatstate::ChatstateClient;
+use super::blocking::BlockingClient;
 use super::groups::GroupsClient;
+use super::polls::PollsClient;
+use super::presence::PresenceClient;
 use super::status::StatusClient;
 use super::tryx_client::TryxClient;
 use crate::clients::chat_actions::ChatActionsClient;
@@ -95,6 +99,30 @@ impl Tryx {
                     client_rx: client_rx.clone(),
                 },
             )?;
+            let chatstate_client = Py::new(
+                py,
+                ChatstateClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
+            let blocking_client = Py::new(
+                py,
+                BlockingClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
+            let polls_client = Py::new(
+                py,
+                PollsClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
+            let presence_client = Py::new(
+                py,
+                PresenceClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
             let tryx_client = Py::new(
                 py,
                 TryxClient {
@@ -105,6 +133,10 @@ impl Tryx {
                     newsletter: newsletter_client,
                     groups: groups_client,
                     status: status_client,
+                    chatstate: chatstate_client,
+                    blocking: blocking_client,
+                    polls: polls_client,
+                    presence: presence_client,
                 }
             )?;
             

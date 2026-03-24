@@ -28,6 +28,10 @@ It combines:
 - Dedicated newsletter namespace: `client.newsletter.*`
 - Dedicated groups namespace: `client.groups.*`
 - Dedicated status namespace: `client.status.*`
+- Dedicated chatstate namespace: `client.chatstate.*`
+- Dedicated blocking namespace: `client.blocking.*`
+- Dedicated polls namespace: `client.polls.*`
+- Dedicated presence namespace: `client.presence.*`
 - Dedicated helper namespace: `tryx.helpers.*`
 - Rich event payload classes with lazy conversion where possible
 
@@ -184,6 +188,10 @@ if __name__ == "__main__":
 - `TryxClient.newsletter -> NewsletterClient`
 - `TryxClient.groups -> GroupsClient`
 - `TryxClient.status -> StatusClient`
+- `TryxClient.chatstate -> ChatstateClient`
+- `TryxClient.blocking -> BlockingClient`
+- `TryxClient.polls -> PollsClient`
+- `TryxClient.presence -> PresenceClient`
 - `TryxClient.send_message(...)`
 - `TryxClient.send_text(...)`
 - `TryxClient.send_photo(...)`
@@ -275,6 +283,35 @@ if __name__ == "__main__":
 - `StatusClient.send_raw(message, recipients, options=None)`
 - `StatusClient.revoke(message_id, recipients, options=None)`
 
+### Chatstate namespace
+
+- `ChatstateClient.send(to, state)`
+- `ChatstateClient.send_composing(to)`
+- `ChatstateClient.send_recording(to)`
+- `ChatstateClient.send_paused(to)`
+
+### Blocking namespace
+
+- `BlockingClient.block(jid)`
+- `BlockingClient.unblock(jid)`
+- `BlockingClient.get_blocklist()`
+- `BlockingClient.is_blocked(jid)`
+
+### Polls namespace
+
+- `PollsClient.create(to, name, options, selectable_count)`
+- `PollsClient.vote(chat_jid, poll_msg_id, poll_creator_jid, message_secret, option_names)`
+- `PollsClient.decrypt_vote(enc_payload, enc_iv, message_secret, poll_msg_id, poll_creator_jid, voter_jid)`
+- `PollsClient.aggregate_votes(poll_options, votes, message_secret, poll_msg_id, poll_creator_jid)`
+
+### Presence namespace
+
+- `PresenceClient.set(status)`
+- `PresenceClient.set_available()`
+- `PresenceClient.set_unavailable()`
+- `PresenceClient.subscribe(jid)`
+- `PresenceClient.unsubscribe(jid)`
+
 ### Helper namespace
 
 - `NewsletterHelpers.parse_message(data)`
@@ -285,6 +322,13 @@ if __name__ == "__main__":
 - `GroupsHelpers.build_create_options(...)`
 - `StatusHelpers.build_send_options(privacy=...)`
 - `StatusHelpers.default_privacy()`
+- `ChatstateHelpers.composing()`
+- `ChatstateHelpers.recording()`
+- `ChatstateHelpers.paused()`
+- `BlockingHelpers.same_user(a, b)`
+- `PollsHelpers.decrypt_vote(...)`
+- `PollsHelpers.aggregate_votes(...)`
+- `PresenceHelpers.default_status()`
 
 Related typed models:
 
@@ -314,6 +358,10 @@ Related typed models:
 - `GroupInfo`
 - `StatusPrivacySetting`
 - `StatusSendOptions`
+- `ChatStateType`
+- `BlocklistEntry`
+- `PollOptionResult`
+- `PresenceStatus`
 
 ## Typing Support
 

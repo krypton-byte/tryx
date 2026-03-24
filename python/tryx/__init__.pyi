@@ -1,6 +1,10 @@
 from .backend import BackendBase, SqliteBackend
 from .client import (
+    BlockingClient,
+    BlocklistEntry,
     ChatActionsClient,
+    ChatstateClient,
+    ChatStateType,
     CommunityClient,
     CommunitySubgroup,
     ContactClient,
@@ -28,6 +32,10 @@ from .client import (
     NewsletterRole,
     NewsletterState,
     NewsletterVerification,
+    PollOptionResult,
+    PollsClient,
+    PresenceClient,
+    PresenceStatus,
     StatusClient,
     StatusPrivacySetting,
     StatusSendOptions,
@@ -47,6 +55,14 @@ from .exceptions import (
 )
 from .types import JID, MessageInfo, MessageSource, ProfilePicture, UploadResponse
 from .wacore import MediaType
-from .helpers import GroupsHelpers, NewsletterHelpers, StatusHelpers
+from .helpers import (
+    BlockingHelpers,
+    ChatstateHelpers,
+    GroupsHelpers,
+    NewsletterHelpers,
+    PollsHelpers,
+    PresenceHelpers,
+    StatusHelpers,
+)
 
 __all__: list[str]

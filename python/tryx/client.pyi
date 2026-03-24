@@ -60,6 +60,10 @@ class TryxClient:
     newsletter: NewsletterClient
     groups: GroupsClient
     status: StatusClient
+    chatstate: ChatstateClient
+    blocking: BlockingClient
+    polls: PollsClient
+    presence: PresenceClient
 
     def is_connected(self) -> bool: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
@@ -532,4 +536,82 @@ class StatusClient:
     ) -> str: ...
     @staticmethod
     def default_privacy() -> StatusPrivacySetting: ...
+
+
+class ChatStateType:
+    Composing: ChatStateType
+    Recording: ChatStateType
+    Paused: ChatStateType
+
+
+class BlocklistEntry:
+    jid: JID
+    timestamp: int | None
+
+
+class PollOptionResult:
+    name: str
+    voters: list[str]
+
+
+class PresenceStatus:
+    Available: PresenceStatus
+    Unavailable: PresenceStatus
+
+
+class ChatstateClient:
+    async def send(self, to: JID, state: ChatStateType) -> None: ...
+    async def send_composing(self, to: JID) -> None: ...
+    async def send_recording(self, to: JID) -> None: ...
+    async def send_paused(self, to: JID) -> None: ...
+
+
+class BlockingClient:
+    async def block(self, jid: JID) -> None: ...
+    async def unblock(self, jid: JID) -> None: ...
+    async def get_blocklist(self) -> list[BlocklistEntry]: ...
+    async def is_blocked(self, jid: JID) -> bool: ...
+
+
+class PollsClient:
+    async def create(
+        self,
+        to: JID,
+        name: str,
+        options: list[str],
+        selectable_count: int,
+    ) -> tuple[str, bytes]: ...
+    async def vote(
+        self,
+        chat_jid: JID,
+        poll_msg_id: str,
+        poll_creator_jid: JID,
+        message_secret: bytes,
+        option_names: list[str],
+    ) -> str: ...
+    @staticmethod
+    def decrypt_vote(
+        enc_payload: bytes,
+        enc_iv: bytes,
+        message_secret: bytes,
+        poll_msg_id: str,
+        poll_creator_jid: JID,
+        voter_jid: JID,
+    ) -> list[bytes]: ...
+    @staticmethod
+    def aggregate_votes(
+        poll_options: list[str],
+        votes: list[tuple[JID, bytes, bytes]],
+        message_secret: bytes,
+        poll_msg_id: str,
+        poll_creator_jid: JID,
+    ) -> list[PollOptionResult]: ...
+
+
+class PresenceClient:
+    async def set(self, status: PresenceStatus) -> None: ...
+    async def set_available(self) -> None: ...
+    async def set_unavailable(self) -> None: ...
+    async def subscribe(self, jid: JID) -> None: ...
+    async def unsubscribe(self, jid: JID) -> None: ...
 

@@ -63,7 +63,6 @@ impl GroupsClient {
                 .get_participating()
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-
             Python::attach(|py| {
                 let dict = PyDict::new(py);
                 for (jid, meta) in result {

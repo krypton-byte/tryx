@@ -1,10 +1,14 @@
 from .waproto.whatsapp_pb2 import Message as MessageProto
 from .client import (
+    BlocklistEntry,
+    ChatStateType,
     CreateGroupOptions,
     GroupParticipantOptions,
     MemberAddMode,
     MemberLinkMode,
     MembershipApprovalMode,
+    PollOptionResult,
+    PresenceStatus,
     StatusPrivacySetting,
     StatusSendOptions,
 )
@@ -51,3 +55,42 @@ class StatusHelpers:
     ) -> StatusSendOptions: ...
     @staticmethod
     def default_privacy() -> StatusPrivacySetting: ...
+
+
+class ChatstateHelpers:
+    @staticmethod
+    def composing() -> ChatStateType: ...
+    @staticmethod
+    def recording() -> ChatStateType: ...
+    @staticmethod
+    def paused() -> ChatStateType: ...
+
+
+class BlockingHelpers:
+    @staticmethod
+    def same_user(a: JID, b: JID) -> bool: ...
+
+
+class PollsHelpers:
+    @staticmethod
+    def decrypt_vote(
+        enc_payload: bytes,
+        enc_iv: bytes,
+        message_secret: bytes,
+        poll_msg_id: str,
+        poll_creator_jid: JID,
+        voter_jid: JID,
+    ) -> list[bytes]: ...
+    @staticmethod
+    def aggregate_votes(
+        poll_options: list[str],
+        votes: list[tuple[JID, bytes, bytes]],
+        message_secret: bytes,
+        poll_msg_id: str,
+        poll_creator_jid: JID,
+    ) -> list[PollOptionResult]: ...
+
+
+class PresenceHelpers:
+    @staticmethod
+    def default_status() -> PresenceStatus: ...
