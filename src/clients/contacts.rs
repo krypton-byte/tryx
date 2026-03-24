@@ -36,7 +36,6 @@ impl ContactClient {
                 .get_info(phone_refs.as_slice())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-
             let result = Python::attach(|py| {
                 info.into_iter()
                     .map(|item| Py::new(py, ContactInfo::from(item)))

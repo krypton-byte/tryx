@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 use self::clients::tryx_client::TryxClient;
 use self::clients::tryx::Tryx;
 use self::clients::chat_actions::ChatActionsClient;
+use self::clients::community::CommunityClient;
 use self::clients::contacts::ContactClient;
 use self::events::types::{
     BusinessStatusUpdateData,
@@ -72,6 +73,16 @@ use self::exceptions::{EventDispatchError, FailedBuildBot, PyPayloadBuildError, 
 use self::types::{JID, MessageInfo, UploadResponse};
 use self::wacore::download::MediaType;
 use self::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
+use self::wacore::iq::community::{
+    CommunitySubgroup,
+    CreateCommunityOptions,
+    CreateCommunityResult,
+    GroupMetadata,
+    GroupParticipant,
+    GroupType,
+    LinkSubgroupsResult,
+    UnlinkSubgroupsResult,
+};
 
 /// A Python module implemented in Rust.
 /// 
@@ -82,9 +93,18 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<TryxClient>()?;
     client_module.add_class::<ContactClient>()?;
     client_module.add_class::<ChatActionsClient>()?;
+    client_module.add_class::<CommunityClient>()?;
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;
+    client_module.add_class::<GroupType>()?;
+    client_module.add_class::<CreateCommunityOptions>()?;
+    client_module.add_class::<CreateCommunityResult>()?;
+    client_module.add_class::<CommunitySubgroup>()?;
+    client_module.add_class::<LinkSubgroupsResult>()?;
+    client_module.add_class::<UnlinkSubgroupsResult>()?;
+    client_module.add_class::<GroupParticipant>()?;
+    client_module.add_class::<GroupMetadata>()?;
     client_module.add_class::<Tryx>()?;
     _py.add_submodule(&client_module)?;
 

@@ -1,5 +1,19 @@
 from .backend import BackendBase, SqliteBackend
-from .client import ChatActionsClient, ContactClient, Tryx, TryxClient
+from .client import (
+    ChatActionsClient,
+    CommunityClient,
+    CommunitySubgroup,
+    ContactClient,
+    CreateCommunityOptions,
+    CreateCommunityResult,
+    GroupMetadata,
+    GroupParticipant,
+    GroupType,
+    LinkSubgroupsResult,
+    Tryx,
+    TryxClient,
+    UnlinkSubgroupsResult,
+)
 from .exceptions import (
     BuildBotError,
     EventDispatchError,

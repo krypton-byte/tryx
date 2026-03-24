@@ -24,6 +24,7 @@ It combines:
 - Messaging API (text, media upload, media download)
 - Dedicated contact namespace: `client.contact.*`
 - Dedicated chat-actions namespace: `client.chat_actions.*`
+- Dedicated community namespace: `client.community.*`
 - Rich event payload classes with lazy conversion where possible
 
 ## Architecture Overview
@@ -175,6 +176,7 @@ if __name__ == "__main__":
 
 - `TryxClient.contact -> ContactClient`
 - `TryxClient.chat_actions -> ChatActionsClient`
+- `TryxClient.community -> CommunityClient`
 - `TryxClient.send_message(...)`
 - `TryxClient.send_text(...)`
 - `TryxClient.send_photo(...)`
@@ -205,6 +207,29 @@ if __name__ == "__main__":
 - `ChatActionsClient.delete_message_for_me(chat_jid, participant_jid, message_id, from_me, delete_media, message_timestamp=None)`
 - `ChatActionsClient.build_message_key(...)`
 - `ChatActionsClient.build_message_range(...)`
+
+### Community namespace
+
+- `CommunityClient.create(options)`
+- `CommunityClient.deactivate(community_jid)`
+- `CommunityClient.link_subgroups(community_jid, subgroup_jids)`
+- `CommunityClient.unlink_subgroups(community_jid, subgroup_jids, remove_orphan_members)`
+- `CommunityClient.get_subgroups(community_jid)`
+- `CommunityClient.get_subgroup_participant_counts(community_jid)`
+- `CommunityClient.query_linked_group(community_jid, subgroup_jid)`
+- `CommunityClient.join_subgroup(community_jid, subgroup_jid)`
+- `CommunityClient.get_linked_groups_participants(community_jid)`
+
+Related typed models:
+
+- `CreateCommunityOptions`
+- `CreateCommunityResult`
+- `CommunitySubgroup`
+- `LinkSubgroupsResult`
+- `UnlinkSubgroupsResult`
+- `GroupParticipant`
+- `GroupMetadata`
+- `GroupType`
 
 ## Typing Support
 

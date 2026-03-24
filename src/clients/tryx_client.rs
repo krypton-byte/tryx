@@ -9,6 +9,7 @@ use wacore::proto_helpers::build_quote_context;
 use prost::Message;
 use whatsapp_rust::Client;
 use crate::clients::chat_actions::ChatActionsClient;
+use crate::clients::community::CommunityClient;
 use crate::clients::contacts::ContactClient;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, UploadResponse};
@@ -20,6 +21,8 @@ pub struct TryxClient {
     pub contact: Py<ContactClient>,
     #[pyo3(get)]
     pub chat_actions: Py<ChatActionsClient>,
+    #[pyo3(get)]
+    pub community: Py<CommunityClient>,
 }
 
 #[pymethods]

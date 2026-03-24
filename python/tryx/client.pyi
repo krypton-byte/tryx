@@ -56,6 +56,7 @@ class Tryx:
 class TryxClient:
     contact: ContactClient
     chat_actions: ChatActionsClient
+    community: CommunityClient
 
     def is_connected(self) -> bool: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
@@ -143,4 +144,120 @@ class ChatActionsClient:
         delete_media: bool,
         message_timestamp: int | None = None,
     ) -> None: ...
+
+
+class GroupType:
+    Default: GroupType
+    Community: GroupType
+    LinkedSubgroup: GroupType
+    LinkedAnnouncementGroup: GroupType
+    LinkedGeneralGroup: GroupType
+
+
+class CreateCommunityOptions:
+    name: str
+    description: str | None
+    closed: bool
+    allow_non_admin_sub_group_creation: bool
+    create_general_chat: bool
+
+    def __init__(
+        self,
+        name: str,
+        description: str | None = None,
+        closed: bool = False,
+        allow_non_admin_sub_group_creation: bool = False,
+        create_general_chat: bool = True,
+    ) -> None: ...
+
+
+class CreateCommunityResult:
+    gid: JID
+
+
+class CommunitySubgroup:
+    id: JID
+    subject: str
+    participant_count: int | None
+    is_default_sub_group: bool
+    is_general_chat: bool
+
+
+class LinkSubgroupsResult:
+    linked_jids: list[JID]
+    failed_groups: list[tuple[JID, int]]
+
+
+class UnlinkSubgroupsResult:
+    unlinked_jids: list[JID]
+    failed_groups: list[tuple[JID, int]]
+
+
+class GroupParticipant:
+    jid: JID
+    phone_number: JID | None
+    is_admin: bool
+
+
+class GroupMetadata:
+    id: JID
+    subject: str
+    participants: list[GroupParticipant]
+    addressing_mode: str
+    creator: JID | None
+    creation_time: int | None
+    subject_time: int | None
+    subject_owner: JID | None
+    description: str | None
+    description_id: str | None
+    is_locked: bool
+    is_announcement: bool
+    ephemeral_expiration: int
+    membership_approval: bool
+    member_add_mode: str | None
+    member_link_mode: str | None
+    size: int | None
+    is_parent_group: bool
+    parent_group_jid: JID | None
+    is_default_sub_group: bool
+    is_general_chat: bool
+    allow_non_admin_sub_group_creation: bool
+    group_type: GroupType
+
+
+class CommunityClient:
+    @staticmethod
+    def classify_group(metadata: GroupMetadata) -> GroupType: ...
+    async def create(self, options: CreateCommunityOptions) -> CreateCommunityResult: ...
+    async def deactivate(self, community_jid: JID) -> None: ...
+    async def link_subgroups(
+        self,
+        community_jid: JID,
+        subgroup_jids: list[JID],
+    ) -> LinkSubgroupsResult: ...
+    async def unlink_subgroups(
+        self,
+        community_jid: JID,
+        subgroup_jids: list[JID],
+        remove_orphan_members: bool,
+    ) -> UnlinkSubgroupsResult: ...
+    async def get_subgroups(self, community_jid: JID) -> list[CommunitySubgroup]: ...
+    async def get_subgroup_participant_counts(
+        self,
+        community_jid: JID,
+    ) -> list[tuple[JID, int]]: ...
+    async def query_linked_group(
+        self,
+        community_jid: JID,
+        subgroup_jid: JID,
+    ) -> GroupMetadata: ...
+    async def join_subgroup(
+        self,
+        community_jid: JID,
+        subgroup_jid: JID,
+    ) -> GroupMetadata: ...
+    async def get_linked_groups_participants(
+        self,
+        community_jid: JID,
+    ) -> list[GroupParticipant]: ...
 
