@@ -57,6 +57,7 @@ class TryxClient:
     contact: ContactClient
     chat_actions: ChatActionsClient
     community: CommunityClient
+    newsletter: NewsletterClient
 
     def is_connected(self) -> bool: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
@@ -260,4 +261,78 @@ class CommunityClient:
         self,
         community_jid: JID,
     ) -> list[GroupParticipant]: ...
+
+
+class NewsletterVerification:
+    Verified: NewsletterVerification
+    Unverified: NewsletterVerification
+
+
+class NewsletterState:
+    Active: NewsletterState
+    Suspended: NewsletterState
+    Geosuspended: NewsletterState
+
+
+class NewsletterRole:
+    Owner: NewsletterRole
+    Admin: NewsletterRole
+    Subscriber: NewsletterRole
+    Guest: NewsletterRole
+
+
+class NewsletterReactionCount:
+    code: str
+    count: int
+
+
+class NewsletterMetadata:
+    jid: JID
+    name: str
+    description: str | None
+    subscriber_count: int
+    verification: NewsletterVerification
+    state: NewsletterState
+    picture_url: str | None
+    preview_url: str | None
+    invite_code: str | None
+    role: NewsletterRole | None
+    creation_time: int | None
+
+
+class NewsletterMessage:
+    server_id: int
+    timestamp: int
+    message_type: str
+    is_sender: bool
+    reactions: list[NewsletterReactionCount]
+    message: MessageProto | None
+
+
+class NewsletterClient:
+    async def list_subscribed(self) -> list[NewsletterMetadata]: ...
+    async def get_metadata(self, jid: JID) -> NewsletterMetadata: ...
+    async def get_metadata_by_invite(self, invite_code: str) -> NewsletterMetadata: ...
+    async def create(
+        self,
+        name: str,
+        description: str | None = None,
+    ) -> NewsletterMetadata: ...
+    async def join(self, jid: JID) -> NewsletterMetadata: ...
+    async def leave(self, jid: JID) -> None: ...
+    async def update(
+        self,
+        jid: JID,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> NewsletterMetadata: ...
+    async def subscribe_live_updates(self, jid: JID) -> int: ...
+    async def send_message(self, jid: JID, message: MessageProto) -> str: ...
+    async def send_reaction(self, jid: JID, server_id: int, reaction: str) -> None: ...
+    async def get_messages(
+        self,
+        jid: JID,
+        count: int,
+        before: int | None = None,
+    ) -> list[NewsletterMessage]: ...
 

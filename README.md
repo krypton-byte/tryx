@@ -25,6 +25,8 @@ It combines:
 - Dedicated contact namespace: `client.contact.*`
 - Dedicated chat-actions namespace: `client.chat_actions.*`
 - Dedicated community namespace: `client.community.*`
+- Dedicated newsletter namespace: `client.newsletter.*`
+- Dedicated helper namespace: `tryx.helpers.*`
 - Rich event payload classes with lazy conversion where possible
 
 ## Architecture Overview
@@ -220,6 +222,26 @@ if __name__ == "__main__":
 - `CommunityClient.join_subgroup(community_jid, subgroup_jid)`
 - `CommunityClient.get_linked_groups_participants(community_jid)`
 
+### Newsletter namespace
+
+- `NewsletterClient.list_subscribed()`
+- `NewsletterClient.get_metadata(jid)`
+- `NewsletterClient.get_metadata_by_invite(invite_code)`
+- `NewsletterClient.create(name, description=None)`
+- `NewsletterClient.join(jid)`
+- `NewsletterClient.leave(jid)`
+- `NewsletterClient.update(jid, name=None, description=None)`
+- `NewsletterClient.subscribe_live_updates(jid)`
+- `NewsletterClient.send_message(jid, message)`
+- `NewsletterClient.send_reaction(jid, server_id, reaction)`
+- `NewsletterClient.get_messages(jid, count, before=None)`
+
+### Helper namespace
+
+- `NewsletterHelpers.parse_message(data)`
+- `NewsletterHelpers.serialize_message(message)`
+- `NewsletterHelpers.build_text_message(text)`
+
 Related typed models:
 
 - `CreateCommunityOptions`
@@ -230,6 +252,12 @@ Related typed models:
 - `GroupParticipant`
 - `GroupMetadata`
 - `GroupType`
+- `NewsletterVerification`
+- `NewsletterState`
+- `NewsletterRole`
+- `NewsletterReactionCount`
+- `NewsletterMetadata`
+- `NewsletterMessage`
 
 ## Typing Support
 

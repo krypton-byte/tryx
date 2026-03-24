@@ -5,6 +5,8 @@ use self::clients::tryx::Tryx;
 use self::clients::chat_actions::ChatActionsClient;
 use self::clients::community::CommunityClient;
 use self::clients::contacts::ContactClient;
+use self::clients::newsletter::NewsletterClient;
+use self::helpers::newsletter::NewsletterHelpers;
 use self::events::types::{
     BusinessStatusUpdateData,
     EvArchiveUpdateData,
@@ -83,6 +85,14 @@ use self::wacore::iq::community::{
     LinkSubgroupsResult,
     UnlinkSubgroupsResult,
 };
+use self::wacore::iq::newsletter::{
+    NewsletterMessage,
+    NewsletterMetadata,
+    NewsletterReactionCount,
+    NewsletterRole,
+    NewsletterState,
+    NewsletterVerification,
+};
 
 /// A Python module implemented in Rust.
 /// 
@@ -94,6 +104,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<ContactClient>()?;
     client_module.add_class::<ChatActionsClient>()?;
     client_module.add_class::<CommunityClient>()?;
+    client_module.add_class::<NewsletterClient>()?;
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;
@@ -105,6 +116,12 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<UnlinkSubgroupsResult>()?;
     client_module.add_class::<GroupParticipant>()?;
     client_module.add_class::<GroupMetadata>()?;
+    client_module.add_class::<NewsletterVerification>()?;
+    client_module.add_class::<NewsletterState>()?;
+    client_module.add_class::<NewsletterRole>()?;
+    client_module.add_class::<NewsletterReactionCount>()?;
+    client_module.add_class::<NewsletterMetadata>()?;
+    client_module.add_class::<NewsletterMessage>()?;
     client_module.add_class::<Tryx>()?;
     _py.add_submodule(&client_module)?;
 
@@ -192,6 +209,10 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     let wacore_module = PyModule::new(_py.py(), "wacore")?;
     wacore_module.add_class::<MediaType>()?;
     _py.add_submodule(&wacore_module)?;
+
+    let helpers_module = PyModule::new(_py.py(), "helpers")?;
+    helpers_module.add_class::<NewsletterHelpers>()?;
+    _py.add_submodule(&helpers_module)?;
     Ok(())
 }
 
@@ -202,3 +223,4 @@ mod types;
 mod exceptions;
 mod wacore;
 mod log;
+mod helpers;

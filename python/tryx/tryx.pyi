@@ -10,6 +10,13 @@ from .client import (
     GroupParticipant,
     GroupType,
     LinkSubgroupsResult,
+    NewsletterClient,
+    NewsletterMessage,
+    NewsletterMetadata,
+    NewsletterReactionCount,
+    NewsletterRole,
+    NewsletterState,
+    NewsletterVerification,
     Tryx,
     TryxClient,
     UnlinkSubgroupsResult,
@@ -26,5 +33,6 @@ from .exceptions import (
 )
 from .types import JID, MessageInfo, MessageSource, ProfilePicture, UploadResponse
 from .wacore import MediaType
+from .helpers import NewsletterHelpers
 
 __all__: list[str]

@@ -75,6 +75,12 @@ impl Tryx {
                     client_rx: client_rx.clone(),
                 },
             )?;
+            let newsletter_client = Py::new(
+                py,
+                crate::clients::newsletter::NewsletterClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
             let tryx_client = Py::new(
                 py,
                 TryxClient {
@@ -82,6 +88,7 @@ impl Tryx {
                     contact: contact_client,
                     chat_actions: chat_actions_client,
                     community: community_client,
+                    newsletter: newsletter_client,
                 }
             )?;
             

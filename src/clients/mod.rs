@@ -4,3 +4,5 @@ pub mod tryx_client;
 pub mod contacts;
 pub mod chat_actions;
 pub mod community;
+pub mod newsletter;
+pub mod status;
