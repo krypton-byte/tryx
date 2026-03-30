@@ -348,3 +348,34 @@ pub struct SendResult {
     #[pyo3(get)]
     pub to: Py<JID>
 }
+
+#[pyclass]
+pub struct MediaReuploadResult {
+    #[pyo3(get)]
+    pub status: String,
+    #[pyo3(get)]
+    pub direct_path: Option<String>,
+}
+
+impl From<whatsapp_rust::MediaRetryResult> for MediaReuploadResult {
+    fn from(value: whatsapp_rust::MediaRetryResult) -> Self {
+        match value {
+            whatsapp_rust::MediaRetryResult::Success { direct_path } => Self {
+                status: "success".to_string(),
+                direct_path: Some(direct_path),
+            },
+            whatsapp_rust::MediaRetryResult::GeneralError => Self {
+                status: "general_error".to_string(),
+                direct_path: None,
+            },
+            whatsapp_rust::MediaRetryResult::NotFound => Self {
+                status: "not_found".to_string(),
+                direct_path: None,
+            },
+            whatsapp_rust::MediaRetryResult::DecryptionError => Self {
+                status: "decryption_error".to_string(),
+                direct_path: None,
+            },
+        }
+    }
+}

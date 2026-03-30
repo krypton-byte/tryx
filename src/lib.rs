@@ -86,7 +86,7 @@ use self::events::types::{
 };
 use self::backend::SqliteBackend;
 use self::exceptions::{EventDispatchError, FailedBuildBot, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
-use self::types::{JID, MessageInfo, UploadResponse};
+use self::types::{JID, MediaReuploadResult, MessageInfo, SendResult, UploadResponse};
 use self::wacore::download::MediaType;
 use self::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
 use self::wacore::iq::community::{
@@ -274,6 +274,8 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     types_module.add_class::<JID>()?;
     types_module.add_class::<MessageInfo>()?;
     types_module.add_class::<UploadResponse>()?;
+    types_module.add_class::<SendResult>()?;
+    types_module.add_class::<MediaReuploadResult>()?;
     _py.add_submodule(&types_module)?;
     let wacore_module = PyModule::new(_py.py(), "wacore")?;
     wacore_module.add_class::<MediaType>()?;

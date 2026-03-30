@@ -84,6 +84,18 @@ class UploadResponse:
     @property
     def file_length(self) -> int: ...
 
+class SendResult:
+    @property
+    def message_id(self) -> str: ...
+    @property
+    def to(self) -> JID: ...
+
+class MediaReuploadResult:
+    @property
+    def status(self) -> str: ...
+    @property
+    def direct_path(self) -> str | None: ...
+
 class ProfilePicture:
     id: str
     url: str

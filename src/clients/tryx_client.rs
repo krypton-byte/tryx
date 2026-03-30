@@ -21,7 +21,7 @@ use crate::clients::privacy::PrivacyClient;
 use crate::clients::profile::ProfileClient;
 use crate::clients::status::StatusClient;
 use crate::events::types::{EvMessage};
-use crate::types::{JID, UploadResponse};
+use crate::types::{JID, MediaReuploadResult, SendResult, UploadResponse};
 use crate::wacore::download::MediaType;
 #[pyclass]
 pub struct TryxClient {
@@ -50,6 +50,31 @@ pub struct TryxClient {
     pub privacy: Py<PrivacyClient>,
     #[pyo3(get)]
     pub profile: Py<ProfileClient>,
+}
+
+impl TryxClient {
+    fn quote_context(py: Python<'_>, quoted: Option<&Py<EvMessage>>) -> Option<waproto::whatsapp::ContextInfo> {
+        quoted.map(|q| {
+            let quote = q.bind(py).borrow();
+            let msg = quote.inner.as_ref();
+            build_quote_context(
+                quote.inner_message_info.id.clone(),
+                quote.inner_message_info.source.chat.clone(),
+                msg,
+            )
+        })
+    }
+
+    fn into_send_result(py: Python<'_>, result: whatsapp_rust::SendResult) -> PyResult<Py<SendResult>> {
+        let to = Py::new(py, JID::from(result.to))?;
+        Py::new(
+            py,
+            SendResult {
+                message_id: result.message_id,
+                to,
+            },
+        )
+    }
 }
 
 #[pymethods]
@@ -279,12 +304,12 @@ impl TryxClient {
         })?;
 
         let locals = get_current_locals(py)?;
-        future_into_py_with_locals::<_, String>(py, locals, async move {
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             let send_result = client
                 .send_message(jid, whatsapp_message)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            Ok(send_result.message_id)
+            Python::attach(|py| Self::into_send_result(py, send_result))
         })
     }
     #[pyo3(signature = (to, text, quoted=None))]
@@ -294,16 +319,8 @@ impl TryxClient {
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let locals = get_current_locals(py)?;
-        let context_info = quoted.as_ref().map(|q| {
-            let quote = q.bind(py).borrow();
-            let msg = quote.inner.as_ref();
-            build_quote_context(
-                quote.inner_message_info.id.clone(),
-                quote.inner_message_info.source.chat.clone(),
-                msg,
-            )
-        });
-        future_into_py_with_locals(py, locals, async move {
+        let context_info = Self::quote_context(py, quoted.as_ref());
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             match quoted {
                 Some(_) => {
                     let message = WhatsappMessage {
@@ -318,7 +335,7 @@ impl TryxClient {
                         .send_message(jid, message)
                         .await
                         .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-                    Ok(send_result.message_id)
+                    Python::attach(|py| Self::into_send_result(py, send_result))
                 }
                 None => {
                     let message = WhatsappMessage {
@@ -329,43 +346,25 @@ impl TryxClient {
                         .send_message(jid, message)
                         .await
                         .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-                    Ok(send_result.message_id)
+                    Python::attach(|py| Self::into_send_result(py, send_result))
                 }
             }
         })
     }
-    #[pyo3(signature = (to, photo_data, caption, quoted=None))]
-    fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: &[u8], caption: String, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
+    #[pyo3(signature = (to, photo_data, caption=None, quoted=None))]
+    fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: &[u8], caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let photo_clone = photo_data.to_vec();
         let locals = get_current_locals(py)?;
-        let context_info = quoted.as_ref().map(|q| {
-            let quote = q.bind(py).borrow();
-            let msg = quote.inner.as_ref();
-            build_quote_context(
-                quote.inner_message_info.id.clone(),
-                quote.inner_message_info.source.chat.clone(),
-                msg,
-            )
-        });
-        future_into_py_with_locals(py, locals, async move {
+        let context_info = Self::quote_context(py, quoted.as_ref());
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             let upload = client
                 .upload(photo_clone, wacore::download::MediaType::Image, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            // let image_message = wa::ImageMessage {
-            //     url: Some(upload.url),
-            //     direct_path: Some(upload.direct_path),
-            //     media_key: Some(upload.media_key),
-            //     file_enc_sha256: Some(upload.file_enc_sha256),
-            //     file_sha256: Some(upload.file_sha256),
-            //     file_length: Some(upload.file_length),
-            //     caption: Some(caption),
-            //     ..Default::default()
-            // };
             let message = WhatsappMessage {
                 image_message: Some(Box::new(wa::ImageMessage {
                 url: Some(upload.url),
@@ -374,7 +373,7 @@ impl TryxClient {
                 file_enc_sha256: Some(upload.file_enc_sha256),
                 file_sha256: Some(upload.file_sha256),
                 file_length: Some(upload.file_length),
-                caption: Some(caption),
+                caption,
                 context_info: context_info.map(Box::new),
                 ..Default::default()
             })),
@@ -384,7 +383,264 @@ impl TryxClient {
                 .send_message(jid, message)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            Ok(send_result.message_id)
+            Python::attach(|py| Self::into_send_result(py, send_result))
+        })
+    }
+
+    #[pyo3(signature = (to, document_data, mimetype, file_name=None, caption=None, quoted=None))]
+    fn send_document<'py>(
+        &self,
+        py: Python<'py>,
+        to: Py<JID>,
+        document_data: &[u8],
+        mimetype: String,
+        file_name: Option<String>,
+        caption: Option<String>,
+        quoted: Option<Py<EvMessage>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let data = document_data.to_vec();
+        let locals = get_current_locals(py)?;
+        let context_info = Self::quote_context(py, quoted.as_ref());
+
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let upload = client
+                .upload(data, wacore::download::MediaType::Document, UploadOptions::default())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+
+            let message = WhatsappMessage {
+                document_message: Some(Box::new(wa::DocumentMessage {
+                    url: Some(upload.url),
+                    mimetype: Some(mimetype),
+                    title: file_name.clone(),
+                    file_sha256: Some(upload.file_sha256),
+                    file_length: Some(upload.file_length),
+                    media_key: Some(upload.media_key),
+                    file_name,
+                    file_enc_sha256: Some(upload.file_enc_sha256),
+                    direct_path: Some(upload.direct_path),
+                    caption,
+                    context_info: context_info.map(Box::new),
+                    ..Default::default()
+                })),
+                ..Default::default()
+            };
+
+            let send_result = client
+                .send_message(jid, message)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| Self::into_send_result(py, send_result))
+        })
+    }
+
+    #[pyo3(signature = (to, audio_data, mimetype=None, ptt=false, seconds=None, quoted=None))]
+    fn send_audio<'py>(
+        &self,
+        py: Python<'py>,
+        to: Py<JID>,
+        audio_data: &[u8],
+        mimetype: Option<String>,
+        ptt: bool,
+        seconds: Option<u32>,
+        quoted: Option<Py<EvMessage>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let data = audio_data.to_vec();
+        let locals = get_current_locals(py)?;
+        let context_info = Self::quote_context(py, quoted.as_ref());
+
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let upload = client
+                .upload(data, wacore::download::MediaType::Audio, UploadOptions::default())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+
+            let message = WhatsappMessage {
+                audio_message: Some(Box::new(wa::AudioMessage {
+                    url: Some(upload.url),
+                    mimetype: Some(mimetype.unwrap_or_else(|| "audio/ogg; codecs=opus".to_string())),
+                    file_sha256: Some(upload.file_sha256),
+                    file_length: Some(upload.file_length),
+                    seconds,
+                    ptt: Some(ptt),
+                    media_key: Some(upload.media_key),
+                    file_enc_sha256: Some(upload.file_enc_sha256),
+                    direct_path: Some(upload.direct_path),
+                    context_info: context_info.map(Box::new),
+                    ..Default::default()
+                })),
+                ..Default::default()
+            };
+
+            let send_result = client
+                .send_message(jid, message)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| Self::into_send_result(py, send_result))
+        })
+    }
+
+    #[pyo3(signature = (to, video_data, mimetype=None, caption=None, seconds=None, gif_playback=false, quoted=None))]
+    fn send_video<'py>(
+        &self,
+        py: Python<'py>,
+        to: Py<JID>,
+        video_data: &[u8],
+        mimetype: Option<String>,
+        caption: Option<String>,
+        seconds: Option<u32>,
+        gif_playback: bool,
+        quoted: Option<Py<EvMessage>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let data = video_data.to_vec();
+        let locals = get_current_locals(py)?;
+        let context_info = Self::quote_context(py, quoted.as_ref());
+
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let upload = client
+                .upload(data, wacore::download::MediaType::Video, UploadOptions::default())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+
+            let message = WhatsappMessage {
+                video_message: Some(Box::new(wa::VideoMessage {
+                    url: Some(upload.url),
+                    mimetype: Some(mimetype.unwrap_or_else(|| "video/mp4".to_string())),
+                    file_sha256: Some(upload.file_sha256),
+                    file_length: Some(upload.file_length),
+                    seconds,
+                    media_key: Some(upload.media_key),
+                    caption,
+                    gif_playback: Some(gif_playback),
+                    file_enc_sha256: Some(upload.file_enc_sha256),
+                    direct_path: Some(upload.direct_path),
+                    context_info: context_info.map(Box::new),
+                    ..Default::default()
+                })),
+                ..Default::default()
+            };
+
+            let send_result = client
+                .send_message(jid, message)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| Self::into_send_result(py, send_result))
+        })
+    }
+
+    #[pyo3(signature = (to, gif_data, caption=None, seconds=None, quoted=None))]
+    fn send_gif<'py>(
+        &self,
+        py: Python<'py>,
+        to: Py<JID>,
+        gif_data: &[u8],
+        caption: Option<String>,
+        seconds: Option<u32>,
+        quoted: Option<Py<EvMessage>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        self.send_video(py, to, gif_data, Some("video/mp4".to_string()), caption, seconds, true, quoted)
+    }
+
+    #[pyo3(signature = (to, sticker_data, is_animated=false, quoted=None))]
+    fn send_sticker<'py>(
+        &self,
+        py: Python<'py>,
+        to: Py<JID>,
+        sticker_data: &[u8],
+        is_animated: bool,
+        quoted: Option<Py<EvMessage>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let data = sticker_data.to_vec();
+        let locals = get_current_locals(py)?;
+        let context_info = Self::quote_context(py, quoted.as_ref());
+
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let upload = client
+                .upload(data, wacore::download::MediaType::Sticker, UploadOptions::default())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+
+            let message = WhatsappMessage {
+                sticker_message: Some(Box::new(wa::StickerMessage {
+                    url: Some(upload.url),
+                    file_sha256: Some(upload.file_sha256),
+                    file_enc_sha256: Some(upload.file_enc_sha256),
+                    media_key: Some(upload.media_key),
+                    mimetype: Some("image/webp".to_string()),
+                    direct_path: Some(upload.direct_path),
+                    file_length: Some(upload.file_length),
+                    is_animated: Some(is_animated),
+                    context_info: context_info.map(Box::new),
+                    ..Default::default()
+                })),
+                ..Default::default()
+            };
+
+            let send_result = client
+                .send_message(jid, message)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| Self::into_send_result(py, send_result))
+        })
+    }
+
+    #[pyo3(signature = (message_id, chat_jid, media_key, is_from_me=false, participant=None))]
+    fn request_media_reupload<'py>(
+        &self,
+        py: Python<'py>,
+        message_id: String,
+        chat_jid: Py<JID>,
+        media_key: &[u8],
+        is_from_me: bool,
+        participant: Option<Py<JID>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        if media_key.is_empty() {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "media_key cannot be empty",
+            ));
+        }
+
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+        })?;
+        let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
+        let participant_value = participant
+            .as_ref()
+            .map(|value| value.bind(py).borrow().as_whatsapp_jid());
+        let media_key_data = media_key.to_vec();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, MediaReuploadResult>(py, locals, async move {
+            let req = whatsapp_rust::MediaReuploadRequest {
+                msg_id: message_id.as_str(),
+                chat_jid: &chat_jid_value,
+                media_key: media_key_data.as_slice(),
+                is_from_me,
+                participant: participant_value.as_ref(),
+            };
+
+            client
+                .media_reupload()
+                .request(&req)
+                .await
+                .map(MediaReuploadResult::from)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
 }

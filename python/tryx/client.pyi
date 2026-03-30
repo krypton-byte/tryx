@@ -2,7 +2,7 @@ from typing import Any, Awaitable, Callable, Type, TypeVar
 
 from .backend import BackendBase
 from .events import EvMessage
-from .types import JID, ProfilePicture, UploadResponse
+from .types import JID, MediaReuploadResult, ProfilePicture, SendResult, UploadResponse
 from .wacore import MediaType
 from .waproto.whatsapp_pb2 import Message as MessageProto
 from .waproto.whatsapp_pb2 import MessageKey, SyncActionValue
@@ -71,15 +71,66 @@ class TryxClient:
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
     async def upload_file(self, path: str, media_type: MediaType) -> UploadResponse: ...
     async def upload(self, data: bytes, media_type: MediaType) -> UploadResponse: ...
-    async def send_message(self, to: JID, message: MessageProto) -> str: ...
-    async def send_text(self, to: JID, text: str, quoted: EvMessage | None = None) -> str: ...
+    async def send_message(self, to: JID, message: MessageProto) -> SendResult: ...
+    async def send_text(self, to: JID, text: str, quoted: EvMessage | None = None) -> SendResult: ...
     async def send_photo(
         self,
         to: JID,
         photo_data: bytes,
-        caption: str,
+        caption: str | None = None,
         quoted: EvMessage | None = None,
-    ) -> str: ...
+    ) -> SendResult: ...
+    async def send_document(
+        self,
+        to: JID,
+        document_data: bytes,
+        mimetype: str,
+        file_name: str | None = None,
+        caption: str | None = None,
+        quoted: EvMessage | None = None,
+    ) -> SendResult: ...
+    async def send_audio(
+        self,
+        to: JID,
+        audio_data: bytes,
+        mimetype: str | None = None,
+        ptt: bool = False,
+        seconds: int | None = None,
+        quoted: EvMessage | None = None,
+    ) -> SendResult: ...
+    async def send_video(
+        self,
+        to: JID,
+        video_data: bytes,
+        mimetype: str | None = None,
+        caption: str | None = None,
+        seconds: int | None = None,
+        gif_playback: bool = False,
+        quoted: EvMessage | None = None,
+    ) -> SendResult: ...
+    async def send_gif(
+        self,
+        to: JID,
+        gif_data: bytes,
+        caption: str | None = None,
+        seconds: int | None = None,
+        quoted: EvMessage | None = None,
+    ) -> SendResult: ...
+    async def send_sticker(
+        self,
+        to: JID,
+        sticker_data: bytes,
+        is_animated: bool = False,
+        quoted: EvMessage | None = None,
+    ) -> SendResult: ...
+    async def request_media_reupload(
+        self,
+        message_id: str,
+        chat_jid: JID,
+        media_key: bytes,
+        is_from_me: bool = False,
+        participant: JID | None = None,
+    ) -> MediaReuploadResult: ...
 
 
 class ContactClient:

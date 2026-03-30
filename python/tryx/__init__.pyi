@@ -61,7 +61,7 @@ from .exceptions import (
     UnsupportedEventType,
     UnsupportedEventTypeError,
 )
-from .types import JID, MessageInfo, MessageSource, ProfilePicture, UploadResponse
+from .types import JID, MediaReuploadResult, MessageInfo, MessageSource, ProfilePicture, SendResult, UploadResponse
 from .wacore import MediaType
 from .helpers import (
     BlockingHelpers,
