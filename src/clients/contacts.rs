@@ -4,7 +4,13 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
-use whatsapp_rust::Client;
+use whatsapp_rust::{Client, Jid as WaJid};
+use wacore::iq::usync::{
+    IsOnWhatsAppQueryType,
+    IsOnWhatsAppSpec,
+    IsOnWhatsAppUser,
+    UserInfoSpec,
+};
 
 use crate::types::{JID, ProfilePicture};
 use crate::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
@@ -30,10 +36,20 @@ impl ContactClient {
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals::<_, Vec<Py<ContactInfo>>>(py, locals, async move {
-            let phone_refs: Vec<&str> = phones.iter().map(String::as_str).collect();
+            let users = phones
+                .iter()
+                .map(|phone| IsOnWhatsAppUser {
+                    jid: WaJid::pn(phone).to_non_ad(),
+                    known_lid: None,
+                })
+                .collect::<Vec<_>>();
+            let spec = IsOnWhatsAppSpec::new(
+                users,
+                wacore::time::now_millis().to_string(),
+                IsOnWhatsAppQueryType::Pn,
+            );
             let info = client
-                .contacts()
-                .get_info(phone_refs.as_slice())
+                .execute(spec)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             let result = Python::attach(|py| {
@@ -50,11 +66,11 @@ impl ContactClient {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
         let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let spec = UserInfoSpec::new(vec![jid_value], wacore::time::now_millis().to_string());
 
         future_into_py_with_locals::<_, Py<PyDict>>(py, locals, async move {
             let info = client
-                .contacts()
-                .get_user_info(&[jid_value])
+                .execute(spec)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
@@ -102,26 +118,69 @@ impl ContactClient {
     fn is_on_whatsapp<'py>(&self, py: Python<'py>, jid: Vec<Py<JID>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
 
-        let jid_str: Vec<String> = jid
+        let jid_values = jid
             .into_iter()
             .map(|item| {
                 let s_jid = item.borrow(py);
-                let user_jid = s_jid.as_whatsapp_jid();
-                user_jid.user_base().to_string()
+                s_jid.as_whatsapp_jid()
             })
-            .collect();
+            .collect::<Vec<_>>();
 
         let locals = get_current_locals(py)?;
         future_into_py_with_locals::<_, Vec<IsOnWhatsAppResult>>(py, locals, async move {
-            let jid_slice: Vec<&str> = jid_str.iter().map(String::as_str).collect();
-            let response = client
-                .contacts()
-                .is_on_whatsapp(jid_slice.as_slice())
-                .await
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let mut pn_users = Vec::new();
+            let mut lid_users = Vec::new();
+
+            for jid in jid_values {
+                if jid.is_pn() {
+                    pn_users.push(IsOnWhatsAppUser {
+                        jid: jid.to_non_ad(),
+                        known_lid: None,
+                    });
+                } else if jid.is_lid() {
+                    lid_users.push(IsOnWhatsAppUser {
+                        jid: jid.to_non_ad(),
+                        known_lid: None,
+                    });
+                }
+            }
+
+            let mut response = Vec::new();
+            if !pn_users.is_empty() {
+                let spec = IsOnWhatsAppSpec::new(
+                    pn_users,
+                    wacore::time::now_millis().to_string(),
+                    IsOnWhatsAppQueryType::Pn,
+                );
+                response.extend(
+                    client
+                        .execute(spec)
+                        .await
+                        .map_err(|e| {
+                            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                        })?,
+                );
+            }
+
+            if !lid_users.is_empty() {
+                let spec = IsOnWhatsAppSpec::new(
+                    lid_users,
+                    wacore::time::now_millis().to_string(),
+                    IsOnWhatsAppQueryType::Lid,
+                );
+                response.extend(
+                    client
+                        .execute(spec)
+                        .await
+                        .map_err(|e| {
+                            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
+                        })?,
+                );
+            }
+
             let response_py = response
                 .into_iter()
-                .map(|res| IsOnWhatsAppResult::new(res.jid.into(), res.is_registered))
+                .map(IsOnWhatsAppResult::from)
                 .collect::<Vec<_>>();
             Ok(response_py)
         })

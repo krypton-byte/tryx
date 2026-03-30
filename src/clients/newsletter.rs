@@ -219,9 +219,9 @@ impl NewsletterClient {
 
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
-                .newsletter()
-                .send_message(&jid_value, &message_value)
+                .send_message(jid_value, message_value)
                 .await
+                .map(|result| result.message_id)
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }

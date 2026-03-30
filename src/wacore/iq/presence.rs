@@ -13,6 +13,7 @@ impl From<WaPresenceStatus> for PresenceStatus {
         match value {
             WaPresenceStatus::Available => Self::Available,
             WaPresenceStatus::Unavailable => Self::Unavailable,
+            _ => Self::Unavailable, // Default case for any unknown status
         }
     }
 }

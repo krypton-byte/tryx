@@ -27,6 +27,7 @@ impl From<WaNewsletterVerification> for NewsletterVerification {
         match value {
             WaNewsletterVerification::Verified => Self::Verified,
             WaNewsletterVerification::Unverified => Self::Unverified,
+            _ => Self::Unverified,
         }
     }
 }
@@ -45,6 +46,7 @@ impl From<WaNewsletterState> for NewsletterState {
             WaNewsletterState::Active => Self::Active,
             WaNewsletterState::Suspended => Self::Suspended,
             WaNewsletterState::Geosuspended => Self::Geosuspended,
+            _ => Self::Active,
         }
     }
 }
@@ -65,6 +67,7 @@ impl From<WaNewsletterRole> for NewsletterRole {
             WaNewsletterRole::Admin => Self::Admin,
             WaNewsletterRole::Subscriber => Self::Subscriber,
             WaNewsletterRole::Guest => Self::Guest,
+            _ => Self::Guest,
         }
     }
 }
@@ -157,7 +160,7 @@ impl NewsletterMessage {
         Ok(Self {
             server_id: value.server_id,
             timestamp: value.timestamp,
-            message_type: value.message_type,
+            message_type: value.message_type.as_str().to_string(),
             is_sender: value.is_sender,
             reactions,
             message_inner: value.message,

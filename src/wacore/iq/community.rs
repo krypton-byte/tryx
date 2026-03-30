@@ -31,6 +31,7 @@ impl From<WaGroupType> for GroupType {
             WaGroupType::LinkedSubgroup => Self::LinkedSubgroup,
             WaGroupType::LinkedAnnouncementGroup => Self::LinkedAnnouncementGroup,
             WaGroupType::LinkedGeneralGroup => Self::LinkedGeneralGroup,
+            _ => Self::Default,
         }
     }
 }

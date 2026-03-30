@@ -47,6 +47,7 @@ impl PollsClient {
 				.polls()
 				.create(&to_value, name.as_str(), options.as_slice(), selectable_count)
 				.await
+				.map(|(result, secret)| (result.message_id, secret))
 				.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
 		})
 	}
@@ -83,6 +84,7 @@ impl PollsClient {
 					option_names.as_slice(),
 				)
 				.await
+				.map(|result| result.message_id)
 				.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
 		})
 	}

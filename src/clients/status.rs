@@ -60,10 +60,11 @@ impl StatusClient {
                     text.as_str(),
                     background_argb,
                     font,
-                    recipient_values,
+                    recipient_values.as_slice(),
                     options_value,
                 )
                 .await
+                .map(|result| result.message_id)
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -114,10 +115,11 @@ impl StatusClient {
                     &upload_value,
                     thumbnail_value,
                     caption.as_deref(),
-                    recipient_values,
+                    recipient_values.as_slice(),
                     options_value,
                 )
                 .await
+                .map(|result| result.message_id)
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -170,10 +172,11 @@ impl StatusClient {
                     thumbnail_value,
                     duration_seconds,
                     caption.as_deref(),
-                    recipient_values,
+                    recipient_values.as_slice(),
                     options_value,
                 )
                 .await
+                .map(|result| result.message_id)
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -213,8 +216,9 @@ impl StatusClient {
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .status()
-                .send_raw(message_value, recipient_values, options_value)
+                .send_raw(message_value, recipient_values.as_slice(), options_value)
                 .await
+                .map(|result| result.message_id)
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -247,8 +251,9 @@ impl StatusClient {
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .status()
-                .revoke(message_id, recipient_values, options_value)
+                .revoke(message_id, recipient_values.as_slice(), options_value)
                 .await
+                .map(|result| result.message_id)
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }

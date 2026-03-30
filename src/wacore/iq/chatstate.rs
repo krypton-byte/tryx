@@ -15,6 +15,7 @@ impl From<WaChatStateType> for ChatStateType {
             WaChatStateType::Composing => Self::Composing,
             WaChatStateType::Recording => Self::Recording,
             WaChatStateType::Paused => Self::Paused,
+            _ => Self::Paused, // Default case for any unknown state
         }
     }
 }

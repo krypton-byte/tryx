@@ -7,7 +7,7 @@ use waproto::whatsapp::Message as WhatsappMessage;
 use waproto::whatsapp::message::{self as wa};
 use wacore::proto_helpers::build_quote_context;
 use prost::Message;
-use whatsapp_rust::Client;
+use whatsapp_rust::{Client, UploadOptions};
 use crate::clients::chat_actions::ChatActionsClient;
 use crate::clients::chatstate::ChatstateClient;
 use crate::clients::community::CommunityClient;
@@ -215,7 +215,7 @@ impl TryxClient {
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
         future_into_py_with_locals(py, locals, async move {
             let url = client
-                .upload(data, media_type_enum)
+                .upload(data, media_type_enum, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             let result= UploadResponse {
@@ -238,7 +238,7 @@ impl TryxClient {
         let locals = get_current_locals(py)?;
         future_into_py_with_locals::<_, UploadResponse>(py, locals, async move {
             let url = client
-                .upload(data_vec, mtype)
+                .upload(data_vec, mtype, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             let result= UploadResponse {
@@ -273,12 +273,12 @@ impl TryxClient {
         })?;
 
         let locals = get_current_locals(py)?;
-        future_into_py_with_locals(py, locals, async move {
-            let message_id = client
+        future_into_py_with_locals::<_, String>(py, locals, async move {
+            let send_result = client
                 .send_message(jid, whatsapp_message)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            Ok(message_id.to_string())
+            Ok(send_result.message_id)
         })
     }
     #[pyo3(signature = (to, text, quoted=None))]
@@ -308,22 +308,22 @@ impl TryxClient {
                         })),
                         ..Default::default()
                     };
-                    let message_id = client
+                    let send_result = client
                         .send_message(jid, message)
                         .await
                         .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-                    Ok(message_id.to_string())
+                    Ok(send_result.message_id)
                 }
                 None => {
                     let message = WhatsappMessage {
                         conversation: Some(text),
                         ..Default::default()
                     };
-                    let message_id = client
+                    let send_result = client
                         .send_message(jid, message)
                         .await
                         .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-                    Ok(message_id.to_string())
+                    Ok(send_result.message_id)
                 }
             }
         })
@@ -347,7 +347,7 @@ impl TryxClient {
         });
         future_into_py_with_locals(py, locals, async move {
             let upload = client
-                .upload(photo_clone, wacore::download::MediaType::Image)
+                .upload(photo_clone, wacore::download::MediaType::Image, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             // let image_message = wa::ImageMessage {
@@ -374,11 +374,11 @@ impl TryxClient {
             })),
                 ..Default::default()
             };
-            let message_id = client
+            let send_result = client
                 .send_message(jid, message)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            Ok(message_id.to_string())
+            Ok(send_result.message_id)
         })
     }
 }

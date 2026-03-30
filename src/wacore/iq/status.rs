@@ -18,6 +18,7 @@ impl From<WaStatusPrivacySetting> for StatusPrivacySetting {
             WaStatusPrivacySetting::Contacts => Self::Contacts,
             WaStatusPrivacySetting::AllowList => Self::AllowList,
             WaStatusPrivacySetting::DenyList => Self::DenyList,
+            _ => Self::Contacts,
         }
     }
 }

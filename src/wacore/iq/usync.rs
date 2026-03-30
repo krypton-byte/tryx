@@ -67,15 +67,15 @@ impl ContactInfo {
 }
 
 
-impl From<wacore::iq::usync::ContactInfo> for ContactInfo {
-    fn from(info: wacore::iq::usync::ContactInfo) -> Self {
+impl From<wacore::iq::usync::IsOnWhatsAppResult> for ContactInfo {
+    fn from(info: wacore::iq::usync::IsOnWhatsAppResult) -> Self {
         ContactInfo::new(
             info.jid.into(),
             info.lid.map(Into::into),
             info.is_registered,
             info.is_business,
-            info.status,
-            info.picture_id,
+            None,
+            None,
         )
     }
 }
