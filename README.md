@@ -166,6 +166,34 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Command Bot Example (examples)
+
+Contoh siap pakai tersedia di `examples/command_bot.py`.
+
+Fitur contoh:
+- command router berbasis `EvMessage`
+- quoted reply pada semua balasan command
+- download profile picture pengirim, lalu kirim kembali ke chat
+- ambil pushname dari metadata pesan
+- ambil bio/about dari contact API
+- log update pushname dan bio realtime (`EvPushNameUpdate`, `EvUserAboutUpdate`)
+
+Command yang tersedia:
+- `ping` -> `pong`
+- `pp` -> kirim ulang profile picture pengirim
+- `pushname` -> tampilkan pushname pengirim
+- `bio` -> tampilkan bio/about pengirim
+- `help` / `menu` -> tampilkan daftar command
+
+Run:
+
+```bash
+python examples/command_bot.py
+```
+
+Opsional env:
+- `TRYX_DB_PATH` (default `whatsapp.db`)
+
 ## Python API Reference (High Level)
 
 ### Backend
@@ -192,12 +220,24 @@ if __name__ == "__main__":
 - `TryxClient.blocking -> BlockingClient`
 - `TryxClient.polls -> PollsClient`
 - `TryxClient.presence -> PresenceClient`
+- `TryxClient.privacy -> PrivacyClient`
+- `TryxClient.profile -> ProfileClient`
 - `TryxClient.send_message(...)`
 - `TryxClient.send_text(...)`
 - `TryxClient.send_photo(...)`
+- `TryxClient.send_document(...)`
+- `TryxClient.send_audio(...)`
+- `TryxClient.send_video(...)`
+- `TryxClient.send_gif(...)`
+- `TryxClient.send_sticker(...)`
+- `TryxClient.request_media_reupload(...)`
 - `TryxClient.download_media(...)`
 - `TryxClient.upload(...)`
 - `TryxClient.upload_file(...)`
+
+Return value penting:
+- `send_message/send_text/send_photo/send_document/send_audio/send_video/send_gif/send_sticker` mengembalikan `SendResult`.
+- `request_media_reupload` mengembalikan `MediaReuploadResult`.
 
 ### Contact namespace
 
@@ -312,6 +352,20 @@ if __name__ == "__main__":
 - `PresenceClient.subscribe(jid)`
 - `PresenceClient.unsubscribe(jid)`
 
+### Profile namespace
+
+- `ProfileClient.set_push_name(name)`
+- `ProfileClient.set_status_text(text)`
+- `ProfileClient.set_profile_picture(image_data)`
+- `ProfileClient.remove_profile_picture()`
+
+### Privacy namespace
+
+- `PrivacyClient.fetch_settings()`
+- `PrivacyClient.set_setting(category, value)`
+- `PrivacyClient.set_disallowed_list(category, update)`
+- `PrivacyClient.set_default_disappearing_mode(duration_seconds)`
+
 ### Helper namespace
 
 - `NewsletterHelpers.parse_message(data)`
@@ -362,6 +416,8 @@ Related typed models:
 - `BlocklistEntry`
 - `PollOptionResult`
 - `PresenceStatus`
+- `SendResult`
+- `MediaReuploadResult`
 
 ## Typing Support
 
@@ -412,7 +468,7 @@ python -c "import tryx; print('ok')"
 ```bash
 pyright
 # or
-mypy examples.py
+mypy examples/command_bot.py
 ```
 
 ## Performance Notes
