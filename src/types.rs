@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use pyo3::{PyAny, PyErr, PyResult, Python, exceptions::PyRuntimeError, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyDateTime}};
+use pyo3::{PyAny, Py, PyErr, PyResult, Python, exceptions::PyRuntimeError, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyDateTime}};
 use whatsapp_rust::{Jid as WhatsAppJID};
 use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo};
 use prost::Message;
@@ -338,4 +338,13 @@ impl From<wacore::iq::contacts::ProfilePicture> for ProfilePicture {
     fn from(picture: wacore::iq::contacts::ProfilePicture) -> Self {
         ProfilePicture::new(picture.id, picture.url, picture.direct_path, picture.hash)
     }
+}
+
+
+#[pyclass]
+pub struct SendResult {
+    #[pyo3(get)]
+    pub message_id: String,
+    #[pyo3(get)]
+    pub to: Py<JID>
 }

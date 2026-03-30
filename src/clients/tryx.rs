@@ -23,6 +23,8 @@ use super::blocking::BlockingClient;
 use super::groups::GroupsClient;
 use super::polls::PollsClient;
 use super::presence::PresenceClient;
+use super::privacy::PrivacyClient;
+use super::profile::ProfileClient;
 use super::status::StatusClient;
 use super::tryx_client::TryxClient;
 use crate::clients::chat_actions::ChatActionsClient;
@@ -123,6 +125,18 @@ impl Tryx {
                     client_rx: client_rx.clone(),
                 },
             )?;
+            let privacy_client = Py::new(
+                py,
+                PrivacyClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
+            let profile_client = Py::new(
+                py,
+                ProfileClient {
+                    client_rx: client_rx.clone(),
+                },
+            )?;
             let tryx_client = Py::new(
                 py,
                 TryxClient {
@@ -137,6 +151,8 @@ impl Tryx {
                     blocking: blocking_client,
                     polls: polls_client,
                     presence: presence_client,
+                    privacy: privacy_client,
+                    profile: profile_client,
                 }
             )?;
             

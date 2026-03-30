@@ -5,7 +5,7 @@ from .events import EvMessage
 from .types import JID, ProfilePicture, UploadResponse
 from .wacore import MediaType
 from .waproto.whatsapp_pb2 import Message as MessageProto
-from .waproto.whatsapp_pb2 import MessageKey, SyncActionMessageRange
+from .waproto.whatsapp_pb2 import MessageKey, SyncActionValue
 
 EventT = TypeVar("EventT")
 
@@ -64,6 +64,8 @@ class TryxClient:
     blocking: BlockingClient
     polls: PollsClient
     presence: PresenceClient
+    privacy: PrivacyClient
+    profile: ProfileClient
 
     def is_connected(self) -> bool: ...
     async def download_media(self, message: DownloadableMedia) -> bytes: ...
@@ -100,16 +102,16 @@ class ChatActionsClient:
         last_message_timestamp: int,
         last_system_message_timestamp: int | None,
         messages: list[tuple[MessageKey, int]],
-    ) -> SyncActionMessageRange: ...
+    ) -> SyncActionValue.SyncActionMessageRange: ...
     async def archive_chat(
         self,
         jid: JID,
-        message_range: SyncActionMessageRange | None = None,
+        message_range: SyncActionValue.SyncActionMessageRange | None = None,
     ) -> None: ...
     async def unarchive_chat(
         self,
         jid: JID,
-        message_range: SyncActionMessageRange | None = None,
+        message_range: SyncActionValue.SyncActionMessageRange | None = None,
     ) -> None: ...
     async def pin_chat(self, jid: JID) -> None: ...
     async def unpin_chat(self, jid: JID) -> None: ...
@@ -134,13 +136,13 @@ class ChatActionsClient:
         self,
         jid: JID,
         read: bool,
-        message_range: SyncActionMessageRange | None = None,
+        message_range: SyncActionValue.SyncActionMessageRange | None = None,
     ) -> None: ...
     async def delete_chat(
         self,
         jid: JID,
         delete_media: bool,
-        message_range: SyncActionMessageRange | None = None,
+        message_range: SyncActionValue.SyncActionMessageRange | None = None,
     ) -> None: ...
     async def delete_message_for_me(
         self,
@@ -151,6 +153,26 @@ class ChatActionsClient:
         delete_media: bool,
         message_timestamp: int | None = None,
     ) -> None: ...
+    async def edit_message(
+        self,
+        chat_jid: JID,
+        original_id: str,
+        new_message: MessageProto,
+    ) -> str: ...
+    async def revoke_message(
+        self,
+        chat_jid: JID,
+        message_id: str,
+        original_sender: JID | None = None,
+    ) -> None: ...
+    async def react_message(
+        self,
+        chat_jid: JID,
+        message_id: str,
+        reaction: str,
+        from_me: bool = False,
+        participant_jid: JID | None = None,
+    ) -> str: ...
 
 
 class GroupType:
@@ -559,6 +581,65 @@ class PresenceStatus:
     Unavailable: PresenceStatus
 
 
+class PrivacyCategory:
+    Last: PrivacyCategory
+    Online: PrivacyCategory
+    Profile: PrivacyCategory
+    Status: PrivacyCategory
+    GroupAdd: PrivacyCategory
+    ReadReceipts: PrivacyCategory
+    CallAdd: PrivacyCategory
+    Messages: PrivacyCategory
+    DefenseMode: PrivacyCategory
+    Other: PrivacyCategory
+
+
+class PrivacyValue:
+    All: PrivacyValue
+    Contacts: PrivacyValue
+    None_: PrivacyValue
+    ContactBlacklist: PrivacyValue
+    MatchLastSeen: PrivacyValue
+    Known: PrivacyValue
+    Off: PrivacyValue
+    OnStandard: PrivacyValue
+    Other: PrivacyValue
+
+
+class DisallowedListAction:
+    Add: DisallowedListAction
+    Remove: DisallowedListAction
+
+
+class PrivacySetting:
+    category: PrivacyCategory
+    value: PrivacyValue
+
+
+class DisallowedListUserEntry:
+    action: DisallowedListAction
+    jid: JID
+    pn_jid: JID | None
+
+    def __init__(
+        self,
+        action: DisallowedListAction,
+        jid: JID,
+        pn_jid: JID | None = None,
+    ) -> None: ...
+
+
+class DisallowedListUpdate:
+    dhash: str
+    users: list[DisallowedListUserEntry]
+
+    def __init__(
+        self,
+        dhash: str,
+        users: list[DisallowedListUserEntry] = [],
+    ) -> None: ...
+
+
 class ChatstateClient:
     async def send(self, to: JID, state: ChatStateType) -> None: ...
     async def send_composing(self, to: JID) -> None: ...
@@ -571,6 +652,28 @@ class BlockingClient:
     async def unblock(self, jid: JID) -> None: ...
     async def get_blocklist(self) -> list[BlocklistEntry]: ...
     async def is_blocked(self, jid: JID) -> bool: ...
+
+
+class ProfileClient:
+    async def set_push_name(self, name: str) -> None: ...
+    async def set_status_text(self, text: str) -> None: ...
+    async def set_profile_picture(self, image_data: bytes) -> str: ...
+    async def remove_profile_picture(self) -> str: ...
+
+
+class PrivacyClient:
+    async def fetch_settings(self) -> list[PrivacySetting]: ...
+    async def set_setting(
+        self,
+        category: PrivacyCategory,
+        value: PrivacyValue,
+    ) -> str | None: ...
+    async def set_disallowed_list(
+        self,
+        category: PrivacyCategory,
+        update: DisallowedListUpdate,
+    ) -> str | None: ...
+    async def set_default_disappearing_mode(self, duration_seconds: int) -> None: ...
 
 
 class PollsClient:

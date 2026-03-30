@@ -7,3 +7,4 @@ pub mod chatstate;
 pub mod blocking;
 pub mod polls;
 pub mod presence;
+pub mod privacy;

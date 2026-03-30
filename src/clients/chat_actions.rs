@@ -6,7 +6,7 @@ use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals}
 use tokio::sync::watch;
 use waproto::whatsapp as wa;
 use whatsapp_rust::Client;
-use whatsapp_rust::{SyncActionMessageRange, message_key, message_range};
+use whatsapp_rust::{RevokeType, SyncActionMessageRange, message_key, message_range};
 
 use crate::events::proto_cache::{
     parse_proto_bytes,
@@ -376,6 +376,98 @@ impl ChatActionsClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
+        })
+    }
+
+    fn edit_message<'py>(
+        &self,
+        py: Python<'py>,
+        chat_jid: Py<JID>,
+        original_id: String,
+        new_message: Py<PyAny>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
+        let serialized: Vec<u8> = new_message.call_method0(py, "SerializeToString")?.extract(py)?;
+        let message_value = wa::Message::decode(serialized.as_slice()).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Failed to decode WhatsAppMessage proto: {}", e),
+            )
+        })?;
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, String>(py, locals, async move {
+            client
+                .edit_message(chat_jid_value, original_id, message_value)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+        })
+    }
+
+    #[pyo3(signature = (chat_jid, message_id, original_sender=None))]
+    fn revoke_message<'py>(
+        &self,
+        py: Python<'py>,
+        chat_jid: Py<JID>,
+        message_id: String,
+        original_sender: Option<Py<JID>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
+        let revoke_type = original_sender
+            .as_ref()
+            .map(|jid| RevokeType::Admin {
+                original_sender: jid.bind(py).borrow().as_whatsapp_jid(),
+            })
+            .unwrap_or(RevokeType::Sender);
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .revoke_message(chat_jid_value, message_id, revoke_type)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    #[pyo3(signature = (chat_jid, message_id, reaction, from_me=false, participant_jid=None))]
+    fn react_message<'py>(
+        &self,
+        py: Python<'py>,
+        chat_jid: Py<JID>,
+        message_id: String,
+        reaction: String,
+        from_me: bool,
+        participant_jid: Option<Py<JID>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
+        let participant = participant_jid
+            .as_ref()
+            .map(|jid| jid.bind(py).borrow().as_whatsapp_jid().to_string());
+        let reaction_message = wa::Message {
+            reaction_message: Some(wa::message::ReactionMessage {
+                key: Some(wa::MessageKey {
+                    remote_jid: Some(chat_jid_value.to_string()),
+                    id: Some(message_id),
+                    from_me: Some(from_me),
+                    participant,
+                }),
+                text: Some(reaction),
+                sender_timestamp_ms: Some(wacore::time::now_millis()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, String>(py, locals, async move {
+            client
+                .send_message(chat_jid_value, reaction_message)
+                .await
+                .map(|result| result.message_id)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
 }

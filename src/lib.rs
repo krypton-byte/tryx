@@ -11,6 +11,8 @@ use self::clients::groups::GroupsClient;
 use self::clients::newsletter::NewsletterClient;
 use self::clients::polls::PollsClient;
 use self::clients::presence::PresenceClient;
+use self::clients::privacy::PrivacyClient;
+use self::clients::profile::ProfileClient;
 use self::clients::status::StatusClient;
 use self::helpers::blocking::BlockingHelpers;
 use self::helpers::chatstate::ChatstateHelpers;
@@ -122,6 +124,14 @@ use self::wacore::iq::chatstate::ChatStateType;
 use self::wacore::iq::blocking::BlocklistEntry;
 use self::wacore::iq::polls::PollOptionResult;
 use self::wacore::iq::presence::PresenceStatus;
+use self::wacore::iq::privacy::{
+    DisallowedListAction,
+    DisallowedListUpdate,
+    DisallowedListUserEntry,
+    PrivacyCategory,
+    PrivacySetting,
+    PrivacyValue,
+};
 
 /// A Python module implemented in Rust.
 /// 
@@ -140,6 +150,8 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<BlockingClient>()?;
     client_module.add_class::<PollsClient>()?;
     client_module.add_class::<PresenceClient>()?;
+    client_module.add_class::<PrivacyClient>()?;
+    client_module.add_class::<ProfileClient>()?;
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;
@@ -173,6 +185,12 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<BlocklistEntry>()?;
     client_module.add_class::<PollOptionResult>()?;
     client_module.add_class::<PresenceStatus>()?;
+    client_module.add_class::<PrivacyCategory>()?;
+    client_module.add_class::<PrivacyValue>()?;
+    client_module.add_class::<DisallowedListAction>()?;
+    client_module.add_class::<PrivacySetting>()?;
+    client_module.add_class::<DisallowedListUserEntry>()?;
+    client_module.add_class::<DisallowedListUpdate>()?;
     client_module.add_class::<Tryx>()?;
     _py.add_submodule(&client_module)?;
 

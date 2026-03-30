@@ -17,6 +17,8 @@ use crate::clients::groups::GroupsClient;
 use crate::clients::newsletter::NewsletterClient;
 use crate::clients::polls::PollsClient;
 use crate::clients::presence::PresenceClient;
+use crate::clients::privacy::PrivacyClient;
+use crate::clients::profile::ProfileClient;
 use crate::clients::status::StatusClient;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, UploadResponse};
@@ -44,6 +46,10 @@ pub struct TryxClient {
     pub polls: Py<PollsClient>,
     #[pyo3(get)]
     pub presence: Py<PresenceClient>,
+    #[pyo3(get)]
+    pub privacy: Py<PrivacyClient>,
+    #[pyo3(get)]
+    pub profile: Py<ProfileClient>,
 }
 
 #[pymethods]
