@@ -1,5 +1,7 @@
 # QnA
 
+Use this page for quick decisions, then jump to linked technical pages for implementation details.
+
 ## General
 
 ### What is Tryx?
@@ -10,6 +12,8 @@ Rust handles protocol-heavy runtime work for better throughput and lower overhea
 
 ### Is Tryx synchronous or asynchronous?
 Both: async-first (`await bot.run()`), plus blocking convenience (`bot.run_blocking()`).
+
+See [Quick Start](../getting-started/quickstart.md).
 
 ## Pairing and Session
 
@@ -22,6 +26,8 @@ Another session replaced your active stream. Re-check device/session ownership.
 ### What should I do on EvLoggedOut?
 Treat it as session invalidation. Re-pair and refresh persisted state.
 
+See [Authentication Flow](../getting-started/authentication.md).
+
 ## Event Handling
 
 ### Can I register multiple handlers for one event?
@@ -32,6 +38,8 @@ Many event payloads are lazily materialized for efficiency.
 
 ### Should I process heavy logic directly in handlers?
 Prefer short handlers that delegate expensive work to background tasks.
+
+See [Reliability](../operations/reliability.md) and [Performance](../operations/performance.md).
 
 ## Messaging and Media
 
@@ -44,6 +52,8 @@ When media direct path is stale or unavailable and normal download fails.
 ### Can I quote a message in replies?
 Yes, pass the original `EvMessage` to send helpers that support `quoted`.
 
+See [Media Workflows](../tutorials/media-workflows.md).
+
 ## Groups and Privacy
 
 ### Can I automate group moderation?
@@ -51,6 +61,22 @@ Yes, use `client.groups.*` and handle `EvGroupUpdate` for state feedback.
 
 ### Can I modify privacy settings?
 Yes, use `client.privacy.fetch_settings()` and `set_setting(...)`.
+
+See [Privacy Namespace](../api/privacy.md) and [Profile and Privacy Tutorial](../tutorials/profile-privacy.md).
+
+## Deployment and Operations
+
+### What is the minimum production checklist?
+
+1. durable backend/session storage
+2. bounded retry strategy
+3. idempotent message processing
+4. basic security controls (admin-only commands, secret management)
+
+See [Deployment Guide](../operations/deployment.md).
+
+### How do I troubleshoot reconnect loops quickly?
+Use the connection decision tree in [Troubleshooting](../operations/troubleshooting.md) and verify single-writer backend ownership.
 
 ## Typing and Tooling
 
@@ -67,6 +93,8 @@ Listen to `EvTemporaryBan`, pause high-frequency operations, and avoid aggressiv
 
 ### How can I make my bot idempotent?
 Store processed message IDs and guard side effects before calling external systems.
+
+See [Reliability](../operations/reliability.md).
 
 ## Compatibility
 

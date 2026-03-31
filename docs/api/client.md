@@ -1,84 +1,134 @@
-# Client API
+# Client API Gateway
 
-`TryxClient` is the main runtime client object passed to event handlers.
+`TryxClient` is the runtime facade passed to every handler, and it exposes a root messaging surface plus 12 namespace clients.
 
-## Root Methods
+!!! tip "How To Read This Section"
+	1. Start with this gateway page.
+	2. Open the namespace page that matches your task.
+	3. Jump to [Events API](events.md) for event contracts and [Types API](types.md) for enum/value-object constraints.
 
-- `is_connected() -> bool`
-- `download_media(message) -> bytes`
-- `upload_file(path, media_type) -> UploadResponse`
-- `upload(data, media_type) -> UploadResponse`
-- `send_message(to, message) -> SendResult`
-- `send_text(...) -> SendResult`
-- `send_photo(...) -> SendResult`
-- `send_document(...) -> SendResult`
-- `send_audio(...) -> SendResult`
-- `send_video(...) -> SendResult`
-- `send_gif(...) -> SendResult`
-- `send_sticker(...) -> SendResult`
-- `request_media_reupload(...) -> MediaReuploadResult`
+## Client Topology
 
-## Namespace Clients
+```mermaid
+flowchart TD
+	A[TryxClient] --> B[Root send/download/upload methods]
+	A --> C[contact]
+	A --> D[chat_actions]
+	A --> E[community]
+	A --> F[newsletter]
+	A --> G[groups]
+	A --> H[status]
+	A --> I[chatstate]
+	A --> J[blocking]
+	A --> K[polls]
+	A --> L[presence]
+	A --> M[privacy]
+	A --> N[profile]
+```
 
-| Namespace | Purpose |
-| --- | --- |
-| `client.contact` | Contact lookup and profile picture info |
-| `client.chat_actions` | Archive, pin, mute, mark-read, edit/revoke/react |
-| `client.community` | Community and linked subgroup operations |
-| `client.newsletter` | Newsletter metadata, messaging, subscription |
-| `client.groups` | Group management lifecycle |
-| `client.status` | Status posting and privacy |
-| `client.chatstate` | Typing/recording/paused state |
-| `client.blocking` | Blocklist operations |
-| `client.polls` | Poll creation and vote cryptography helpers |
-| `client.presence` | Presence updates and subscriptions |
-| `client.privacy` | Privacy setting changes |
-| `client.profile` | Push name, bio, and profile picture updates |
+## Namespace Router
 
-## ContactClient
+<div class="tryx-link-grid" markdown="1">
+[Contact Namespace](contact.md)
 
-- `get_info(phones)`
-- `get_user_info(jid)`
-- `get_profile_picture(jid, preview)`
-- `is_on_whatsapp(jids)`
+Find users, check registration state, and fetch profile pictures.
 
-## ChatActionsClient
+[Chat Actions Namespace](chat-actions.md)
 
-Notable operations:
+Archive, pin, mute, read-state, edit/revoke/react operations.
 
-- archive/unarchive chat
-- pin/unpin chat
-- mute/unmute chat
-- mark chat as read
-- delete chat
-- delete message for me
-- edit, revoke, and react to messages
+[Community Namespace](community.md)
 
-Builder helpers:
+Create and manage communities with linked subgroups.
 
-- `build_message_key(...)`
-- `build_message_range(...)`
+[Newsletter Namespace](newsletter.md)
 
-## Groups and Community
+Join, manage, post, and read newsletter channels.
 
-`GroupsClient` handles conventional group lifecycle.
-`CommunityClient` focuses on linked subgroup topology and community-specific operations.
+[Groups Namespace](groups.md)
 
-## Newsletter
+Group lifecycle, membership approval, and participant administration.
 
-`NewsletterClient` supports:
+[Status Namespace](status.md)
 
-- listing subscriptions
-- metadata lookup
-- joining/leaving
-- sending messages and reactions
-- polling historical messages
+Post/revoke statuses and manage status audience privacy.
 
-## Privacy and Profile
+[Chatstate Namespace](chatstate.md)
 
-Use `PrivacyClient` for settings and disallowed lists.
-Use `ProfileClient` for account-facing text and picture changes.
+Typing and recording state signaling.
 
-## Operational Tip
+[Blocking Namespace](blocking.md)
 
-For production handlers, use namespace methods from the event callback and avoid storing stale references across reconnect boundaries.
+Blocklist management and identity checks.
+
+[Polls Namespace](polls.md)
+
+Poll creation, encrypted vote operations, and tally aggregation.
+
+[Presence Namespace](presence.md)
+
+Presence state updates and subscription controls.
+
+[Privacy Namespace](privacy.md)
+
+Privacy categories, values, and disallowed-list updates.
+
+[Profile Namespace](profile.md)
+
+Push name, status text, and profile picture lifecycle.
+</div>
+
+## Root Transport Methods
+
+These methods stay on `TryxClient` directly because they are cross-domain primitives.
+
+| Method | Purpose | Typical usage |
+| --- | --- | --- |
+| `is_connected() -> bool` | Connection health check | Guard before sends in long-running jobs |
+| `download_media(message) -> bytes` | Download media blob from message proto media node | Save image/audio/document payloads |
+| `upload_file(path, media_type) -> UploadResponse` | Upload file path for later message/status usage | Status media workflows |
+| `upload(data, media_type) -> UploadResponse` | Upload in-memory bytes | Transform pipelines |
+| `send_message(to, message) -> SendResult` | Raw protobuf message send | Advanced custom payloads |
+| `send_text(...) -> SendResult` | Text helper | Most command handlers |
+| `send_photo(...) -> SendResult` | Image helper | Bot replies with screenshots/posters |
+| `send_document(...) -> SendResult` | File helper | Reports, exports, invoices |
+| `send_audio(...) -> SendResult` | Audio helper | Voice notes / TTS |
+| `send_video(...) -> SendResult` | Video helper | Clips, demos |
+| `send_gif(...) -> SendResult` | GIF helper | Motion responses |
+| `send_sticker(...) -> SendResult` | Sticker helper | Lightweight reactions |
+| `request_media_reupload(...) -> MediaReuploadResult` | Recover stale media references | Retry failed media downloads |
+
+!!! warning "Reconnect-safe Pattern"
+	Avoid caching `TryxClient` on global module state across runtime restarts.
+	Always use the `client` object injected in the current handler call.
+
+## Practical Flow By Goal
+
+=== "Message Bot"
+	Use root send methods + `chat_actions` + `chatstate`.
+
+	1. Parse incoming event.
+	2. Signal typing with `client.chatstate.send_composing(chat)`.
+	3. Send reply with `client.send_text(...)`.
+	4. Optional message edit/revoke via `client.chat_actions`.
+
+=== "Moderation Bot"
+	Use `groups`, `blocking`, `privacy`.
+
+	1. Resolve sender via [Types API](types.md).
+	2. Apply participant actions (`promote`, `remove`, `approve request`).
+	3. Enforce policy with blocklist/privacy settings.
+
+=== "Broadcast/Channel Bot"
+	Use `status`, `newsletter`, `polls`.
+
+	1. Upload content or build text payload.
+	2. Publish status/newsletter message.
+	3. Track engagement using polls and reactions.
+
+## Cross-References
+
+- Event contracts: [Events API](events.md)
+- Shared value objects: [Types API](types.md)
+- Builders and utility helpers: [Helpers API](helpers.md)
+- End-to-end bot composition: [Tutorial: Command Bot](../tutorials/command-bot.md)

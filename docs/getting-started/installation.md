@@ -1,10 +1,23 @@
 # Installation
 
+This page sets up a local development environment for the Tryx Python bindings backed by Rust.
+
+!!! note "Recommended shell flow"
+	Use an isolated virtual environment per project to avoid conflicting native extension builds.
+
 ## Prerequisites
 
 - Python 3.8+
 - Rust toolchain (stable)
 - `pip` and virtual environment tooling
+
+## Environment Bootstrap
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+```
 
 ## Local Development Install
 
@@ -16,6 +29,9 @@ maturin develop
 ```
 
 This installs the Rust extension module into your active environment in editable mode.
+
+!!! tip "Fast rebuild loop"
+	Re-run `maturin develop` after Rust binding changes to keep Python runtime artifacts in sync.
 
 ## Build Wheel
 
@@ -36,6 +52,8 @@ bot = Tryx(backend)
 client = bot.get_client()
 print(type(client).__name__)
 ```
+
+If output shows `TryxClient`, extension loading is successful.
 
 ## Optional Tools
 
@@ -60,3 +78,8 @@ Ensure your platform build tools are installed:
 ### ImportError for extension module
 
 Re-run `maturin develop` in the same active virtual environment where you run Python.
+
+## Next Step
+
+- Continue to [Quick Start](quickstart.md)
+- Then configure pairing in [Authentication Flow](authentication.md)

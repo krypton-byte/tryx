@@ -2,6 +2,9 @@
 
 Tryx ships with `.pyi` stubs and `py.typed`, enabling full editor and type-checker support.
 
+!!! tip "Why this matters"
+    Typed contracts make event handling safer, API discovery faster, and refactors less risky.
+
 ## Core Types
 
 - `JID`: canonical address object
@@ -20,6 +23,15 @@ Event classes define explicit payload contracts:
 - discoverable through IDE autocomplete
 - easier static checks in large projects
 
+## Enum-heavy Domains
+
+Key domains with enum-like constraints:
+
+- privacy and disallowed-list management
+- status audience control
+- chatstate and presence signaling
+- group/community policy modes
+
 ## Enum-Style Classes
 
 Several Rust enums are exposed as Python classes with fixed attributes (for example status/privacy and event reason classes).
@@ -29,6 +41,19 @@ Several Rust enums are exposed as Python classes with fixed attributes (for exam
 1. Keep handler function signatures explicit.
 2. Annotate helper functions returning event-derived data.
 3. Run static analysis in CI (mypy or pyright).
+
+## Type Boundary Pattern
+
+```python
+from tryx.events import EvMessage
+from tryx.types import JID
+
+
+def extract_sender(event: EvMessage) -> JID:
+    return event.data.message_info.source.sender
+```
+
+Then keep your service layer function signatures strictly typed as well.
 
 ## Example
 
@@ -40,3 +65,9 @@ from tryx.types import JID
 def extract_chat(event: EvMessage) -> JID:
     return event.data.message_info.source.chat
 ```
+
+## Related Docs
+
+- [Types API](../api/types.md)
+- [Privacy Namespace](../api/privacy.md)
+- [Status Namespace](../api/status.md)

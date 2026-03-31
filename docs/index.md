@@ -11,6 +11,9 @@
   </div>
 </div>
 
+!!! tip "Documentation Mode"
+    This site is designed as a full path: setup -> architecture -> API namespaces -> tutorials -> production operations.
+
 ## What You Can Do
 
 <div class="tryx-grid">
@@ -32,14 +35,36 @@
   </div>
 </div>
 
+## Choose Your Path
+
+=== "I am New"
+  1. [Installation](getting-started/installation.md)
+  2. [Quick Start](getting-started/quickstart.md)
+  3. [Authentication Flow](getting-started/authentication.md)
+  4. [Client API Gateway](api/client.md)
+
+=== "I am Building Features"
+  1. [Client Namespaces](api/client.md)
+  2. [Events API](api/events.md)
+  3. [Types API](api/types.md)
+  4. [Tutorials](tutorials/command-bot.md)
+
+=== "I am Deploying"
+  1. [Deployment Guide](operations/deployment.md)
+  2. [Reliability](operations/reliability.md)
+  3. [Troubleshooting](operations/troubleshooting.md)
+  4. [Security](operations/security.md)
+
 ## Recommended Reading Path
 
 1. Start with [Installation](getting-started/installation.md).
 2. Follow [Quick Start](getting-started/quickstart.md) to build your first running bot.
 3. Understand pairing in [Authentication Flow](getting-started/authentication.md).
 4. Learn internals in [Architecture](core-concepts/architecture.md) and [Event Model](core-concepts/event-model.md).
-5. Jump into [Client API](api/client.md) and [Events API](api/events.md).
-6. Use [QnA](faq/qna.md) and [Troubleshooting](operations/troubleshooting.md) when debugging.
+5. Jump into [Client API Gateway](api/client.md) and namespace deep dives.
+6. Use [Tutorials](tutorials/command-bot.md) for implementation patterns.
+7. Use [QnA](faq/qna.md) and [Troubleshooting](operations/troubleshooting.md) when debugging.
+8. Finish with [Deployment](operations/deployment.md) and [Reliability](operations/reliability.md) before production.
 
 ## Project Scope
 
@@ -52,3 +77,23 @@ This documentation set focuses on the Python SDK experience first:
 - Practical tutorials and real-world QnA
 
 Rust-internal details remain visible where they directly affect Python usage and behavior.
+
+## Quick Technical Index
+
+<div class="tryx-link-grid" markdown="1">
+[Client Namespace Gateway](api/client.md)
+
+All namespace clients mapped with deep-dive pages.
+
+[Operational Readiness](operations/deployment.md)
+
+Deployment, reliability, performance, security, and troubleshooting.
+
+[Typed Contracts](api/types.md)
+
+Shared value objects and type-first usage patterns.
+
+[QnA](faq/qna.md)
+
+Scenario-driven answers for practical problems.
+</div>

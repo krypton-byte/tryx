@@ -16,16 +16,33 @@ nav:
       - Event Model: core-concepts/event-model.md
       - Type System: core-concepts/type-system.md
   - API Reference:
-      - Client API: api/client.md
+      - Client API Gateway: api/client.md
+      - Client Namespaces:
+        - Contact Namespace: api/contact.md
+        - Chat Actions Namespace: api/chat-actions.md
+        - Community Namespace: api/community.md
+        - Newsletter Namespace: api/newsletter.md
+        - Groups Namespace: api/groups.md
+        - Status Namespace: api/status.md
+        - Chatstate Namespace: api/chatstate.md
+        - Blocking Namespace: api/blocking.md
+        - Polls Namespace: api/polls.md
+        - Presence Namespace: api/presence.md
+        - Privacy Namespace: api/privacy.md
+        - Profile Namespace: api/profile.md
       - Events API: api/events.md
       - Types API: api/types.md
       - Helpers API: api/helpers.md
       - WACore API: api/wacore.md
   - Tutorials:
       - Command Bot: tutorials/command-bot.md
+      - Profile and Privacy: tutorials/profile-privacy.md
+      - Poll Survey Workflow: tutorials/poll-survey.md
       - Media Workflows: tutorials/media-workflows.md
       - Group Automation: tutorials/group-automation.md
   - Operations:
+      - Deployment: operations/deployment.md
+      - Reliability: operations/reliability.md
       - Troubleshooting: operations/troubleshooting.md
       - Performance: operations/performance.md
       - Security: operations/security.md
@@ -42,14 +59,21 @@ theme:
   language: en
   features:
     - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
+    - navigation.path
     - navigation.tracking
     - navigation.instant
     - navigation.expand
+    - navigation.indexes
     - content.code.copy
+    - content.code.annotate
     - content.tabs.link
+    - content.tooltips
     - search.suggest
     - search.highlight
+    - search.share
     - toc.follow
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -62,7 +86,7 @@ theme:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: teal
-      accent: lime
+      accent: orange
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -78,15 +102,20 @@ markdown_extensions:
   - md_in_html
   - tables
   - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
   - pymdownx.snippets
   - toc:
       permalink: true
+      toc_depth: 2-4
 
 extra_css:
   - assets/stylesheets/extra.css

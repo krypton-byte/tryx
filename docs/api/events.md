@@ -1,15 +1,23 @@
 # Events API
 
-This page summarizes the event classes exported by `tryx.events`.
+This page maps event classes in `tryx.events` to practical handler strategies.
 
-## Dispatcher
+## Dispatcher Contract
 
-`Dispatcher` is the internal callback registry used by `Tryx`.
+`Dispatcher` is used internally by `Tryx` and by `@bot.on(EventClass)` registration.
 
-- `on(EventClass)` selects a target event class.
-- calling the returned object with a function registers a callback.
+```python
+@bot.on(EvMessage)
+async def on_message(client, event):
+	...
+```
 
-## Lifecycle Events
+!!! tip "Handler model"
+	Keep handlers small, push expensive work into background tasks, and treat incoming event payloads as typed contracts.
+
+## Event Taxonomy
+
+### Lifecycle
 
 - `EvConnected`
 - `EvDisconnected`
@@ -17,21 +25,21 @@ This page summarizes the event classes exported by `tryx.events`.
 - `EvStreamReplaced`
 - `EvClientOutDated`
 
-## Pairing Events
+### Pairing
 
 - `EvPairingQrCode`
 - `EvPairingCode`
 - `EvPairSuccess`
 - `EvPairError`
 
-## Messaging Events
+### Messaging
 
 - `EvMessage`
 - `EvReceipt`
 - `EvUndecryptableMessage`
 - `EvNotification`
 
-## Sync Action Events
+### Sync Actions
 
 - `EvPinUpdate`
 - `EvMuteUpdate`
@@ -42,7 +50,7 @@ This page summarizes the event classes exported by `tryx.events`.
 - `EvStarUpdate`
 - `EvContactUpdate`
 
-## Contact/Profile/Presence Events
+### Contact, Profile, Presence
 
 - `EvPushNameUpdate`
 - `EvSelfPushNameUpdated`
@@ -54,36 +62,72 @@ This page summarizes the event classes exported by `tryx.events`.
 - `EvContactNumberChanged`
 - `EvContactSyncRequested`
 
-## Device and Business Events
+### Device and Business
 
 - `EvDeviceListUpdate`
 - `EvBusinessStatusUpdate`
 
-## Group and Newsletter Events
+### Group and Newsletter
 
 - `EvJoinedGroup`
 - `EvGroupInfoUpdate`
 - `EvGroupUpdate`
 - `EvNewsletterLiveUpdate`
 
-## Data Shape Guidance
+## Event-to-Namespace Mapping
 
-Most event classes expose `data` with a dedicated payload class.
-Use explicit payload attributes instead of parsing raw protobuf bytes whenever possible.
+| Event family | Namespace actions usually paired |
+| --- | --- |
+| Messaging | [Chat Actions](chat-actions.md), [Contact](contact.md), root send methods |
+| Group updates | [Groups](groups.md), [Community](community.md) |
+| Newsletter updates | [Newsletter](newsletter.md), [Polls](polls.md) |
+| Presence updates | [Presence](presence.md), [Chatstate](chatstate.md) |
+| Profile updates | [Profile](profile.md), [Privacy](privacy.md) |
 
-## Enum-Like Event Types
+## Payload Discipline
 
-Tryx also exports reason/state classes used in event payloads, such as:
+=== "Recommended"
+	- Read typed fields from `event.data`.
+	- Guard optional values (`None`) before usage.
+	- Log identity metadata (`chat_jid`, `sender`, `message_id`) for observability.
+
+=== "Avoid"
+	- Parsing raw protobuf bytes when typed fields already exist.
+	- Long blocking work inside handler coroutine.
+	- Assuming strict order between unrelated event classes.
+
+## Example: Safe Event Router
+
+```python
+from tryx.events import EvMessage, EvPresence
+
+
+@bot.on(EvMessage)
+async def on_message(client, event):
+	chat = event.data.message_info.source.chat
+	text = event.data.get_text() or ""
+	if text == "/ping":
+		await client.send_text(chat, "pong", quoted=event)
+
+
+@bot.on(EvPresence)
+async def on_presence(client, event):
+	# keep side effects minimal; enqueue heavy processing
+	pass
+```
+
+## Enum-like Support Types
+
+Common reason/state classes used by event payloads:
 
 - `TempBanReason`
 - `ReceiptType`
 - `UnavailableType`
 - `DecryptFailMode`
-- `ChatPresence` and `ChatPresenceMedia`
+- `ChatPresence`, `ChatPresenceMedia`
 - `DeviceListUpdateType`
 - `BusinessStatusUpdateType`
-- `GroupNotificationAction` (opaque variant object)
+- `GroupNotificationAction`
 
-## Recommendation
-
-Treat event classes as contracts. If your logic depends on a field, type it explicitly and guard optional values.
+!!! warning "Reliability"
+	Treat sync events as convergence signals, not anomalies. They are expected in multi-device behavior.

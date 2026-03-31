@@ -1,5 +1,7 @@
 # Architecture
 
+Tryx intentionally splits protocol-heavy runtime responsibilities and Python-facing ergonomics.
+
 ## Layered Design
 
 Tryx uses a two-layer model:
@@ -16,6 +18,12 @@ The Rust side handles:
 - heavy event transformations
 - media and protobuf conversions
 
+Additional responsibilities:
+
+- connection lifecycle and stream state
+- event normalization and serialization boundaries
+- low-level protocol node handling
+
 ### Python API Layer
 
 The Python side provides:
@@ -25,11 +33,22 @@ The Python side provides:
 - typed stubs for IDE and static analysis
 - callback registration via decorators
 
+Additional responsibilities:
+
+- namespace-driven domain APIs (`client.groups`, `client.privacy`, etc.)
+- handler orchestration and business logic composition
+- integration with third-party systems (DB, queues, APIs)
+
 ## Why This Design Works
 
 - Performance-sensitive logic stays in Rust.
 - Product logic stays simple in Python.
 - Event payloads are structured classes, not ad-hoc dicts.
+
+## Runtime Boundary Principle
+
+!!! tip
+    Keep protocol assumptions in Rust-backed typed models and keep product/business policy in Python handlers.
 
 ## Data Flow
 
@@ -56,3 +75,9 @@ flowchart LR
 ## Practical Implication
 
 You can safely treat Python classes as stable contracts while trusting Rust internals for throughput and protocol-heavy work.
+
+## Related Docs
+
+- [Event Model](event-model.md)
+- [Type System](type-system.md)
+- [Client API Gateway](../api/client.md)

@@ -1,10 +1,14 @@
 # Tutorial: Command Bot
 
-## Goal
+Build a command-driven bot that stays maintainable as command count grows.
 
-Build a command-based bot with clean handler routing.
+!!! tip "Outcome"
+    At the end of this tutorial you will have:
+    - clean command parser
+    - command dispatch table
+    - production-safe error handling and idempotency guard
 
-## Example Skeleton
+## Level 1: Basic Command Router
 
 ```python
 import asyncio
@@ -35,8 +39,86 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 asyncio.run(bot.run())
 ```
 
-## Production Tips
+## Level 2: Table-driven Commands
 
-- Keep command parsing pure and testable.
-- Avoid large logic branches inside one callback.
-- Split commands into dedicated async functions.
+```python
+from collections.abc import Awaitable, Callable
+
+CommandHandler = Callable[[TryxClient, EvMessage, list[str]], Awaitable[None]]
+
+
+async def cmd_ping(client: TryxClient, event: EvMessage, args: list[str]) -> None:
+    chat = event.data.message_info.source.chat
+    await client.send_text(chat, "pong", quoted=event)
+
+
+async def cmd_echo(client: TryxClient, event: EvMessage, args: list[str]) -> None:
+    chat = event.data.message_info.source.chat
+    await client.send_text(chat, " ".join(args) or "(empty)", quoted=event)
+
+
+COMMANDS: dict[str, CommandHandler] = {
+    "ping": cmd_ping,
+    "echo": cmd_echo,
+}
+
+
+@bot.on(EvMessage)
+async def on_command(client: TryxClient, event: EvMessage) -> None:
+    text = (event.data.get_text() or "").strip()
+    if not text.startswith("/"):
+        return
+
+    parts = text[1:].split()
+    name, args = parts[0].lower(), parts[1:]
+    fn = COMMANDS.get(name)
+    if fn is None:
+        await client.send_text(event.data.message_info.source.chat, f"Unknown command: {name}")
+        return
+    await fn(client, event, args)
+```
+
+## Level 3: Production Pattern
+
+=== "Reliability"
+    - Add per-message idempotency key from `event.data.message_info.id`.
+    - Separate command parsing from side effects.
+    - Add structured logging (`command`, `chat`, `message_id`).
+
+=== "Safety"
+    - Use allowlist for admin-only commands.
+    - Validate argument length/type before action.
+    - Wrap outbound mutations with retry policy for transient failures.
+
+=== "UX"
+    - Send `client.chatstate.send_composing(chat)` during slow command execution.
+    - Return explicit error message for invalid command arguments.
+
+## Production Example: Idempotent Dispatch
+
+```python
+seen_ids: set[str] = set()
+
+
+@bot.on(EvMessage)
+async def on_idempotent(client: TryxClient, event: EvMessage) -> None:
+    message_id = event.data.message_info.id
+    if message_id in seen_ids:
+        return
+    seen_ids.add(message_id)
+
+    # dispatch command here
+```
+
+??? info "Advanced: plugin command registry"
+    For larger bots, store command handlers in module-level plugins and register them into a central command registry at startup.
+    This keeps each command domain isolated and testable.
+
+!!! warning "Memory growth"
+    If you store processed IDs in memory, add TTL eviction or persist compact dedupe state.
+
+## Where To Go Next
+
+- [Chat Actions Namespace](../api/chat-actions.md)
+- [Profile and Privacy Tutorial](profile-privacy.md)
+- [Reliability Operations](../operations/reliability.md)

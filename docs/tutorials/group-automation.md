@@ -1,28 +1,67 @@
 # Tutorial: Group Automation
 
-## Common Tasks
+Automate full group lifecycle with safe participant governance.
 
-- create groups
-- update subject/description
-- add/remove/promote/demote participants
-- configure announce/locked/ephemeral modes
+## Common Workflows
 
-## Pattern
+- create and configure group
+- manage participants (add/remove/promote/demote)
+- handle membership approvals
+- keep chat policy aligned (announce/locked/ephemeral)
 
-1. Read current metadata (`get_metadata`)
-2. Compute minimal change
-3. Apply targeted action
-4. Handle sync events (`EvGroupUpdate`) for confirmation
-
-## Example Action
+## Basic: Create + Configure
 
 ```python
-await client.groups.set_subject(group_jid, "Engineering Room")
-await client.groups.set_announce(group_jid, True)
+from tryx.client import CreateGroupOptions, GroupParticipantOptions
+
+
+participants = [GroupParticipantOptions(jid=jid) for jid in initial_members]
+options = CreateGroupOptions(subject="Engineering Room", participants=participants)
+created = await client.groups.create_group(options)
+
+await client.groups.set_subject(created.gid, "Engineering Room")
+await client.groups.set_announce(created.gid, True)
+await client.groups.set_locked(created.gid, True)
 ```
 
-## Safety Rules
+## Intermediate: Membership Queue
 
-- Check bot admin privileges before mutating group state.
-- Use idempotent wrappers to avoid repeated side effects.
-- Keep audit logs for participant management operations.
+```python
+pending = await client.groups.get_membership_requests(group_jid)
+
+approve = [row.jid for row in pending if row.jid.user in trusted_users]
+reject = [row.jid for row in pending if row.jid.user not in trusted_users]
+
+if approve:
+	await client.groups.approve_membership_requests(group_jid, approve)
+if reject:
+	await client.groups.reject_membership_requests(group_jid, reject)
+```
+
+## Production: State Reconciliation Loop
+
+```python
+async def reconcile_group(client, group_jid):
+	metadata = await client.groups.get_metadata(group_jid)
+
+	# enforce policy
+	if not metadata.is_announcement:
+		await client.groups.set_announce(group_jid, True)
+
+	if metadata.ephemeral_expiration != 604800:
+		await client.groups.set_ephemeral(group_jid, 604800)
+```
+
+## Operational Safety Rules
+
+!!! warning
+	Always verify the bot has required admin privileges before participant mutation.
+
+!!! tip
+	Write audit logs for every moderator action: actor, target group, participant, action, timestamp.
+
+## Related Docs
+
+- [Groups Namespace](../api/groups.md)
+- [Community Namespace](../api/community.md)
+- [Troubleshooting](../operations/troubleshooting.md)

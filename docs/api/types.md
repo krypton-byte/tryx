@@ -1,60 +1,79 @@
 # Types API
 
-Core data classes live in `tryx.types`.
+Core value objects in `tryx.types` define identity, message metadata, and result contracts used across client namespaces.
 
-## JID
+## Identity and Source Types
 
-Represents a WhatsApp identifier with `user` and `server` parts.
+### `JID`
 
-## MessageSource
+Canonical WhatsApp identifier:
 
-Describes where a message came from and how it was addressed.
+- `user`: account or group numeric/opaque id
+- `server`: domain segment (`s.whatsapp.net`, `g.us`, etc.)
 
-Fields include:
+### `MessageSource`
 
-- sender
-- chat
-- is_from_me
-- is_group
-- alternate/recipient addressing metadata
+Routing context for a message:
 
-## MessageInfo
+- sender identity
+- target chat identity
+- from-me and group flags
+- alternate identity hints for multi-device routing
 
-Common metadata for inbound/outbound messages:
+### `MessageInfo`
+
+Message metadata envelope:
 
 - `id`
 - `type`
 - `timestamp`
 - `source`
-- edit metadata and verification hints
+- edit and verification metadata
 
-## Bot/Meta Side Types
+## Send and Media Result Types
+
+| Type | Produced by |
+| --- | --- |
+| `UploadResponse` | `upload`, `upload_file` |
+| `SendResult` | `send_*` methods |
+| `MediaReuploadResult` | `request_media_reupload` |
+| `ProfilePicture` | `client.contact.get_profile_picture` |
+
+## Advanced Metadata Types
 
 - `MsgBotInfo`
 - `MsgMetaInfo`
 - `DeviceSentMeta`
 
-These provide advanced metadata used in sync/edit contexts.
+These are useful when building sync-aware systems and diagnostics.
 
-## Media and Send Result Types
+## Practical Typed Patterns
 
-- `UploadResponse`
-- `SendResult`
-- `MediaReuploadResult`
-
-## Contact Visual Type
-
-- `ProfilePicture`
-
-## Practical Pattern
-
-Use typed helper functions around event payloads to keep business logic clean:
-
-```python
-from tryx.events import EvMessage
-from tryx.types import JID
+=== "Event extraction"
+    ```python
+    from tryx.events import EvMessage
+    from tryx.types import JID
 
 
-def source_chat(event: EvMessage) -> JID:
-    return event.data.message_info.source.chat
-```
+    def source_chat(event: EvMessage) -> JID:
+        return event.data.message_info.source.chat
+    ```
+
+=== "Result-safe send"
+    ```python
+    async def send_with_audit(client, chat, text):
+        result = await client.send_text(chat, text)
+        return {"message_id": result.id, "ts": result.timestamp}
+    ```
+
+## Privacy Type Bridge
+
+Privacy and status workflows (documented in [Privacy Namespace](privacy.md) and [Status Namespace](status.md)) rely on typed enums from the client surface, including:
+
+- `PrivacyCategory`
+- `PrivacyValue`
+- `DisallowedListAction`
+- `StatusPrivacySetting`
+
+!!! tip "Type-first architecture"
+    Keep handler boundaries typed. Convert external payloads into typed objects early, and keep business logic free of ad-hoc dict parsing.
