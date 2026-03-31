@@ -1,6 +1,7 @@
+"""Utility helpers for building payloads and handling common conversions."""
+
 from .waproto.whatsapp_pb2 import Message as MessageProto
 from .client import (
-    BlocklistEntry,
     ChatStateType,
     CreateGroupOptions,
     GroupParticipantOptions,
@@ -16,6 +17,8 @@ from .types import JID
 
 
 class NewsletterHelpers:
+    """Helpers for newsletter message serialization and builders."""
+
     @staticmethod
     def parse_message(data: bytes) -> MessageProto: ...
     @staticmethod
@@ -25,6 +28,8 @@ class NewsletterHelpers:
 
 
 class GroupsHelpers:
+    """Helpers for group invite and option object construction."""
+
     @staticmethod
     def strip_invite_url(code: str) -> str: ...
     @staticmethod
@@ -49,6 +54,8 @@ class GroupsHelpers:
 
 
 class StatusHelpers:
+    """Helpers for status privacy and send options."""
+
     @staticmethod
     def build_send_options(
         privacy: StatusPrivacySetting = StatusPrivacySetting.Contacts,
@@ -58,6 +65,8 @@ class StatusHelpers:
 
 
 class ChatstateHelpers:
+    """Helpers for constructing chat state enum values."""
+
     @staticmethod
     def composing() -> ChatStateType: ...
     @staticmethod
@@ -67,11 +76,15 @@ class ChatstateHelpers:
 
 
 class BlockingHelpers:
+    """Helpers related to blocklist identity matching."""
+
     @staticmethod
     def same_user(a: JID, b: JID) -> bool: ...
 
 
 class PollsHelpers:
+    """Helpers for poll vote decryption and aggregation."""
+
     @staticmethod
     def decrypt_vote(
         enc_payload: bytes,
@@ -92,5 +105,7 @@ class PollsHelpers:
 
 
 class PresenceHelpers:
+    """Helpers for default presence values."""
+
     @staticmethod
     def default_status() -> PresenceStatus: ...

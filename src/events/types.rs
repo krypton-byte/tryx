@@ -147,7 +147,7 @@ impl From<QrScannedWithoutMultidevice> for EvQrScannedWithoutMultidevice {
 pub struct EvClientOutDated;
 
 #[pyclass]
-enum ReceiptType {
+pub enum ReceiptType {
     Delivered,
     Sender,
     Retry,
@@ -225,13 +225,13 @@ impl EvReceipt {
 }
 
 #[pyclass]
-enum UnavailableType {
+pub enum UnavailableType {
     Unknown,
     ViewOnce,
 }
 
 #[pyclass]
-enum DecryptFailMode {
+pub enum DecryptFailMode {
     Show,
     Hide
 }
@@ -319,7 +319,7 @@ impl EvNotification {
 }
 
 #[pyclass]
-enum ChatPresence {
+pub enum ChatPresence {
     Composing,
     Paused
 }
@@ -338,7 +338,7 @@ impl ChatPresence {
 }
 
 #[pyclass]
-enum ChatPresenceMedia {
+pub enum ChatPresenceMedia {
     Text,
     Audio
 }

@@ -1,0 +1,92 @@
+site_name: Tryx Documentation
+site_description: Rust-powered Python SDK for event-driven WhatsApp automation
+site_author: krypton-byte
+repo_url: https://github.com/krypton-byte/tryx
+repo_name: krypton-byte/tryx
+edit_uri: edit/main/docs/
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Authentication Flow: getting-started/authentication.md
+  - Core Concepts:
+      - Architecture: core-concepts/architecture.md
+      - Event Model: core-concepts/event-model.md
+      - Type System: core-concepts/type-system.md
+  - API Reference:
+      - Client API: api/client.md
+      - Events API: api/events.md
+      - Types API: api/types.md
+      - Helpers API: api/helpers.md
+      - WACore API: api/wacore.md
+  - Tutorials:
+      - Command Bot: tutorials/command-bot.md
+      - Media Workflows: tutorials/media-workflows.md
+      - Group Automation: tutorials/group-automation.md
+  - Operations:
+      - Troubleshooting: operations/troubleshooting.md
+      - Performance: operations/performance.md
+      - Security: operations/security.md
+  - FAQ:
+      - QnA: faq/qna.md
+  - Reference:
+      - Glossary: reference/glossary.md
+      - Error Handling: reference/error-handling.md
+      - Roadmap: reference/roadmap.md
+      - Changelog Policy: reference/changelog.md
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - navigation.instant
+    - navigation.expand
+    - content.code.copy
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: lime
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.snippets
+  - toc:
+      permalink: true
+
+extra_css:
+  - assets/stylesheets/extra.css

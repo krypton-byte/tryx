@@ -116,6 +116,28 @@ This keeps `TryxClient` focused on messaging/media and keeps contacts grouped by
 - `python/tryx/waproto/`: generated protobuf Python files
 - `libs/whatsapp-rust/`: embedded rust stack dependencies
 
+## Documentation Site (MkDocs Material)
+
+A full documentation site is provided with MkDocs Material.
+
+Install docs dependencies:
+
+```bash
+pip install mkdocs mkdocs-material
+```
+
+Run local docs server:
+
+```bash
+mkdocs serve
+```
+
+Build docs in strict mode:
+
+```bash
+mkdocs build --strict
+```
+
 ## Installation
 
 ### Prerequisites

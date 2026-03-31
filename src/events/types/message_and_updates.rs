@@ -690,7 +690,7 @@ impl EvStarUpdate {
 }
 
 #[pyclass]
-struct GroupParticipant {
+pub struct GroupParticipant {
     #[pyo3(get)]
     jid: Py<JID>,
     #[pyo3(get)]
@@ -698,7 +698,7 @@ struct GroupParticipant {
 }
 
 #[pyclass]
-enum GroupNotificationAction {
+pub enum GroupNotificationAction {
     Add {
         participants: Vec<Py<GroupParticipant>>,
         reason: Option<String>,
@@ -904,7 +904,7 @@ impl EvGroupUpdate {
 
 
 #[pyclass]
-struct ContactUpdateData {
+pub struct ContactUpdateData {
     #[pyo3(get)]
     jid: Py<JID>,
     #[pyo3(get)]
@@ -971,7 +971,7 @@ impl From<wacore::types::events::ContactUpdate> for EvContactUpdate {
     }
 }
 #[pyclass]
-struct NewsletterLiveUpdateReaction {
+pub struct NewsletterLiveUpdateReaction {
     #[pyo3(get)]
     code: String,
     #[pyo3(get)]
@@ -979,7 +979,7 @@ struct NewsletterLiveUpdateReaction {
 }
 
 #[pyclass]
-struct NewsletterUpdateMessage {
+pub struct NewsletterUpdateMessage {
         #[pyo3(get)]
         server_id: u64,
         #[pyo3(get)]
@@ -987,7 +987,7 @@ struct NewsletterUpdateMessage {
 }
 
 #[pyclass]
-struct NewsletterLiveUpdateData {
+pub struct NewsletterLiveUpdateData {
     #[pyo3(get)]
     newsletter_jid: Py<JID>,
     #[pyo3(get)]
@@ -1042,7 +1042,7 @@ impl From<wacore::types::events::NewsletterLiveUpdate> for EvNewsletterLiveUpdat
 }
 
 #[pyclass]
-struct DeleteChatUpdateData {
+pub struct DeleteChatUpdateData {
     #[pyo3(get)]
     jid: Py<JID>,
     #[pyo3(get)]

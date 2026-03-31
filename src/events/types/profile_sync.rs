@@ -390,13 +390,13 @@ impl EvOfflineSyncCompleted {
 }
 
 #[pyclass]
-enum DeviceListUpdateType {
+pub enum DeviceListUpdateType {
     Added,
     Removed,
     Updated
 }
 #[pyclass]
-struct DeviceNottificationInfo {
+pub struct DeviceNottificationInfo {
     #[pyo3(get)]
     device_id: u32,
     #[pyo3(get)]

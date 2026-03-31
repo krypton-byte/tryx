@@ -122,7 +122,7 @@ impl From<WhatsAppMessageSource> for MessageSource {
 
 
 #[pyclass]
-struct MsgBotInfo {
+pub struct MsgBotInfo {
     inner: Arc<WhatsAppMsgBotInfo>,
     #[pyo3(get)]
     edit_target_id: Option<String>,
@@ -149,7 +149,7 @@ impl MsgBotInfo {
     }
 }
 #[pyclass]
-struct MsgMetaInfo {
+pub struct MsgMetaInfo {
     #[pyo3(get)]
     target_id: Option<String>,
     #[pyo3(get)]
@@ -186,7 +186,7 @@ impl From<WhatsAppMessageInfo> for MessageInfo {
 }
 
 #[pyclass]
-struct DeviceSentMeta {
+pub struct DeviceSentMeta {
     #[pyo3(get)]
     destination_jid: String,
     #[pyo3(get)]

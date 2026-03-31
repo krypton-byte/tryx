@@ -20,7 +20,7 @@ impl FailedBuildBot {
 }
 
 #[pyclass(extends=PyException)]
-struct FailedToDecodeProto {
+pub struct FailedToDecodeProto {
     message: String,
 }
 

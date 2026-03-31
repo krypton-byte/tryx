@@ -1,3 +1,5 @@
+"""High-level client API surface for Tryx Python bindings."""
+
 from typing import Any, Awaitable, Callable, Type, TypeVar
 
 from .backend import BackendBase
@@ -11,11 +13,13 @@ EventT = TypeVar("EventT")
 
 
 class IsOnWhatsAppResult:
+    """Result entry for WhatsApp registration lookup."""
     jid: JID
     is_registered: bool
 
 
 class UserInfo:
+    """Basic profile metadata for a single user."""
     jid: JID
     lid: JID | None
     status: str | None
@@ -24,6 +28,7 @@ class UserInfo:
 
 
 class ContactInfo:
+    """Resolved contact information from phone lookups."""
     jid: JID
     lid: JID | None
     is_registered: bool
@@ -42,6 +47,10 @@ DownloadableMedia = (
 
 
 class Tryx:
+    """Main bot runtime controller.
+
+    Use this class to register handlers and start the connection lifecycle.
+    """
     handlers: Any
 
     def __init__(self, backend: BackendBase) -> None: ...
@@ -54,6 +63,7 @@ class Tryx:
 
 
 class TryxClient:
+    """Connected client facade for messaging and feature namespaces."""
     contact: ContactClient
     chat_actions: ChatActionsClient
     community: CommunityClient
@@ -134,6 +144,7 @@ class TryxClient:
 
 
 class ContactClient:
+    """Contact and profile lookup operations."""
     async def get_info(self, phones: list[str]) -> list[ContactInfo]: ...
     async def get_user_info(self, jid: JID) -> dict[JID, UserInfo]: ...
     async def get_profile_picture(self, jid: JID, preview: bool) -> ProfilePicture: ...
@@ -141,6 +152,7 @@ class ContactClient:
 
 
 class ChatActionsClient:
+    """Chat-level actions such as archive, pin, mute, and reactions."""
     @staticmethod
     def build_message_key(
         id: str,
@@ -227,6 +239,7 @@ class ChatActionsClient:
 
 
 class GroupType:
+    """Type stub for GroupType."""
     Default: GroupType
     Community: GroupType
     LinkedSubgroup: GroupType
@@ -235,6 +248,7 @@ class GroupType:
 
 
 class CreateCommunityOptions:
+    """Type stub for CreateCommunityOptions."""
     name: str
     description: str | None
     closed: bool
@@ -252,10 +266,12 @@ class CreateCommunityOptions:
 
 
 class CreateCommunityResult:
+    """Type stub for CreateCommunityResult."""
     gid: JID
 
 
 class CommunitySubgroup:
+    """Type stub for CommunitySubgroup."""
     id: JID
     subject: str
     participant_count: int | None
@@ -264,22 +280,26 @@ class CommunitySubgroup:
 
 
 class LinkSubgroupsResult:
+    """Type stub for LinkSubgroupsResult."""
     linked_jids: list[JID]
     failed_groups: list[tuple[JID, int]]
 
 
 class UnlinkSubgroupsResult:
+    """Type stub for UnlinkSubgroupsResult."""
     unlinked_jids: list[JID]
     failed_groups: list[tuple[JID, int]]
 
 
 class GroupParticipant:
+    """Type stub for GroupParticipant."""
     jid: JID
     phone_number: JID | None
     is_admin: bool
 
 
 class GroupMetadata:
+    """Type stub for GroupMetadata."""
     id: JID
     subject: str
     participants: list[GroupParticipant]
@@ -306,6 +326,7 @@ class GroupMetadata:
 
 
 class CommunityClient:
+    """Type stub for CommunityClient."""
     @staticmethod
     def classify_group(metadata: GroupMetadata) -> GroupType: ...
     async def create(self, options: CreateCommunityOptions) -> CreateCommunityResult: ...
@@ -343,17 +364,20 @@ class CommunityClient:
 
 
 class NewsletterVerification:
+    """Type stub for NewsletterVerification."""
     Verified: NewsletterVerification
     Unverified: NewsletterVerification
 
 
 class NewsletterState:
+    """Type stub for NewsletterState."""
     Active: NewsletterState
     Suspended: NewsletterState
     Geosuspended: NewsletterState
 
 
 class NewsletterRole:
+    """Type stub for NewsletterRole."""
     Owner: NewsletterRole
     Admin: NewsletterRole
     Subscriber: NewsletterRole
@@ -361,11 +385,13 @@ class NewsletterRole:
 
 
 class NewsletterReactionCount:
+    """Type stub for NewsletterReactionCount."""
     code: str
     count: int
 
 
 class NewsletterMetadata:
+    """Type stub for NewsletterMetadata."""
     jid: JID
     name: str
     description: str | None
@@ -380,6 +406,7 @@ class NewsletterMetadata:
 
 
 class NewsletterMessage:
+    """Type stub for NewsletterMessage."""
     server_id: int
     timestamp: int
     message_type: str
@@ -389,6 +416,7 @@ class NewsletterMessage:
 
 
 class NewsletterClient:
+    """Type stub for NewsletterClient."""
     async def list_subscribed(self) -> list[NewsletterMetadata]: ...
     async def get_metadata(self, jid: JID) -> NewsletterMetadata: ...
     async def get_metadata_by_invite(self, invite_code: str) -> NewsletterMetadata: ...
@@ -417,21 +445,25 @@ class NewsletterClient:
 
 
 class MemberLinkMode:
+    """Type stub for MemberLinkMode."""
     AdminLink: MemberLinkMode
     AllMemberLink: MemberLinkMode
 
 
 class MemberAddMode:
+    """Type stub for MemberAddMode."""
     AdminAdd: MemberAddMode
     AllMemberAdd: MemberAddMode
 
 
 class MembershipApprovalMode:
+    """Type stub for MembershipApprovalMode."""
     Off: MembershipApprovalMode
     On: MembershipApprovalMode
 
 
 class GroupParticipantOptions:
+    """Type stub for GroupParticipantOptions."""
     jid: JID
     phone_number: JID | None
     privacy: bytes | None
@@ -445,6 +477,7 @@ class GroupParticipantOptions:
 
 
 class CreateGroupOptions:
+    """Type stub for CreateGroupOptions."""
     subject: str
     participants: list[GroupParticipantOptions]
     member_link_mode: MemberLinkMode | None
@@ -472,32 +505,38 @@ class CreateGroupOptions:
 
 
 class CreateGroupResult:
+    """Type stub for CreateGroupResult."""
     gid: JID
 
 
 class JoinGroupResult:
+    """Type stub for JoinGroupResult."""
     jid: JID
     pending_approval: bool
 
 
 class ParticipantChangeResponse:
+    """Type stub for ParticipantChangeResponse."""
     jid: JID
     status: str | None
     error: str | None
 
 
 class MembershipRequest:
+    """Type stub for MembershipRequest."""
     jid: JID
     request_time: int | None
 
 
 class GroupInfo:
+    """Type stub for GroupInfo."""
     participants: list[JID]
     addressing_mode: str
     lid_to_pn_map: list[tuple[str, JID]]
 
 
 class GroupsClient:
+    """Type stub for GroupsClient."""
     async def query_info(self, jid: JID) -> GroupInfo: ...
     async def get_participating(self) -> dict[str, GroupMetadata]: ...
     async def get_metadata(self, jid: JID) -> GroupMetadata: ...
@@ -555,12 +594,14 @@ class GroupsClient:
 
 
 class StatusPrivacySetting:
+    """Type stub for StatusPrivacySetting."""
     Contacts: StatusPrivacySetting
     AllowList: StatusPrivacySetting
     DenyList: StatusPrivacySetting
 
 
 class StatusSendOptions:
+    """Type stub for StatusSendOptions."""
     privacy: StatusPrivacySetting
 
     def __init__(
@@ -570,6 +611,7 @@ class StatusSendOptions:
 
 
 class StatusClient:
+    """Type stub for StatusClient."""
     async def send_text(
         self,
         text: str,
@@ -612,27 +654,32 @@ class StatusClient:
 
 
 class ChatStateType:
+    """Type stub for ChatStateType."""
     Composing: ChatStateType
     Recording: ChatStateType
     Paused: ChatStateType
 
 
 class BlocklistEntry:
+    """Type stub for BlocklistEntry."""
     jid: JID
     timestamp: int | None
 
 
 class PollOptionResult:
+    """Type stub for PollOptionResult."""
     name: str
     voters: list[str]
 
 
 class PresenceStatus:
+    """Type stub for PresenceStatus."""
     Available: PresenceStatus
     Unavailable: PresenceStatus
 
 
 class PrivacyCategory:
+    """Type stub for PrivacyCategory."""
     Last: PrivacyCategory
     Online: PrivacyCategory
     Profile: PrivacyCategory
@@ -646,6 +693,7 @@ class PrivacyCategory:
 
 
 class PrivacyValue:
+    """Type stub for PrivacyValue."""
     All: PrivacyValue
     Contacts: PrivacyValue
     None_: PrivacyValue
@@ -658,16 +706,19 @@ class PrivacyValue:
 
 
 class DisallowedListAction:
+    """Type stub for DisallowedListAction."""
     Add: DisallowedListAction
     Remove: DisallowedListAction
 
 
 class PrivacySetting:
+    """Type stub for PrivacySetting."""
     category: PrivacyCategory
     value: PrivacyValue
 
 
 class DisallowedListUserEntry:
+    """Type stub for DisallowedListUserEntry."""
     action: DisallowedListAction
     jid: JID
     pn_jid: JID | None
@@ -681,6 +732,7 @@ class DisallowedListUserEntry:
 
 
 class DisallowedListUpdate:
+    """Type stub for DisallowedListUpdate."""
     dhash: str
     users: list[DisallowedListUserEntry]
 
@@ -692,6 +744,7 @@ class DisallowedListUpdate:
 
 
 class ChatstateClient:
+    """Type stub for ChatstateClient."""
     async def send(self, to: JID, state: ChatStateType) -> None: ...
     async def send_composing(self, to: JID) -> None: ...
     async def send_recording(self, to: JID) -> None: ...
@@ -699,6 +752,7 @@ class ChatstateClient:
 
 
 class BlockingClient:
+    """Type stub for BlockingClient."""
     async def block(self, jid: JID) -> None: ...
     async def unblock(self, jid: JID) -> None: ...
     async def get_blocklist(self) -> list[BlocklistEntry]: ...
@@ -706,6 +760,7 @@ class BlockingClient:
 
 
 class ProfileClient:
+    """Type stub for ProfileClient."""
     async def set_push_name(self, name: str) -> None: ...
     async def set_status_text(self, text: str) -> None: ...
     async def set_profile_picture(self, image_data: bytes) -> str: ...
@@ -713,6 +768,7 @@ class ProfileClient:
 
 
 class PrivacyClient:
+    """Type stub for PrivacyClient."""
     async def fetch_settings(self) -> list[PrivacySetting]: ...
     async def set_setting(
         self,
@@ -728,6 +784,7 @@ class PrivacyClient:
 
 
 class PollsClient:
+    """Type stub for PollsClient."""
     async def create(
         self,
         to: JID,
@@ -763,6 +820,7 @@ class PollsClient:
 
 
 class PresenceClient:
+    """Type stub for PresenceClient."""
     async def set(self, status: PresenceStatus) -> None: ...
     async def set_available(self) -> None: ...
     async def set_unavailable(self) -> None: ...

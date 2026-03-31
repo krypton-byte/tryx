@@ -44,7 +44,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Typing :: Typed",
 ]
-urls = { Homepage = "https://github.com/krypton-byte/tryx", Repository = "https://github.com/krypton-byte/tryx", Documentation = "https://github.com/krypton-byte/tryx#readme", Issues = "https://github.com/krypton-byte/tryx/issues" }
+urls = { Homepage = "https://github.com/krypton-byte/tryx", Repository = "https://github.com/krypton-byte/tryx", Documentation = "https://krypton-byte.github.io/tryx/", Issues = "https://github.com/krypton-byte/tryx/issues" }
 dynamic = ["version"]
 
 [tool.maturin]
@@ -55,6 +55,10 @@ python-source = "python"
 dev = [
     "mypy-protobuf>=5.0.0",
     "segno>=1.6.6",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.6.0",
 ]
 # include = [
 #     { path = "python/tryx/__init__.py", format = ["sdist", "wheel"] },

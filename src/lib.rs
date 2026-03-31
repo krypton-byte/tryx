@@ -21,8 +21,18 @@ use self::helpers::newsletter::NewsletterHelpers;
 use self::helpers::polls::PollsHelpers;
 use self::helpers::presence::PresenceHelpers;
 use self::helpers::status::StatusHelpers;
+use self::events::dispatcher::Dispatcher;
 use self::events::types::{
     BusinessStatusUpdateData,
+    BusinessStatusUpdateType,
+    ChatPresence,
+    ChatPresenceMedia,
+    ContactUpdateData,
+    DecryptFailMode,
+    DeleteChatUpdateData,
+    DeleteMessageForMeUpdateData,
+    DeviceListUpdateType,
+    DeviceNottificationInfo,
     EvArchiveUpdateData,
     EvArchiveUpdate,
     EvBusinessStatusUpdate,
@@ -37,6 +47,8 @@ use self::events::types::{
     EvContactUpdatedData,
     EvContactUpdated,
     EvContactUpdate,
+    EvDeleteChatUpdate,
+    EvDeleteMessageForMeUpdate,
     EvDeviceListUpdate,
     EvDisconnected,
     EvDisappearingModeChangedData,
@@ -52,6 +64,7 @@ use self::events::types::{
     EvNotification,
     EvOfflineSyncCompleted,
     EvOfflineSyncPreview,
+    EvNewsletterLiveUpdate,
     EvPairError,
     EvPairSuccess,
     EvPairingCode,
@@ -67,27 +80,38 @@ use self::events::types::{
     EvStarUpdate,
     EvStreamError,
     EvStreamReplaced,
+    EvTemporaryData,
     EvTemporaryBan,
     EvUndecryptableMessage,
     EvUserAboutUpdate,
     GroupUpdateData,
+    GroupNotificationAction,
+    GroupParticipant as EventGroupParticipant,
     LazyConversation,
     MarkChatAsReadUpdateData,
     MessageData,
     MuteUpdateData,
+    NewsletterLiveUpdateData,
+    NewsletterLiveUpdateReaction,
+    NewsletterUpdateMessage,
     OfflineSyncCompletedData,
     OfflineSyncData,
     PairSuccessData,
     PictureUpdateData,
     PinUpdatedata,
+    ReceiptType,
+    TempBanReason,
+    UnavailableType,
     UserAboutUpdateData,
     DeviceListUpdateData,
     EvPushNameUpdateData,
 };
-use self::backend::SqliteBackend;
-use self::exceptions::{EventDispatchError, FailedBuildBot, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
-use self::types::{JID, MediaReuploadResult, MessageInfo, SendResult, UploadResponse};
+use self::backend::{BackendBase, SqliteBackend};
+use self::exceptions::{EventDispatchError, FailedBuildBot, FailedToDecodeProto, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
+use self::types::{DeviceSentMeta, JID, MediaReuploadResult, MessageInfo, MessageSource, MsgBotInfo, MsgMetaInfo, ProfilePicture, SendResult, UploadResponse};
 use self::wacore::download::MediaType;
+use self::wacore::node::{Attrs, Node, NodeContent, NodeValue};
+use self::wacore::stanza::{BusinessSubscription, KeyIndexInfo};
 use self::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
 use self::wacore::iq::community::{
     CommunitySubgroup,
@@ -195,6 +219,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     _py.add_submodule(&client_module)?;
 
     let events_module = PyModule::new(_py.py(), "events")?;
+    events_module.add_class::<Dispatcher>()?;
     events_module.add_class::<EvConnected>()?;
     events_module.add_class::<EvDisconnected>()?;
     events_module.add_class::<EvLoggedOut>()?;
@@ -206,14 +231,21 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     events_module.add_class::<EvQrScannedWithoutMultidevice>()?;
     events_module.add_class::<EvClientOutDated>()?;
     events_module.add_class::<EvStreamReplaced>()?;
+    events_module.add_class::<TempBanReason>()?;
+    events_module.add_class::<EvTemporaryData>()?;
     events_module.add_class::<EvTemporaryBan>()?;
     events_module.add_class::<EvConnectFailure>()?;
     events_module.add_class::<EvStreamError>()?;
+    events_module.add_class::<ReceiptType>()?;
     events_module.add_class::<EvReceipt>()?;
+    events_module.add_class::<UnavailableType>()?;
+    events_module.add_class::<DecryptFailMode>()?;
     events_module.add_class::<EvUndecryptableMessage>()?;
     events_module.add_class::<MessageData>()?;
     events_module.add_class::<EvMessage>()?;
     events_module.add_class::<EvNotification>()?;
+    events_module.add_class::<ChatPresence>()?;
+    events_module.add_class::<ChatPresenceMedia>()?;
     events_module.add_class::<EvChatPresence>()?;
     events_module.add_class::<EvPresence>()?;
     events_module.add_class::<PictureUpdateData>()?;
@@ -238,7 +270,10 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     events_module.add_class::<OfflineSyncCompletedData>()?;
     events_module.add_class::<EvOfflineSyncCompleted>()?;
     events_module.add_class::<DeviceListUpdateData>()?;
+    events_module.add_class::<DeviceListUpdateType>()?;
+    events_module.add_class::<DeviceNottificationInfo>()?;
     events_module.add_class::<EvDeviceListUpdate>()?;
+    events_module.add_class::<BusinessStatusUpdateType>()?;
     events_module.add_class::<BusinessStatusUpdateData>()?;
     events_module.add_class::<EvBusinessStatusUpdate>()?;
     events_module.add_class::<EvArchiveUpdateData>()?;
@@ -253,17 +288,30 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     events_module.add_class::<EvContactUpdated>()?;
     events_module.add_class::<EvStarUpdateData>()?;
     events_module.add_class::<EvStarUpdate>()?;
+    events_module.add_class::<EventGroupParticipant>()?;
+    events_module.add_class::<GroupNotificationAction>()?;
     events_module.add_class::<GroupUpdateData>()?;
+    events_module.add_class::<ContactUpdateData>()?;
     events_module.add_class::<EvGroupUpdate>()?;
+    events_module.add_class::<DeleteMessageForMeUpdateData>()?;
+    events_module.add_class::<EvDeleteMessageForMeUpdate>()?;
+    events_module.add_class::<NewsletterLiveUpdateReaction>()?;
+    events_module.add_class::<NewsletterUpdateMessage>()?;
+    events_module.add_class::<NewsletterLiveUpdateData>()?;
+    events_module.add_class::<EvNewsletterLiveUpdate>()?;
+    events_module.add_class::<DeleteChatUpdateData>()?;
+    events_module.add_class::<EvDeleteChatUpdate>()?;
     events_module.add_class::<EvContactUpdate>()?;
     _py.add_submodule(&events_module)?;
 
     let backend_module = PyModule::new(_py.py(), "backend")?;
+    backend_module.add_class::<BackendBase>()?;
     backend_module.add_class::<SqliteBackend>()?;
     _py.add_submodule(&backend_module)?;
 
     let exceptions_module = PyModule::new(_py.py(), "exceptions")?;
     exceptions_module.add_class::<FailedBuildBot>()?;
+    exceptions_module.add_class::<FailedToDecodeProto>()?;
     exceptions_module.add_class::<EventDispatchError>()?;
     exceptions_module.add_class::<PyPayloadBuildError>()?;
     exceptions_module.add_class::<UnsupportedBackend>()?;
@@ -272,12 +320,23 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
 
     let types_module = PyModule::new(_py.py(), "types")?;
     types_module.add_class::<JID>()?;
+    types_module.add_class::<MessageSource>()?;
+    types_module.add_class::<MsgBotInfo>()?;
+    types_module.add_class::<MsgMetaInfo>()?;
     types_module.add_class::<MessageInfo>()?;
+    types_module.add_class::<DeviceSentMeta>()?;
     types_module.add_class::<UploadResponse>()?;
+    types_module.add_class::<ProfilePicture>()?;
     types_module.add_class::<SendResult>()?;
     types_module.add_class::<MediaReuploadResult>()?;
     _py.add_submodule(&types_module)?;
     let wacore_module = PyModule::new(_py.py(), "wacore")?;
+    wacore_module.add_class::<NodeValue>()?;
+    wacore_module.add_class::<NodeContent>()?;
+    wacore_module.add_class::<Attrs>()?;
+    wacore_module.add_class::<Node>()?;
+    wacore_module.add_class::<KeyIndexInfo>()?;
+    wacore_module.add_class::<BusinessSubscription>()?;
     wacore_module.add_class::<MediaType>()?;
     _py.add_submodule(&wacore_module)?;
 

@@ -1,3 +1,5 @@
+"""Top-level Tryx re-export stub."""
+
 from .backend import BackendBase, SqliteBackend
 from .client import (
     BlockingClient,
@@ -55,6 +57,7 @@ from .exceptions import (
     BuildBotError,
     EventDispatchError,
     FailedBuildBot,
+    FailedToDecodeProto,
     PyPayloadBuildError,
     UnsupportedBackend,
     UnsupportedBackendError,
