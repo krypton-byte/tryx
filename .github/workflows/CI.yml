@@ -1,213 +1,225 @@
 name: CI
 
 on:
-	push:
-		branches:
-			- main
-			- master
-		tags:
-			- "v*"
-	pull_request:
-	workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
 
 permissions:
-	contents: read
+  contents: read
 
 env:
-	CARGO_TERM_COLOR: always
+  CARGO_TERM_COLOR: always
 
 jobs:
-	quality:
-		name: Quality Checks
-		runs-on: ubuntu-latest
-		steps:
-			- uses: actions/checkout@v4
-			- uses: actions/setup-python@v5
-				with:
-					python-version: "3.12"
-			- uses: astral-sh/setup-uv@v5
-			- name: Install dev dependencies
-				run: uv sync --group dev --no-install-project
-			- name: Ruff lint
-				run: uv run ruff check .
-			- name: Ruff format check
-				run: uv run ruff format --check .
-			- name: Validate stub parity
-				run: uv run python scripts/check_stub_parity.py
+  quality:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - name: Install dev dependencies
+        run: uv sync --group dev --no-install-project
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format check
+        run: uv run ruff format --check .
+      - name: Validate stub parity
+        run: uv run python scripts/check_stub_parity.py
 
-	linux:
-		name: Linux manylinux wheels
-		needs: quality
-		runs-on: ${{ matrix.platform.runner }}
-		strategy:
-			fail-fast: false
-			matrix:
-				platform:
-					- runner: ubuntu-22.04
-						target: x86_64
-					- runner: ubuntu-22.04
-						target: x86
-					- runner: ubuntu-22.04
-						target: aarch64
-					- runner: ubuntu-22.04
-						target: armv7
-					- runner: ubuntu-22.04
-						target: s390x
-					- runner: ubuntu-22.04
-						target: ppc64le
-		steps:
-			- uses: actions/checkout@v4
-			- uses: actions/setup-python@v5
-				with:
-					python-version: "3.12"
-			- name: Build wheels
-				uses: PyO3/maturin-action@v1
-				with:
-					target: ${{ matrix.platform.target }}
-					args: --release --out dist --find-interpreter
-					sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-					manylinux: auto
-			- name: Upload wheels
-				uses: actions/upload-artifact@v4
-				with:
-					name: wheels-linux-${{ matrix.platform.target }}
-					path: dist
+  linux:
+    name: Linux manylinux wheels
+    needs: quality
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: x86
+          - runner: ubuntu-22.04
+            target: aarch64
+          - runner: ubuntu-22.04
+            target: armv7
+          - runner: ubuntu-22.04
+            target: s390x
+          - runner: ubuntu-22.04
+            target: ppc64le
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: auto
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.platform.target }}
+          path: dist
 
-	musllinux:
-		name: Linux musllinux wheels
-		needs: quality
-		runs-on: ${{ matrix.platform.runner }}
-		strategy:
-			fail-fast: false
-			matrix:
-				platform:
-					- runner: ubuntu-22.04
-						target: x86_64
-					- runner: ubuntu-22.04
-						target: x86
-					- runner: ubuntu-22.04
-						target: aarch64
-					- runner: ubuntu-22.04
-						target: armv7
-		steps:
-			- uses: actions/checkout@v4
-			- uses: actions/setup-python@v5
-				with:
-					python-version: "3.12"
-			- name: Build wheels
-				uses: PyO3/maturin-action@v1
-				with:
-					target: ${{ matrix.platform.target }}
-					args: --release --out dist --find-interpreter
-					sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-					manylinux: musllinux_1_2
-			- name: Upload wheels
-				uses: actions/upload-artifact@v4
-				with:
-					name: wheels-musllinux-${{ matrix.platform.target }}
-					path: dist
+  musllinux:
+    name: Linux musllinux wheels
+    needs: quality
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: x86
+          - runner: ubuntu-22.04
+            target: aarch64
+          - runner: ubuntu-22.04
+            target: armv7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: musllinux_1_2
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-musllinux-${{ matrix.platform.target }}
+          path: dist
 
-	windows:
-		name: Windows wheels
-		needs: quality
-		runs-on: ${{ matrix.platform.runner }}
-		strategy:
-			fail-fast: false
-			matrix:
-				platform:
-					- runner: windows-latest
-						target: x64
-						python_arch: x64
-					- runner: windows-latest
-						target: x86
-						python_arch: x86
-					- runner: windows-11-arm
-						target: aarch64
-						python_arch: arm64
-		steps:
-			- uses: actions/checkout@v4
-			- uses: actions/setup-python@v5
-				with:
-					python-version: "3.12"
-					architecture: ${{ matrix.platform.python_arch }}
-			- name: Build wheels
-				uses: PyO3/maturin-action@v1
-				with:
-					target: ${{ matrix.platform.target }}
-					args: --release --out dist --find-interpreter
-					sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-			- name: Upload wheels
-				uses: actions/upload-artifact@v4
-				with:
-					name: wheels-windows-${{ matrix.platform.target }}
-					path: dist
+  windows:
+    name: Windows wheels
+    needs: quality
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: windows-latest
+            target: x64
+            python_arch: x64
+          - runner: windows-latest
+            target: x86
+            python_arch: x86
+          - runner: windows-11-arm
+            target: aarch64
+            python_arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: ${{ matrix.platform.python_arch }}
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-${{ matrix.platform.target }}
+          path: dist
 
-	macos:
-		name: macOS wheels
-		needs: quality
-		runs-on: ${{ matrix.platform.runner }}
-		strategy:
-			fail-fast: false
-			matrix:
-				platform:
-					- runner: macos-15-intel
-						target: x86_64
-					- runner: macos-latest
-						target: aarch64
-		steps:
-			- uses: actions/checkout@v4
-			- uses: actions/setup-python@v5
-				with:
-					python-version: "3.12"
-			- name: Build wheels
-				uses: PyO3/maturin-action@v1
-				with:
-					target: ${{ matrix.platform.target }}
-					args: --release --out dist --find-interpreter
-					sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-			- name: Upload wheels
-				uses: actions/upload-artifact@v4
-				with:
-					name: wheels-macos-${{ matrix.platform.target }}
-					path: dist
+  macos:
+    name: macOS wheels
+    needs: quality
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runner: macos-15-intel
+            target: x86_64
+          - runner: macos-latest
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.platform.target }}
+          path: dist
 
-	sdist:
-		name: Source distribution
-		needs: quality
-		runs-on: ubuntu-latest
-		steps:
-			- uses: actions/checkout@v4
-			- name: Build sdist
-				uses: PyO3/maturin-action@v1
-				with:
-					command: sdist
-					args: --out dist
-			- name: Upload sdist
-				uses: actions/upload-artifact@v4
-				with:
-					name: wheels-sdist
-					path: dist
+  sdist:
+    name: Source distribution
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-sdist
+          path: dist
 
-	release:
-		name: Publish to PyPI
-		if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-		needs: [linux, musllinux, windows, macos, sdist]
-		runs-on: ubuntu-latest
-		permissions:
-			id-token: write
-			contents: read
-		steps:
-			- name: Download wheel artifacts
-				uses: actions/download-artifact@v4
-				with:
-					pattern: wheels-*
-					merge-multiple: true
-					path: dist
-			- uses: actions/setup-python@v5
-				with:
-					python-version: "3.12"
-			- uses: astral-sh/setup-uv@v5
-			- name: Publish artifacts
-				run: uv publish dist/*
-				env:
-					UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+  release:
+    name: Publish to PyPI
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    needs: [linux, musllinux, windows, macos, sdist]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - name: Publish artifacts
+        run: uv publish dist/*
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
