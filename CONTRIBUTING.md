@@ -89,6 +89,12 @@ Include:
 
 ## Release Flow Overview
 
-- Every merge to `main` is evaluated by semantic release.
-- If commits qualify (`feat`, `fix`, `perf`, or breaking), version and changelog are updated automatically.
-- New tags (`vX.Y.Z`) trigger multi-platform wheel builds and PyPI publish.
+- Release automation runs when a PR from `dev` into `main` is merged.
+- Semantic release evaluates Conventional Commits from merged changes.
+- If commits qualify (`feat`, `fix`, `perf`, or breaking), version and changelog are updated and a new tag (`vX.Y.Z`) is created.
+- If commits do not qualify (for example docs/chore only), release is a no-op and no publish is triggered.
+- New `vX.Y.Z` tags trigger the CI workflow that builds multi-platform wheels and publishes to PyPI.
+
+Required repository secrets:
+- `RELEASE_PUSH_TOKEN`: personal access token used by semantic-release workflow to push release commit and tags.
+- `PYPI_API_TOKEN`: token used by publish job to upload wheels/sdist to PyPI.

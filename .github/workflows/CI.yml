@@ -2,9 +2,6 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - master
     tags:
       - "v*"
   pull_request:
@@ -221,16 +218,45 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Log release context
+        run: |
+          echo "event=${GITHUB_EVENT_NAME}"
+          echo "ref=${GITHUB_REF}"
+          echo "sha=${GITHUB_SHA}"
+
       - name: Download wheel artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: wheels-*
           merge-multiple: true
           path: dist
+
+      - name: Ensure PyPI token exists
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          if [ -z "${UV_PUBLISH_TOKEN}" ]; then
+            echo "::error::Missing PYPI_API_TOKEN secret."
+            exit 1
+          fi
+
+      - name: Validate release artifacts
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No artifacts found in dist/."
+            exit 1
+          fi
+          printf '%s\n' "${files[@]}"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - uses: astral-sh/setup-uv@v5
+
       - name: Publish artifacts
         run: uv publish dist/*
         env:

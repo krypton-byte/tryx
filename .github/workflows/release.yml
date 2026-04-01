@@ -1,9 +1,11 @@
 name: Semantic Release
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+    types:
+      - closed
   workflow_dispatch:
 
 permissions:
@@ -15,13 +17,42 @@ concurrency:
 
 jobs:
   release:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.merged == true &&
+          github.event.pull_request.base.ref == 'main' &&
+          github.event.pull_request.head.ref == 'dev'
+        )
+      }}
     runs-on: ubuntu-latest
     steps:
+      - name: Log trigger context
+        run: |
+          echo "event=${GITHUB_EVENT_NAME}"
+          echo "ref=${GITHUB_REF}"
+          echo "actor=${GITHUB_ACTOR}"
+          echo "pr_merged=${{ github.event.pull_request.merged }}"
+          echo "pr_base=${{ github.event.pull_request.base.ref }}"
+          echo "pr_head=${{ github.event.pull_request.head.ref }}"
+
+      - name: Ensure release push token exists
+        env:
+          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
+        run: |
+          if [ -z "${RELEASE_PUSH_TOKEN}" ]; then
+            echo "::error::Missing RELEASE_PUSH_TOKEN secret."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
           submodules: recursive
+          persist-credentials: false
 
       - uses: actions/setup-python@v5
         with:
@@ -29,16 +60,44 @@ jobs:
 
       - uses: astral-sh/setup-uv@v5
 
+      - name: Configure authenticated remote
+        env:
+          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
+        run: git remote set-url origin "https://x-access-token:${RELEASE_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
       - name: Configure git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Capture release baseline
+        id: baseline
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "tag=$(git describe --tags --abbrev=0 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
+
       - name: Run semantic release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
         run: uv run --no-project --with python-semantic-release==9.21.1 semantic-release version
 
       - name: Push release commit and tags
         run: git push --follow-tags origin HEAD:main
+
+      - name: Summarize release outcome
+        run: |
+          set -euo pipefail
+          after_sha=$(git rev-parse HEAD)
+          after_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+
+          echo "before_sha=${{ steps.baseline.outputs.sha }}"
+          echo "after_sha=${after_sha}"
+          echo "before_tag=${{ steps.baseline.outputs.tag }}"
+          echo "after_tag=${after_tag}"
+
+          if [ "${after_sha}" = "${{ steps.baseline.outputs.sha }}" ] && [ "${after_tag}" = "${{ steps.baseline.outputs.tag }}" ]; then
+            echo "No new release generated from this merge."
+          else
+            echo "Release generated. Latest tag: ${after_tag:-none}"
+          fi
