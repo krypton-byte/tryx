@@ -100,11 +100,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          curl -sS -X POST \
+          status=$(curl -sS -o /tmp/ci_dispatch_response.json -w "%{http_code}" -X POST \
             -H "Authorization: Bearer ${GITHUB_TOKEN}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/CI.yml/dispatches" \
-            -d "{\"ref\":\"${{ steps.release_result.outputs.after_tag }}\"}"
+            -d "{\"ref\":\"${{ steps.release_result.outputs.after_tag }}\"}")
+
+          if [ "${status}" != "204" ]; then
+            echo "::error::Failed to trigger CI.yml via workflow_dispatch (HTTP ${status})."
+            cat /tmp/ci_dispatch_response.json
+            exit 1
+          fi
+
           echo "Triggered CI.yml on tag ${{ steps.release_result.outputs.after_tag }}"
 
       - name: Skip CI trigger when no release
