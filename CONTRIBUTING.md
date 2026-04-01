@@ -95,5 +95,28 @@ Include:
 - If commits do not qualify (for example docs/chore only), release is a no-op and no publish is triggered.
 - New `vX.Y.Z` tags trigger the CI workflow that builds multi-platform wheels and publishes to PyPI.
 
+## Simple Trigger Guide (No-Ribet)
+
+Use this rule of thumb for automatic versioning:
+
+- `feat: ...` -> bump **minor** (for example `0.3.1` -> `0.4.0`)
+- `fix: ...` or `perf: ...` -> bump **patch** (for example `0.3.1` -> `0.3.2`)
+- `feat!: ...` or commit body with `BREAKING CHANGE:` -> bump **major**
+- `docs:`, `chore:`, `test:` only -> no release
+
+How to trigger semantic release until publish to PyPI:
+
+1. Push commit to `dev` using Conventional Commit format.
+2. Open PR from `dev` to `main`.
+3. Merge PR.
+4. Semantic Release workflow runs, creates tag `vX.Y.Z` when releasable commits exist.
+5. CI workflow runs on that tag and publishes artifacts to PyPI.
+
+Manual fallback (if needed):
+
+1. Open Actions tab.
+2. Run `Semantic Release` workflow via `workflow_dispatch`.
+3. If no releasable commit exists, workflow will report no new release.
+
 Required repository secrets:
 - `PYPI_API_TOKEN`: token used by publish job to upload wheels/sdist to PyPI.
