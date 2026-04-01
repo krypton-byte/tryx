@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.3.0 (2026-04-01)
+
+### Features
+
+- **ci**: Reintroduce Linux and Windows wheel builds with updated configurations
+  ([`b30808f`](https://github.com/krypton-byte/tryx/commit/b30808fea71d0e95fa4c9de5ae7a3b2190eb6949))
+
+
 ## v0.2.0 (2026-04-01)
 
 ### Bug Fixes
