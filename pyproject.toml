@@ -46,6 +46,9 @@ classifiers = [
 ]
 urls = { Homepage = "https://github.com/krypton-byte/tryx", Repository = "https://github.com/krypton-byte/tryx", Documentation = "https://krypton-byte.github.io/tryx/", Issues = "https://github.com/krypton-byte/tryx/issues" }
 dynamic = ["version"]
+dependencies = [
+    "protobuf>=5.29.6",
+]
 
 [tool.maturin]
 module-name = "tryx._tryx"
