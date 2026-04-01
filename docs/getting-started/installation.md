@@ -53,7 +53,7 @@ If output shows `TryxClient`, extension loading is successful.
 ## Optional Tools
 
 - `uv run mypy ...` or `pyright` for static type checks
-- `uv run ruff check .` for linting
+- `uv run --no-project --with ruff==0.11.4 ruff check .` for linting (no project build)
 - `uv run pytest` for integration test harnesses
 - `uv run pre-commit run --all-files` for local gate parity with CI
 

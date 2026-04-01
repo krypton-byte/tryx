@@ -13,8 +13,8 @@ uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
 ## Required Checks
 
 ```bash
-uv run ruff check .
-uv run ruff format --check .
+uv run --no-project --with ruff==0.11.4 ruff check .
+uv run --no-project --with ruff==0.11.4 ruff format --check .
 uv run python scripts/check_stub_parity.py
 ```
 
