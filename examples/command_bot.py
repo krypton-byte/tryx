@@ -69,7 +69,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
     if not text:
         return
 
-    print(f"[message] from={jid_to_text(sender_jid)} chat={jid_to_text(chat_jid)} text={text!r}")
+    print(
+        f"[message] from={jid_to_text(sender_jid)} chat={jid_to_text(chat_jid)} text={text!r}"
+    )
 
     if text in {"help", "menu"}:
         await client.send_text(
@@ -96,25 +98,37 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             return
 
         user_info = next(iter(info_map.values()), None)
-        status_text = "(tidak ada)" if user_info is None or not user_info.status else user_info.status
+        status_text = (
+            "(tidak ada)"
+            if user_info is None or not user_info.status
+            else user_info.status
+        )
         await client.send_text(chat_jid, f"Bio: {status_text}", quoted=event)
         return
 
     if text == "pp":
         try:
-            profile_picture = await client.contact.get_profile_picture(sender_jid, False)
+            profile_picture = await client.contact.get_profile_picture(
+                sender_jid, False
+            )
         except Exception as exc:
-            await client.send_text(chat_jid, f"Gagal ambil profile picture: {exc}", quoted=event)
+            await client.send_text(
+                chat_jid, f"Gagal ambil profile picture: {exc}", quoted=event
+            )
             return
 
         if not profile_picture.url:
-            await client.send_text(chat_jid, "Profile picture tidak tersedia.", quoted=event)
+            await client.send_text(
+                chat_jid, "Profile picture tidak tersedia.", quoted=event
+            )
             return
 
         try:
             photo_data = await download_bytes(profile_picture.url)
         except Exception as exc:
-            await client.send_text(chat_jid, f"Gagal download profile picture: {exc}", quoted=event)
+            await client.send_text(
+                chat_jid, f"Gagal download profile picture: {exc}", quoted=event
+            )
             return
 
         await client.send_photo(

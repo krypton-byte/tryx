@@ -2,10 +2,8 @@
 
 from abc import ABC
 
-
 class BackendBase(ABC):
     """Base class for all backend implementations used by Tryx."""
-
 
 class SqliteBackend(BackendBase):
     """SQLite-backed backend implementation.

@@ -10,6 +10,14 @@ use whatsapp_rust::Client;
 use crate::types::{JID, UploadResponse};
 use crate::wacore::iq::status::{StatusPrivacySetting, StatusSendOptions};
 
+fn as_32_bytes(field: &str, value: &[u8]) -> PyResult<[u8; 32]> {
+    value.try_into().map_err(|_| {
+        PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            format!("{field} must contain exactly 32 bytes"),
+        )
+    })
+}
+
 #[pyclass]
 pub struct StatusClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
@@ -86,12 +94,15 @@ impl StatusClient {
         }
 
         let upload_ref = upload.bind(py).borrow();
+        let media_key = as_32_bytes("upload.media_key", &upload_ref.media_key)?;
+        let file_enc_sha256 = as_32_bytes("upload.file_enc_sha256", &upload_ref.file_enc_sha256)?;
+        let file_sha256 = as_32_bytes("upload.file_sha256", &upload_ref.file_sha256)?;
         let upload_value = whatsapp_rust::upload::UploadResponse {
             url: upload_ref.url.clone(),
             direct_path: upload_ref.direct_path.clone(),
-            media_key: upload_ref.media_key.clone(),
-            file_enc_sha256: upload_ref.file_enc_sha256.clone(),
-            file_sha256: upload_ref.file_sha256.clone(),
+            media_key,
+            file_enc_sha256,
+            file_sha256,
             file_length: upload_ref.file_length,
             media_key_timestamp: wacore::time::now_secs(),
         };
@@ -112,7 +123,7 @@ impl StatusClient {
             client
                 .status()
                 .send_image(
-                    &upload_value,
+                    upload_value,
                     thumbnail_value,
                     caption.as_deref(),
                     recipient_values.as_slice(),
@@ -142,12 +153,15 @@ impl StatusClient {
         }
 
         let upload_ref = upload.bind(py).borrow();
+        let media_key = as_32_bytes("upload.media_key", &upload_ref.media_key)?;
+        let file_enc_sha256 = as_32_bytes("upload.file_enc_sha256", &upload_ref.file_enc_sha256)?;
+        let file_sha256 = as_32_bytes("upload.file_sha256", &upload_ref.file_sha256)?;
         let upload_value = whatsapp_rust::upload::UploadResponse {
             url: upload_ref.url.clone(),
             direct_path: upload_ref.direct_path.clone(),
-            media_key: upload_ref.media_key.clone(),
-            file_enc_sha256: upload_ref.file_enc_sha256.clone(),
-            file_sha256: upload_ref.file_sha256.clone(),
+            media_key,
+            file_enc_sha256,
+            file_sha256,
             file_length: upload_ref.file_length,
             media_key_timestamp: wacore::time::now_secs(),
         };
@@ -168,7 +182,7 @@ impl StatusClient {
             client
                 .status()
                 .send_video(
-                    &upload_value,
+                    upload_value,
                     thumbnail_value,
                     duration_seconds,
                     caption.as_deref(),

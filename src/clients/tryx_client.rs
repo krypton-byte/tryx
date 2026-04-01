@@ -252,9 +252,9 @@ impl TryxClient {
             let result= UploadResponse {
                 url: url.url,
                 direct_path: url.direct_path,
-                media_key: url.media_key,
-                file_enc_sha256: url.file_enc_sha256,
-                file_sha256: url.file_sha256,
+                media_key: url.media_key.to_vec(),
+                file_enc_sha256: url.file_enc_sha256.to_vec(),
+                file_sha256: url.file_sha256.to_vec(),
                 file_length: url.file_length,
             };
             Ok(result)
@@ -275,9 +275,9 @@ impl TryxClient {
             let result= UploadResponse {
                 url: url.url,
                 direct_path: url.direct_path,
-                media_key: url.media_key,
-                file_enc_sha256: url.file_enc_sha256,
-                file_sha256: url.file_sha256,
+                media_key: url.media_key.to_vec(),
+                file_enc_sha256: url.file_enc_sha256.to_vec(),
+                file_sha256: url.file_sha256.to_vec(),
                 file_length: url.file_length,
             };
             Ok(result)
@@ -369,9 +369,9 @@ impl TryxClient {
                 image_message: Some(Box::new(wa::ImageMessage {
                 url: Some(upload.url),
                 direct_path: Some(upload.direct_path),
-                media_key: Some(upload.media_key),
-                file_enc_sha256: Some(upload.file_enc_sha256),
-                file_sha256: Some(upload.file_sha256),
+                media_key: Some(upload.media_key.to_vec()),
+                file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
+                file_sha256: Some(upload.file_sha256.to_vec()),
                 file_length: Some(upload.file_length),
                 caption,
                 context_info: context_info.map(Box::new),
@@ -417,11 +417,11 @@ impl TryxClient {
                     url: Some(upload.url),
                     mimetype: Some(mimetype),
                     title: file_name.clone(),
-                    file_sha256: Some(upload.file_sha256),
+                    file_sha256: Some(upload.file_sha256.to_vec()),
                     file_length: Some(upload.file_length),
-                    media_key: Some(upload.media_key),
+                    media_key: Some(upload.media_key.to_vec()),
                     file_name,
-                    file_enc_sha256: Some(upload.file_enc_sha256),
+                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
                     direct_path: Some(upload.direct_path),
                     caption,
                     context_info: context_info.map(Box::new),
@@ -467,12 +467,12 @@ impl TryxClient {
                 audio_message: Some(Box::new(wa::AudioMessage {
                     url: Some(upload.url),
                     mimetype: Some(mimetype.unwrap_or_else(|| "audio/ogg; codecs=opus".to_string())),
-                    file_sha256: Some(upload.file_sha256),
+                    file_sha256: Some(upload.file_sha256.to_vec()),
                     file_length: Some(upload.file_length),
                     seconds,
                     ptt: Some(ptt),
-                    media_key: Some(upload.media_key),
-                    file_enc_sha256: Some(upload.file_enc_sha256),
+                    media_key: Some(upload.media_key.to_vec()),
+                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
                     direct_path: Some(upload.direct_path),
                     context_info: context_info.map(Box::new),
                     ..Default::default()
@@ -518,13 +518,13 @@ impl TryxClient {
                 video_message: Some(Box::new(wa::VideoMessage {
                     url: Some(upload.url),
                     mimetype: Some(mimetype.unwrap_or_else(|| "video/mp4".to_string())),
-                    file_sha256: Some(upload.file_sha256),
+                    file_sha256: Some(upload.file_sha256.to_vec()),
                     file_length: Some(upload.file_length),
                     seconds,
-                    media_key: Some(upload.media_key),
+                    media_key: Some(upload.media_key.to_vec()),
                     caption,
                     gif_playback: Some(gif_playback),
-                    file_enc_sha256: Some(upload.file_enc_sha256),
+                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
                     direct_path: Some(upload.direct_path),
                     context_info: context_info.map(Box::new),
                     ..Default::default()
@@ -579,9 +579,9 @@ impl TryxClient {
             let message = WhatsappMessage {
                 sticker_message: Some(Box::new(wa::StickerMessage {
                     url: Some(upload.url),
-                    file_sha256: Some(upload.file_sha256),
-                    file_enc_sha256: Some(upload.file_enc_sha256),
-                    media_key: Some(upload.media_key),
+                    file_sha256: Some(upload.file_sha256.to_vec()),
+                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
+                    media_key: Some(upload.media_key.to_vec()),
                     mimetype: Some("image/webp".to_string()),
                     direct_path: Some(upload.direct_path),
                     file_length: Some(upload.file_length),

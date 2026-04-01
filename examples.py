@@ -1,6 +1,7 @@
 import asyncio
+
 from tryx.backend import SqliteBackend
-from tryx.client import TryxClient, Tryx  # , Test, K
+from tryx.client import Tryx, TryxClient  # , Test, K
 from tryx.events import EvMessage
 from tryx.waproto.whatsapp_pb2 import Message as msg
 

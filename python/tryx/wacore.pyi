@@ -5,7 +5,6 @@ from enum import Enum
 
 from .types import JID
 
-
 class MediaType(Enum):
     """Supported media categories for upload and download operations."""
 
@@ -18,7 +17,6 @@ class MediaType(Enum):
     Sticker = 7
     StickerPack = 8
     LinkThumbnail = 9
-
 
 class NodeValue:
     """Represents a node attribute value.
@@ -51,7 +49,6 @@ class NodeValue:
     @value.setter
     def value(self, value: str | JID) -> None: ...
 
-
 class NodeContent:
     """Represents node payload content.
 
@@ -75,7 +72,6 @@ class NodeContent:
         """Return True if content is a list of nodes."""
         ...
 
-
 class Attrs:
     """Single attribute entry used in a Node."""
 
@@ -85,7 +81,6 @@ class Attrs:
     def __init__(self, key: str, value: NodeValue) -> None:
         """Create a node attribute pair."""
         ...
-
 
 class Node:
     """Generic protocol node structure used by low-level event payloads."""
@@ -103,13 +98,11 @@ class Node:
         """Create a protocol node object."""
         ...
 
-
 class KeyIndexInfo:
     """Metadata for device key index updates."""
 
     timestamp: int
     signed_bytes: bytes | None
-
 
 class BusinessSubscription:
     """Business subscription status entry attached to sync events."""

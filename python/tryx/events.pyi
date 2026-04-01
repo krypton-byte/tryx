@@ -5,24 +5,24 @@ from typing import Any, Awaitable, Callable, TypeVar
 
 from .types import JID, MessageInfo, MessageSource
 from .wacore import BusinessSubscription, KeyIndexInfo, Node
-from .waproto.whatsapp_pb2 import Conversation, HistorySync, Message as MessageProto
+from .waproto.whatsapp_pb2 import Conversation, HistorySync
+from .waproto.whatsapp_pb2 import Message as MessageProto
 
 EventT = TypeVar("EventT")
-
 
 class Dispatcher:
     """Callback registry used by the runtime to map event classes to handlers."""
 
     def __init__(self) -> None: ...
-
     def on(self, event_type: type[EventT]) -> Dispatcher:
         """Select an event class and return a decorator-like dispatcher object."""
         ...
 
-    def __call__(self, func: Callable[..., Awaitable[Any]] | Callable[..., Any]) -> Callable[..., Any]:
+    def __call__(
+        self, func: Callable[..., Awaitable[Any]] | Callable[..., Any]
+    ) -> Callable[..., Any]:
         """Register a callback function for the previously selected event class."""
         ...
-
 
 class TempBanReason:
     """Reason category for temporary account restrictions."""
@@ -32,7 +32,6 @@ class TempBanReason:
     CreateTooManyGroups: TempBanReason
     SentTooManySameMessage: TempBanReason
     Unknown: TempBanReason
-
 
 class ReceiptType:
     """Receipt status type for incoming receipt events."""
@@ -51,13 +50,11 @@ class ReceiptType:
     EncRekeyRetry: ReceiptType
     Other: ReceiptType
 
-
 class UnavailableType:
     """Unavailable media category for undecryptable message events."""
 
     Unknown: UnavailableType
     ViewOnce: UnavailableType
-
 
 class DecryptFailMode:
     """Client behavior hint when decryption fails."""
@@ -65,13 +62,11 @@ class DecryptFailMode:
     Show: DecryptFailMode
     Hide: DecryptFailMode
 
-
 class ChatPresence:
     """Presence activity state for a chat."""
 
     Composing: ChatPresence
     Paused: ChatPresence
-
 
 class ChatPresenceMedia:
     """Media kind associated with chat presence activity."""
@@ -79,14 +74,12 @@ class ChatPresenceMedia:
     Text: ChatPresenceMedia
     Audio: ChatPresenceMedia
 
-
 class DeviceListUpdateType:
     """Type of device list change in multi-device sync events."""
 
     Added: DeviceListUpdateType
     Removed: DeviceListUpdateType
     Updated: DeviceListUpdateType
-
 
 class BusinessStatusUpdateType:
     """Business profile update categories."""
@@ -99,28 +92,23 @@ class BusinessStatusUpdateType:
     SubscriptionsUpdated: BusinessStatusUpdateType
     Unknown: BusinessStatusUpdateType
 
-
 class GroupNotificationAction:
     """Opaque group update action variant.
 
     The runtime returns one action object that describes what changed in a group.
     """
 
-
 class EvConnected:
     """Emitted when the session becomes connected."""
 
-
 class EvDisconnected:
     """Emitted when the session disconnects."""
-
 
 class EvLoggedOut:
     """Emitted when the account logs out."""
 
     on_connect: bool
     reason: str
-
 
 class PairSuccessData:
     """Pairing success payload."""
@@ -130,13 +118,11 @@ class PairSuccessData:
     business_name: str
     platform: str
 
-
 class EvPairSuccess:
     """Emitted when account pairing succeeds."""
 
     @property
     def data(self) -> PairSuccessData: ...
-
 
 class EvPairError:
     """Emitted when account pairing fails."""
@@ -147,13 +133,11 @@ class EvPairError:
     platform: str
     error: str
 
-
 class EvPairingQrCode:
     """Contains QR pairing code payload."""
 
     code: str
     timeout: int
-
 
 class EvPairingCode:
     """Contains numeric pairing code payload."""
@@ -161,18 +145,14 @@ class EvPairingCode:
     code: str
     timeout: int
 
-
 class EvQrScannedWithoutMultidevice:
     """Emitted when a QR code is scanned without multidevice support."""
-
 
 class EvClientOutDated:
     """Emitted when the client version is considered outdated."""
 
-
 class EvStreamReplaced:
     """Emitted when the active stream/session is replaced by another login."""
-
 
 class EvTemporaryData:
     """Payload for temporary ban details."""
@@ -180,13 +160,11 @@ class EvTemporaryData:
     code: TempBanReason
     expire: datetime
 
-
 class EvTemporaryBan:
     """Emitted when the account receives a temporary ban."""
 
     @property
     def data(self) -> EvTemporaryData: ...
-
 
 class EvConnectFailure:
     """Emitted when an initial connect attempt fails."""
@@ -197,7 +175,6 @@ class EvConnectFailure:
     @property
     def node(self) -> Node | None: ...
 
-
 class EvStreamError:
     """Emitted when stream-level protocol error is received."""
 
@@ -205,7 +182,6 @@ class EvStreamError:
 
     @property
     def node(self) -> Node | None: ...
-
 
 class EvReceipt:
     """Message receipt update event."""
@@ -218,7 +194,6 @@ class EvReceipt:
     @property
     def source(self) -> MessageSource | None: ...
 
-
 class EvUndecryptableMessage:
     """Emitted when a message cannot be decrypted."""
 
@@ -229,7 +204,6 @@ class EvUndecryptableMessage:
     @property
     def info(self) -> MessageInfo | None: ...
 
-
 class MessageData:
     """Normalized message payload data."""
 
@@ -238,14 +212,10 @@ class MessageData:
 
     @property
     def message_info(self) -> MessageInfo: ...
-
     def get_extended_text_message(self) -> str | None: ...
-
     def get_text(self) -> str | None: ...
-
     @property
     def raw_proto(self) -> MessageProto: ...
-
 
 class EvMessage:
     """Main message event."""
@@ -253,26 +223,21 @@ class EvMessage:
     @property
     def data(self) -> MessageData: ...
 
-
 class EvNotification:
     """Raw notification node event."""
 
     @property
     def node(self) -> Node: ...
 
-
 class EvChatPresence:
     """Typing/recording presence event for a chat."""
 
     @property
     def source(self) -> MessageSource: ...
-
     @property
     def state(self) -> str: ...
-
     @property
     def media(self) -> str: ...
-
 
 class EvPresence:
     """Presence update event for a contact."""
@@ -280,7 +245,6 @@ class EvPresence:
     from_: JID
     unavailable: bool
     last_seen: datetime | None
-
 
 class PictureUpdateData:
     """Profile picture update payload."""
@@ -291,13 +255,11 @@ class PictureUpdateData:
     timestamp: datetime | None
     picture_id: str | None
 
-
 class EvPictureUpdate:
     """Emitted when profile picture changes."""
 
     @property
     def data(self) -> PictureUpdateData: ...
-
 
 class UserAboutUpdateData:
     """User bio/about text update payload."""
@@ -306,13 +268,11 @@ class UserAboutUpdateData:
     status: str
     timestamp: datetime | None
 
-
 class EvUserAboutUpdate:
     """Emitted when a user's about/status text changes."""
 
     @property
     def data(self) -> UserAboutUpdateData: ...
-
 
 class LazyConversation:
     """Deferred conversation object from history sync."""
@@ -320,17 +280,14 @@ class LazyConversation:
     @property
     def conversation(self) -> Conversation | None: ...
 
-
 class EvJoinedGroup:
     """Emitted when account joins a group."""
 
     @property
     def data(self) -> LazyConversation: ...
 
-
 class EvGroupInfoUpdate:
     """Emitted for generic group info changes."""
-
 
 class EvPushNameUpdateData:
     """Push name change payload for contact updates."""
@@ -340,13 +297,11 @@ class EvPushNameUpdateData:
     old_push_name: str
     new_push_name: str
 
-
 class EvPushNameUpdate:
     """Emitted when a contact push name changes."""
 
     @property
     def data(self) -> EvPushNameUpdateData: ...
-
 
 class EvSelfPushNameUpdated:
     """Emitted when own account push name is updated."""
@@ -354,7 +309,6 @@ class EvSelfPushNameUpdated:
     from_server: bool
     old_name: str
     new_name: str
-
 
 class PinUpdatedata:
     """Pin update payload."""
@@ -364,13 +318,11 @@ class PinUpdatedata:
     pinned: bool | None
     from_full_sync: bool
 
-
 class EvPinUpdate:
     """Emitted when chat pin status changes."""
 
     @property
     def data(self) -> PinUpdatedata: ...
-
 
 class MuteUpdateData:
     """Mute update payload."""
@@ -382,13 +334,11 @@ class MuteUpdateData:
     @property
     def action(self) -> Any: ...
 
-
 class EvMuteUpdate:
     """Emitted when mute settings change."""
 
     @property
     def data(self) -> MuteUpdateData: ...
-
 
 class MarkChatAsReadUpdateData:
     """Read/unread marker sync payload."""
@@ -400,20 +350,17 @@ class MarkChatAsReadUpdateData:
     @property
     def action(self) -> Any: ...
 
-
 class EvMarkChatAsReadUpdate:
     """Emitted when read state sync action is applied."""
 
     @property
     def data(self) -> MarkChatAsReadUpdateData: ...
 
-
 class EvHistorySync:
     """Contains protobuf history sync payload."""
 
     @property
     def proto(self) -> HistorySync: ...
-
 
 class OfflineSyncData:
     """Preview counters for offline sync."""
@@ -424,19 +371,16 @@ class OfflineSyncData:
     notifications: int
     receipts: int
 
-
 class EvOfflineSyncPreview:
     """Emitted before offline sync processing starts."""
 
     @property
     def data(self) -> OfflineSyncData: ...
 
-
 class OfflineSyncCompletedData:
     """Summary payload after offline sync completes."""
 
     count: int
-
 
 class EvOfflineSyncCompleted:
     """Emitted when offline sync is fully processed."""
@@ -444,13 +388,11 @@ class EvOfflineSyncCompleted:
     @property
     def data(self) -> OfflineSyncCompletedData: ...
 
-
 class DeviceNottificationInfo:
     """Single device info entry within a device list update."""
 
     device_id: int
     key_index: int | None
-
 
 class DeviceListUpdateData:
     """Device list synchronization payload."""
@@ -462,13 +404,11 @@ class DeviceListUpdateData:
     key_index: KeyIndexInfo | None
     contact_hash: str | None
 
-
 class EvDeviceListUpdate:
     """Emitted when companion device list changes."""
 
     @property
     def data(self) -> DeviceListUpdateData: ...
-
 
 class BusinessStatusUpdateData:
     """Business profile sync payload."""
@@ -482,13 +422,11 @@ class BusinessStatusUpdateData:
     collection_ids: list[str]
     subscriptions: list[BusinessSubscription]
 
-
 class EvBusinessStatusUpdate:
     """Emitted when business profile information changes."""
 
     @property
     def data(self) -> BusinessStatusUpdateData: ...
-
 
 class EvArchiveUpdateData:
     """Archive state sync payload."""
@@ -500,13 +438,11 @@ class EvArchiveUpdateData:
     @property
     def action(self) -> Any: ...
 
-
 class EvArchiveUpdate:
     """Emitted when chat archive state changes."""
 
     @property
     def data(self) -> EvArchiveUpdateData: ...
-
 
 class EvDisappearingModeChangedData:
     """Disappearing mode update payload."""
@@ -515,13 +451,11 @@ class EvDisappearingModeChangedData:
     duration: int
     setting_timestamp: int
 
-
 class EvDisappearingModeChanged:
     """Emitted when disappearing mode duration changes."""
 
     @property
     def data(self) -> EvDisappearingModeChangedData: ...
-
 
 class EvContactNumberChangedData:
     """Contact number change payload."""
@@ -532,13 +466,11 @@ class EvContactNumberChangedData:
     new_lid: JID | None
     timestamp: datetime
 
-
 class EvContactNumberChanged:
     """Emitted when a contact number/JID is migrated."""
 
     @property
     def data(self) -> EvContactNumberChangedData: ...
-
 
 class EvContactSyncRequestedData:
     """Payload that indicates contact sync was requested."""
@@ -546,13 +478,11 @@ class EvContactSyncRequestedData:
     after: datetime | None
     timestamp: datetime
 
-
 class EvContactSyncRequested:
     """Emitted when the server requests contact synchronization."""
 
     @property
     def data(self) -> EvContactSyncRequestedData: ...
-
 
 class EvContactUpdatedData:
     """Payload for single contact metadata updates."""
@@ -560,13 +490,11 @@ class EvContactUpdatedData:
     jid: JID
     timestamp: datetime
 
-
 class EvContactUpdated:
     """Emitted when a contact metadata entry is updated."""
 
     @property
     def data(self) -> EvContactUpdatedData: ...
-
 
 class EvStarUpdateData:
     """Star/unstar sync payload for a specific message."""
@@ -579,20 +507,17 @@ class EvStarUpdateData:
     from_full_sync: bool
     starred: bool | None
 
-
 class EvStarUpdate:
     """Emitted when message star state changes."""
 
     @property
     def data(self) -> EvStarUpdateData: ...
 
-
 class GroupParticipant:
     """Participant entry embedded in group notification actions."""
 
     jid: JID
     phone_number: JID | None
-
 
 class GroupUpdateData:
     """Group metadata/action update payload."""
@@ -604,13 +529,11 @@ class GroupUpdateData:
     is_lid_addressing_mode: bool
     action: GroupNotificationAction
 
-
 class EvGroupUpdate:
     """Emitted for rich group notification changes."""
 
     @property
     def data(self) -> GroupUpdateData: ...
-
 
 class ContactUpdateData:
     """Contact sync action payload."""
@@ -622,13 +545,11 @@ class ContactUpdateData:
     @property
     def action(self) -> Any: ...
 
-
 class EvContactUpdate:
     """Emitted when contact sync actions are applied."""
 
     @property
     def data(self) -> ContactUpdateData: ...
-
 
 class NewsletterLiveUpdateReaction:
     """Reaction count entry in newsletter live updates."""
@@ -636,13 +557,11 @@ class NewsletterLiveUpdateReaction:
     code: str
     count: int
 
-
 class NewsletterUpdateMessage:
     """Newsletter message snapshot used by live update events."""
 
     server_id: int
     reactions: list[NewsletterLiveUpdateReaction]
-
 
 class NewsletterLiveUpdateData:
     """Payload for newsletter live update events."""
@@ -650,13 +569,11 @@ class NewsletterLiveUpdateData:
     newsletter_jid: JID
     messages: list[NewsletterUpdateMessage]
 
-
 class EvNewsletterLiveUpdate:
     """Emitted when subscribed newsletter receives live changes."""
 
     @property
     def data(self) -> NewsletterLiveUpdateData: ...
-
 
 class DeleteChatUpdateData:
     """Delete-chat sync action payload."""
@@ -669,13 +586,11 @@ class DeleteChatUpdateData:
     @property
     def action(self) -> Any: ...
 
-
 class EvDeleteChatUpdate:
     """Emitted when a chat is deleted via sync action."""
 
     @property
     def data(self) -> DeleteChatUpdateData: ...
-
 
 class DeleteMessageForMeUpdateData:
     """Delete-for-me sync action payload for a single message."""
@@ -687,7 +602,6 @@ class DeleteMessageForMeUpdateData:
     timestamp: datetime
     action: Any
     from_full_sync: bool
-
 
 class EvDeleteMessageForMeUpdate:
     """Emitted when a message is deleted-for-me via sync action."""
