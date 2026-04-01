@@ -90,7 +90,7 @@ Include:
 ## Release Flow Overview
 
 - Release is executed manually from GitHub Actions using the `Semantic Release` workflow (`workflow_dispatch`).
-- Semantic release evaluates Conventional Commits already present in `main` (from PR merges or direct pushes).
+- Semantic release evaluates Conventional Commits already present in the repository default branch (from PR merges or direct pushes).
 - If commits qualify (`feat`, `fix`, `perf`, or breaking), version and changelog are updated and a new tag (`vX.Y.Z`) is created.
 - If commits do not qualify (for example docs/chore only), release is a no-op and no publish is triggered.
 - After a tag is created, GitHub Release notes are generated automatically.
@@ -107,8 +107,8 @@ Use this rule of thumb for automatic versioning:
 
 How to trigger semantic release until publish to PyPI:
 
-1. Push commits to `main` (direct push or merged PR), using Conventional Commit messages.
-2. Open GitHub Actions and run `Semantic Release` on `main`.
+1. Push commits to default branch (direct push or merged PR), using Conventional Commit messages.
+2. Open GitHub Actions and run `Semantic Release` on default branch.
 3. Workflow evaluates commits and creates tag `vX.Y.Z` when releasable commits exist.
 4. Workflow creates the corresponding GitHub Release.
 5. CI workflow runs on that tag and publishes artifacts to PyPI.

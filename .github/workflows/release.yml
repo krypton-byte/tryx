@@ -20,10 +20,11 @@ jobs:
           echo "event=${GITHUB_EVENT_NAME}"
           echo "ref=${GITHUB_REF}"
           echo "actor=${GITHUB_ACTOR}"
+          echo "default_branch=${{ github.event.repository.default_branch }}"
 
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
           submodules: recursive
 
@@ -51,7 +52,7 @@ jobs:
         run: uv run --no-project --with python-semantic-release==9.21.1 semantic-release version
 
       - name: Push release commit and tags
-        run: git push --follow-tags origin HEAD:main
+        run: git push --follow-tags origin HEAD:${{ github.event.repository.default_branch }}
 
       - name: Capture release result
         id: release_result
