@@ -1,11 +1,6 @@
 name: Semantic Release
 
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
   workflow_dispatch:
 
 permissions:
@@ -18,16 +13,6 @@ concurrency:
 
 jobs:
   release:
-    if: >-
-      ${{
-        github.event_name == 'workflow_dispatch' ||
-        (
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.merged == true &&
-          github.event.pull_request.base.ref == 'main' &&
-          github.event.pull_request.head.ref == 'dev'
-        )
-      }}
     runs-on: ubuntu-latest
     steps:
       - name: Log trigger context
@@ -35,9 +20,6 @@ jobs:
           echo "event=${GITHUB_EVENT_NAME}"
           echo "ref=${GITHUB_REF}"
           echo "actor=${GITHUB_ACTOR}"
-          echo "pr_merged=${{ github.event.pull_request.merged }}"
-          echo "pr_base=${{ github.event.pull_request.base.ref }}"
-          echo "pr_head=${{ github.event.pull_request.head.ref }}"
 
       - uses: actions/checkout@v4
         with:
@@ -88,11 +70,18 @@ jobs:
 
           if [ "${after_sha}" = "${{ steps.baseline.outputs.sha }}" ] && [ "${after_tag}" = "${{ steps.baseline.outputs.tag }}" ]; then
             echo "released=false" >> "$GITHUB_OUTPUT"
-            echo "No new release generated from this merge."
+            echo "No new release generated in this run."
           else
             echo "released=true" >> "$GITHUB_OUTPUT"
             echo "Release generated. Latest tag: ${after_tag:-none}"
           fi
+
+      - name: Create GitHub release
+        if: ${{ steps.release_result.outputs.released == 'true' && startsWith(steps.release_result.outputs.after_tag, 'v') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_result.outputs.after_tag }}
+          generate_release_notes: true
 
       - name: Trigger CI release build on new tag
         if: ${{ steps.release_result.outputs.released == 'true' && startsWith(steps.release_result.outputs.after_tag, 'v') }}

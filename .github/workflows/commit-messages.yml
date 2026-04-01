@@ -1,8 +1,11 @@
 name: Conventional Commits
 
 on:
+  push:
+    tags-ignore:
+      - "v*"
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
@@ -20,27 +23,31 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Check commit subjects in PR range
+      - name: Resolve commit range
+        id: commit_range
         run: |
-          python scripts/check_commit_message.py --range "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          set -euo pipefail
 
-  pr-title:
-    name: Validate PR title
-    runs-on: ubuntu-latest
-    steps:
-      - uses: amannn/action-semantic-pull-request@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          types: |
-            build
-            chore
-            ci
-            docs
-            feat
-            fix
-            perf
-            refactor
-            style
-            test
-          requireScope: false
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          else
+            before_sha="${{ github.event.before }}"
+            after_sha="${GITHUB_SHA}"
+
+            if [ "${before_sha}" = "0000000000000000000000000000000000000000" ]; then
+              if git rev-parse "${after_sha}^" >/dev/null 2>&1; then
+                range="${after_sha}^..${after_sha}"
+              else
+                range="${after_sha}..${after_sha}"
+              fi
+            else
+              range="${before_sha}..${after_sha}"
+            fi
+          fi
+
+          echo "range=${range}" >> "$GITHUB_OUTPUT"
+          echo "Using commit range: ${range}"
+
+      - name: Check commit subjects in range
+        run: |
+          python scripts/check_commit_message.py --range "${{ steps.commit_range.outputs.range }}"
