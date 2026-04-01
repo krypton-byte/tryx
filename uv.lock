@@ -2221,6 +2221,11 @@ wheels = [
 [[package]]
 name = "tryx"
 source = { editable = "." }
+dependencies = [
+    { name = "protobuf", version = "5.29.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "protobuf", version = "6.33.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
+    { name = "protobuf", version = "7.34.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -2244,6 +2249,7 @@ docs = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "protobuf", specifier = ">=5.29.6" }]
 
 [package.metadata.requires-dev]
 dev = [
