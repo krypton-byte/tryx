@@ -1,0 +1,39 @@
+minimum_pre_commit_version: "3.7.0"
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+
+      - id: stub-parity
+        name: check stub parity
+        entry: uv run python scripts/check_stub_parity.py
+        language: system
+        pass_filenames: false
+        files: "^python/tryx/.*\\.(py|pyi)$"
+
+      - id: conventional-commit-message
+        name: conventional commit message
+        entry: uv run python scripts/check_commit_message.py
+        language: system
+        stages: [commit-msg]

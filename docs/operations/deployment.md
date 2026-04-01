@@ -28,13 +28,14 @@ Deploy Tryx bots safely in production with stable session storage and predictabl
     Best for reproducible runtime images.
 
     ```dockerfile
-    FROM python:3.12-slim
+    FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
     WORKDIR /app
     COPY . .
-    RUN pip install -U pip maturin && maturin develop
+    RUN uv sync --group dev
+    RUN uv run maturin develop
 
-    CMD ["python", "bot.py"]
+    CMD ["uv", "run", "python", "bot.py"]
     ```
 
 ## Session Persistence Requirements

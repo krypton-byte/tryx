@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#categories" class="md-skip">
+        <a href="#source-of-truth" class="md-skip">
           Skip to content
         </a>
       
@@ -488,6 +488,8 @@
       
         
       
+        
+      
     
     
     
@@ -550,6 +552,34 @@
     
   
     Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
   
 
     
@@ -2151,10 +2181,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#categories" class="md-nav__link">
+  <a href="#source-of-truth" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Categories
+        Source of Truth
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-bump-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version Bump Rules
       
     </span>
   </a>
@@ -2224,10 +2265,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#categories" class="md-nav__link">
+  <a href="#source-of-truth" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Categories
+        Source of Truth
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-bump-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version Bump Rules
       
     </span>
   </a>
@@ -2325,16 +2377,21 @@
 
 
 <h1 id="changelog-policy">Changelog Policy<a class="headerlink" href="#changelog-policy" title="Permanent link">&para;</a></h1>
-<p>This page defines how Tryx changes should be documented.</p>
-<h2 id="categories">Categories<a class="headerlink" href="#categories" title="Permanent link">&para;</a></h2>
+<p>Tryx changelog is generated automatically with <code>python-semantic-release</code>.</p>
+<p>Generated file: <code>CHANGELOG.md</code></p>
+<p>Do not edit generated release sections manually.</p>
+<h2 id="source-of-truth">Source of Truth<a class="headerlink" href="#source-of-truth" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Added</li>
-<li>Changed</li>
-<li>Fixed</li>
-<li>Deprecated</li>
-<li>Removed</li>
-<li>Security</li>
+<li>Conventional Commit messages from merged history on <code>main</code></li>
+<li>Semantic version tags in format <code>vX.Y.Z</code></li>
 </ul>
+<h2 id="version-bump-rules">Version Bump Rules<a class="headerlink" href="#version-bump-rules" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>feat</code> -&gt; minor bump</li>
+<li><code>fix</code> and <code>perf</code> -&gt; patch bump</li>
+<li><code>!</code> or <code>BREAKING CHANGE:</code> footer -&gt; major bump</li>
+</ul>
+<p>Commits outside release types (<code>docs</code>, <code>chore</code>, <code>ci</code>, etc.) are still tracked in git history but do not necessarily trigger a release.</p>
 <h2 id="minimum-entry-rules">Minimum Entry Rules<a class="headerlink" href="#minimum-entry-rules" title="Permanent link">&para;</a></h2>
 <p>Each release entry should include:</p>
 <ol>
@@ -2343,6 +2400,7 @@
 <li>migration notes if behavior changed</li>
 <li>compatibility impact (if any)</li>
 </ol>
+<p>The release workflow produces these sections from commit metadata.</p>
 <h2 id="api-surface-notes">API Surface Notes<a class="headerlink" href="#api-surface-notes" title="Permanent link">&para;</a></h2>
 <p>Whenever a PyO3 class is added or removed:</p>
 <ul>

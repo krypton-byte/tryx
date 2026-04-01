@@ -3,40 +3,35 @@
 This page sets up a local development environment for the Tryx Python bindings backed by Rust.
 
 !!! note "Recommended shell flow"
-	Use an isolated virtual environment per project to avoid conflicting native extension builds.
+	Use `uv` to manage the project environment and dependencies consistently.
 
 ## Prerequisites
 
 - Python 3.8+
 - Rust toolchain (stable)
-- `pip` and virtual environment tooling
+- `uv`
 
 ## Environment Bootstrap
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip
+uv sync --group dev
 ```
 
 ## Local Development Install
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -U pip maturin
-maturin develop
+uv run maturin develop
 ```
 
 This installs the Rust extension module into your active environment in editable mode.
 
 !!! tip "Fast rebuild loop"
-	Re-run `maturin develop` after Rust binding changes to keep Python runtime artifacts in sync.
+	Re-run `uv run maturin develop` after Rust binding changes to keep Python runtime artifacts in sync.
 
 ## Build Wheel
 
 ```bash
-maturin build --release
+uv run maturin build --release
 ```
 
 Typical wheel output appears under `target/wheels/`.
@@ -57,9 +52,10 @@ If output shows `TryxClient`, extension loading is successful.
 
 ## Optional Tools
 
-- `mypy` or `pyright` for static type checks
-- `ruff` for linting
-- `pytest` for integration test harnesses
+- `uv run mypy ...` or `pyright` for static type checks
+- `uv run ruff check .` for linting
+- `uv run pytest` for integration test harnesses
+- `uv run pre-commit run --all-files` for local gate parity with CI
 
 ## Common Install Issues
 
@@ -77,7 +73,7 @@ Ensure your platform build tools are installed:
 
 ### ImportError for extension module
 
-Re-run `maturin develop` in the same active virtual environment where you run Python.
+Re-run `uv run maturin develop` in the same project environment where you run Python.
 
 ## Next Step
 

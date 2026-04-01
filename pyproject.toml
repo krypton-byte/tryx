@@ -53,7 +53,14 @@ python-source = "python"
 
 [dependency-groups]
 dev = [
+    "maturin>=1.12,<2.0",
+    "mypy>=1.14.0",
     "mypy-protobuf>=5.0.0",
+    "pre-commit>=3.7.1,<4.4; python_version >= '3.9' and python_version < '3.10'",
+    "pre-commit>=4.5.0; python_version >= '3.10'",
+    "pytest>=8.3.5",
+    "python-semantic-release>=9.21.1",
+    "ruff>=0.11.4",
     "segno>=1.6.6",
 ]
 docs = [
@@ -64,3 +71,41 @@ docs = [
 #     { path = "python/tryx/__init__.py", format = ["sdist", "wheel"] },
 #     { path = "python/tryx/yaya.py", format = ["sdist", "wheel"] },
 # ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+extend-exclude = ["target", "site", "libs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["tryx"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.semantic_release]
+version_toml = ["Cargo.toml:package.version"]
+tag_format = "v{version}"
+changelog_file = "CHANGELOG.md"
+major_on_zero = true
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = [
+    "build",
+    "chore",
+    "ci",
+    "docs",
+    "feat",
+    "fix",
+    "perf",
+    "refactor",
+    "style",
+    "test",
+]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]

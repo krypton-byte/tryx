@@ -9,6 +9,7 @@ nav:
   - Home: index.md
   - Getting Started:
       - Installation: getting-started/installation.md
+      - Contributing: getting-started/contributing.md
       - Quick Start: getting-started/quickstart.md
       - Authentication Flow: getting-started/authentication.md
   - Core Concepts:

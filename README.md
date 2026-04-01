@@ -123,19 +123,19 @@ A full documentation site is provided with MkDocs Material.
 Install docs dependencies:
 
 ```bash
-pip install mkdocs mkdocs-material
+uv sync --group docs
 ```
 
 Run local docs server:
 
 ```bash
-mkdocs serve
+uv run mkdocs serve
 ```
 
 Build docs in strict mode:
 
 ```bash
-mkdocs build --strict
+uv run mkdocs build --strict
 ```
 
 ## Installation
@@ -144,21 +144,19 @@ mkdocs build --strict
 
 - Python 3.8+
 - Rust stable toolchain
-- `pip` and virtual environment tooling
+- `uv`
 
 ### Development install (editable)
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -U pip maturin
-maturin develop
+uv sync --group dev
+uv run maturin develop
 ```
 
 ### Build wheel
 
 ```bash
-maturin build --release
+uv run maturin build --release
 ```
 
 Wheels are produced under `target/wheels` or project-specific wheel output depending on command options.
@@ -210,7 +208,7 @@ Command yang tersedia:
 Run:
 
 ```bash
-python examples/command_bot.py
+uv run python examples/command_bot.py
 ```
 
 Opsional env:
@@ -482,15 +480,22 @@ cargo check
 ### Python package sanity
 
 ```bash
-python -c "import tryx; print('ok')"
+uv run python -c "import tryx; print('ok')"
 ```
 
 ### Type checking example
 
 ```bash
-pyright
+uv run pyright
 # or
-mypy examples/command_bot.py
+uv run mypy examples/command_bot.py
+```
+
+### Pre-commit hooks
+
+```bash
+uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
+uv run pre-commit run --all-files
 ```
 
 ## Performance Notes
@@ -511,7 +516,7 @@ Symptom:
 Fix:
 
 ```bash
-maturin develop --release
+uv run maturin develop --release
 ```
 
 ### Bot is not running
@@ -534,6 +539,11 @@ Fix:
 - Keep secrets and session files outside version control
 - Use WhatsApp automation responsibly and within platform policy
 - Audit message handling callbacks before deploying production bots
+
+## Contributing
+
+- Contribution guideline: `CONTRIBUTING.md`
+- Docs page: `docs/getting-started/contributing.md`
 
 ## License
 
