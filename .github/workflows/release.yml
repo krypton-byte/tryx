@@ -29,7 +29,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
 
       - name: Install release dependencies
-        run: uv sync --group dev --no-install-project
+        run: |
+          uv sync --group dev --no-install-project
+          git submodule update --init --remote
 
       - name: Configure git identity
         run: |
