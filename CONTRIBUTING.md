@@ -91,7 +91,6 @@ Include:
 
 - Release is executed manually from GitHub Actions using the `Semantic Release` workflow (`workflow_dispatch`).
 - Semantic release evaluates Conventional Commits already present in the repository default branch (from PR merges or direct pushes).
-- Semantic release evaluates Conventional Commits already present in the repository default branch (from PR merges or direct pushes).
 - If commits qualify (`feat`, `fix`, `perf`, or breaking), version and changelog are updated and a new tag (`vX.Y.Z`) is created.
 - If commits do not qualify (for example docs/chore only), release is a no-op and no publish is triggered.
 - After a tag is created, GitHub Release notes are generated automatically.

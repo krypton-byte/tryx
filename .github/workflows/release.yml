@@ -71,7 +71,6 @@ jobs:
 
       - name: Push release commit and tags
         run: git push --follow-tags origin HEAD:${{ github.event.repository.default_branch }}
-        run: git push --follow-tags origin HEAD:${{ github.event.repository.default_branch }}
 
       - name: Capture release result
         id: release_result
