@@ -633,6 +633,9 @@ impl Tryx {
                                 Py::new(py, EvDeleteMessageForMeUpdate::from(delete_message_for_me_update)).map(|event| event.into_any())
                             }).await;
                         }
+                        _ => {
+                            debug!("received unsupported event type: {:?}", event);
+                        }
                 }
             }
             })
