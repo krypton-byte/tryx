@@ -1,6 +1,36 @@
 # CHANGELOG
 
 
+## v0.2.0 (2026-04-01)
+
+### Bug Fixes
+
+- Remove RELEASE_PUSH_TOKEN reference from contributing guidelines
+  ([`f92bd1d`](https://github.com/krypton-byte/tryx/commit/f92bd1dedf734ca59c5a0ed45293fbe4a63f26ee))
+
+- **release**: Update CI workflow dependencies and improve error handling for dispatch trigger
+  ([`b1acd07`](https://github.com/krypton-byte/tryx/commit/b1acd07befffdb69f0dbcbb3e256bc7e0608b3fb))
+
+- **release**: Update default branch references in workflow and documentation
+  ([`bc5a5cc`](https://github.com/krypton-byte/tryx/commit/bc5a5ccc1cb037cf813998d0ad865d66c30c6ae5))
+
+- **test**: Update workflows for commit message validation and release automation
+  ([`b940d91`](https://github.com/krypton-byte/tryx/commit/b940d91d89969590af84b56a52316803174c4f65))
+
+### Documentation
+
+- Update contributing guidelines to clarify release automation and required secrets
+  ([`cea622c`](https://github.com/krypton-byte/tryx/commit/cea622c1905aee8f461ff87625bddd18ab9b5ec3))
+
+- Update section title in contributing guidelines for clarity
+  ([`ef04047`](https://github.com/krypton-byte/tryx/commit/ef040477453e2d24ffcb384138c7d4b2250d116a))
+
+### Features
+
+- **test**: Test
+  ([`3bc6c04`](https://github.com/krypton-byte/tryx/commit/3bc6c04f8ce84802947c45ad9e9b8735ec615918))
+
+
 ## v0.1.0 (2026-04-01)
 
 ### Bug Fixes
