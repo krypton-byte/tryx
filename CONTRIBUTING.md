@@ -71,7 +71,7 @@ Examples:
 1. Create a feature branch from `main`.
 2. Keep PR scope focused and small.
 3. Ensure CI is green.
-4. Use a Conventional Commit style PR title.
+4. Use Conventional Commit style commit messages (`feat:`, `fix:`, `perf:`, etc.).
 5. Fill the PR template completely.
 
 Recommended merge strategy: squash merge.
@@ -89,11 +89,12 @@ Include:
 
 ## Release Flow Overview
 
-- Release automation runs when a PR from `dev` into `main` is merged.
-- Semantic release evaluates Conventional Commits from merged changes.
+- Release is executed manually from GitHub Actions using the `Semantic Release` workflow (`workflow_dispatch`).
+- Semantic release evaluates Conventional Commits already present in `main` (from PR merges or direct pushes).
 - If commits qualify (`feat`, `fix`, `perf`, or breaking), version and changelog are updated and a new tag (`vX.Y.Z`) is created.
 - If commits do not qualify (for example docs/chore only), release is a no-op and no publish is triggered.
-- New `vX.Y.Z` tags trigger the CI workflow that builds multi-platform wheels and publishes to PyPI.
+- After a tag is created, GitHub Release notes are generated automatically.
+- CI is then triggered on that tag to build artifacts and publish to PyPI.
 
 ## Simple Trigger Guide
 
@@ -106,10 +107,10 @@ Use this rule of thumb for automatic versioning:
 
 How to trigger semantic release until publish to PyPI:
 
-1. Push commit to `dev` using Conventional Commit format.
-2. Open PR from `dev` to `main`.
-3. Merge PR.
-4. Semantic Release workflow runs, creates tag `vX.Y.Z` when releasable commits exist.
+1. Push commits to `main` (direct push or merged PR), using Conventional Commit messages.
+2. Open GitHub Actions and run `Semantic Release` on `main`.
+3. Workflow evaluates commits and creates tag `vX.Y.Z` when releasable commits exist.
+4. Workflow creates the corresponding GitHub Release.
 5. CI workflow runs on that tag and publishes artifacts to PyPI.
 
 Manual fallback (if needed):
@@ -117,6 +118,9 @@ Manual fallback (if needed):
 1. Open Actions tab.
 2. Run `Semantic Release` workflow via `workflow_dispatch`.
 3. If no releasable commit exists, workflow will report no new release.
+
+Commit validation note:
+- Conventional commit message checks run on both `push` and `pull_request` events.
 
 Required repository secrets:
 - `PYPI_API_TOKEN`: token used by publish job to upload wheels/sdist to PyPI.
