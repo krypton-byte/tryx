@@ -1,6 +1,6 @@
 """High-level client API surface for Tryx Python bindings."""
 
-from typing import Any, Awaitable, Callable, Type, TypeVar
+from typing import Any, Awaitable, Callable, TypeVar
 
 from .backend import BackendBase
 from .events import EvMessage
@@ -55,7 +55,7 @@ class Tryx:
     def __init__(self, backend: BackendBase) -> None: ...
     def get_client(self) -> TryxClient: ...
     def on(
-        self, event_type: Type[EventT]
+        self, event_type: type[EventT]
     ) -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]: ...
     def run(self) -> Awaitable[None]: ...
     def run_blocking(self) -> None: ...

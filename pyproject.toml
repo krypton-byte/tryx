@@ -75,7 +75,7 @@ docs = [
 [tool.ruff]
 line-length = 88
 target-version = "py38"
-extend-exclude = ["target", "site", "libs", "python/tryx/waproto/whatsapp_pb2.pyi"]
+extend-exclude = ["target", "site", "libs", "python/tryx/waproto/whatsapp_pb2.py", "python/tryx/waproto/whatsapp_pb2.pyi"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]

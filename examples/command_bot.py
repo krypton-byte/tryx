@@ -70,7 +70,10 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
         return
 
     print(
-        f"[message] from={jid_to_text(sender_jid)} chat={jid_to_text(chat_jid)} text={text!r}"
+        "[message] "
+        f"from={jid_to_text(sender_jid)} "
+        f"chat={jid_to_text(chat_jid)} "
+        f"text={text!r}"
     )
 
     if text in {"help", "menu"}:
