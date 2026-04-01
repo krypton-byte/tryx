@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.4.0 (2026-04-01)
+
+### Bug Fixes
+
+- **client**: Callback params
+  ([`b133efe`](https://github.com/krypton-byte/tryx/commit/b133efe7580636a27a87889d4000fb039e3d7e31))
+
+- **workflow**: Update branch references from 'main' to 'master' in documentation workflow
+  ([`9d64aa2`](https://github.com/krypton-byte/tryx/commit/9d64aa25963d42cb0f410bc0bae42f9469af5d5b))
+
+### Chores
+
+- **deps**: Update tryx version from 0.2.0 to 0.3.0 in Cargo.lock
+  ([`c0b7ab7`](https://github.com/krypton-byte/tryx/commit/c0b7ab71958c2749124da415302ddaee38c404c0))
+
+### Refactoring
+
+- **CI**: Streamline platform matrix and remove musllinux configuration
+  ([`2c2be2f`](https://github.com/krypton-byte/tryx/commit/2c2be2ff5c54601ade1c99efd715e41b5d7c53fb))
+
+
 ## v0.3.0 (2026-04-01)
 
 ### Features
@@ -22,8 +43,22 @@
 - **release**: Update default branch references in workflow and documentation
   ([`bc5a5cc`](https://github.com/krypton-byte/tryx/commit/bc5a5ccc1cb037cf813998d0ad865d66c30c6ae5))
 
+- **release**: Update default branch references in workflow and documentation
+  ([`3bb0cb2`](https://github.com/krypton-byte/tryx/commit/3bb0cb250dd8281a27707e39a181731ff6d2b3f2))
+
 - **test**: Update workflows for commit message validation and release automation
   ([`b940d91`](https://github.com/krypton-byte/tryx/commit/b940d91d89969590af84b56a52316803174c4f65))
+
+- **workflow**: Remove duplicate ref line in release workflow
+  ([`2e3667a`](https://github.com/krypton-byte/tryx/commit/2e3667a8a2801c8fb083a6e38b8d28cc8379ef49))
+
+- **workflow**: Update branch references from 'main' to 'master' in documentation workflow
+  ([`0d9ecc6`](https://github.com/krypton-byte/tryx/commit/0d9ecc63ed4ba76424e1f40e2086e1864ee0f07e))
+
+### Chores
+
+- **deps**: Update tryx version from 0.2.0 to 0.3.0 in Cargo.lock
+  ([`6bd891e`](https://github.com/krypton-byte/tryx/commit/6bd891e87b8befcf3468bd516d5f2ad403320e86))
 
 ### Documentation
 
@@ -35,8 +70,22 @@
 
 ### Features
 
+- **ci**: Reintroduce Linux and Windows wheel builds with updated configurations
+  ([`bb74fd2`](https://github.com/krypton-byte/tryx/commit/bb74fd227019c298853fe8bc038bb7424eba1d58))
+
+- **release**: Enhance workflow dispatch with release type options and improve documentation
+  ([`b477e44`](https://github.com/krypton-byte/tryx/commit/b477e44ac37b3f5b2d200de9cd5e46155094de3a))
+
+- **release**: Enhance workflow dispatch with release type options and improve documentation
+  ([`fb67cf9`](https://github.com/krypton-byte/tryx/commit/fb67cf9f01736ec55fbb97f54845b82a05e3b782))
+
 - **test**: Test
   ([`3bc6c04`](https://github.com/krypton-byte/tryx/commit/3bc6c04f8ce84802947c45ad9e9b8735ec615918))
+
+### Refactoring
+
+- **README**: Streamline content and enhance clarity by removing redundant sections
+  ([`32fcaec`](https://github.com/krypton-byte/tryx/commit/32fcaec8caf5d074ee257c4d29762645f0233cec))
 
 
 ## v0.1.0 (2026-04-01)
