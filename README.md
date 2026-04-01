@@ -1,142 +1,37 @@
 # Tryx
 
-Tryx is a Rust-powered Python SDK for building WhatsApp automations with an async-first developer experience, typed APIs, and high runtime efficiency.
+[![CI](https://img.shields.io/github/actions/workflow/status/krypton-byte/tryx/CI.yml?label=CI&style=for-the-badge&logo=githubactions)](https://github.com/krypton-byte/tryx/actions/workflows/CI.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/krypton-byte/tryx/release.yml?label=Release&style=for-the-badge&logo=githubactions)](https://github.com/krypton-byte/tryx/actions/workflows/release.yml)
+[![Docs](https://img.shields.io/badge/Docs-Live-0ea5e9?style=for-the-badge&logo=readthedocs&logoColor=white)](http://krypton-byte.tech/tryx/)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Rust](https://img.shields.io/badge/Rust-Stable-000000?style=for-the-badge&logo=rust)](https://www.rust-lang.org/)
+[![Typed](https://img.shields.io/badge/Typing-PEP%20561-0ea5e9?style=for-the-badge)](https://peps.python.org/pep-0561/)
+[![License](https://img.shields.io/github/license/krypton-byte/tryx?style=for-the-badge)](LICENSE)
+
+Tryx is a Rust-powered Python SDK for building WhatsApp automations with an async-first API, strong typing, and production-focused performance.
 
 It combines:
-- Rust for protocol, transport, and runtime-heavy work
+
+- Rust for protocol and runtime-heavy paths
 - PyO3 for Python bindings
 - Tokio for async orchestration
-- Protobuf interop via generated WhatsApp Python types
+- Typed Python package distribution (`.pyi` + `py.typed`)
+
+> Note: This project is an independent developer SDK and is not affiliated with WhatsApp or Meta.
 
 ## Why Tryx
 
-- Low-latency runtime path for event processing
-- Python-friendly API surface for application logic
-- Structured event model with explicit classes
-- Optional blocking mode for script-style execution
-- Typed package distribution with `.pyi` and `py.typed`
+- Async-first architecture for event-driven bots
+- Python-friendly API with namespace-based clients
+- High-performance native core for protocol and transport workloads
+- Typed interfaces for better editor support and safer integrations
+- Supports both async and blocking runtime styles
 
-## Key Features
+## Quick Links
 
-- Async bot lifecycle: `await bot.run()`
-- Blocking lifecycle for simple scripts: `bot.run_blocking()`
-- Event registration decorator: `@bot.on(EventType)`
-- Messaging API (text, media upload, media download)
-- Dedicated contact namespace: `client.contact.*`
-- Dedicated chat-actions namespace: `client.chat_actions.*`
-- Dedicated community namespace: `client.community.*`
-- Dedicated newsletter namespace: `client.newsletter.*`
-- Dedicated groups namespace: `client.groups.*`
-- Dedicated status namespace: `client.status.*`
-- Dedicated chatstate namespace: `client.chatstate.*`
-- Dedicated blocking namespace: `client.blocking.*`
-- Dedicated polls namespace: `client.polls.*`
-- Dedicated presence namespace: `client.presence.*`
-- Dedicated helper namespace: `tryx.helpers.*`
-- Rich event payload classes with lazy conversion where possible
-
-## Architecture Overview
-
-Tryx is split into two layers:
-
-1. Core (Rust)
-- Transport, protocol state, and event stream integration
-- WhatsApp runtime from submodule stack in `libs/whatsapp-rust`
-- PyO3 bindings in `src/`
-
-2. Interface (Python)
-- Dynamic re-export modules in `python/tryx/*.py`
-- Type stubs in `python/tryx/*.pyi`
-- Generated protobuf package in `python/tryx/waproto`
-
-## Native Binding Advantages (Rust + PyO3)
-
-Tryx uses native Rust bindings instead of a pure-Python protocol implementation.
-This gives concrete benefits for this specific project:
-
-- Lower CPU overhead on hot paths such as event parsing and media/protobuf conversion.
-- Better memory behavior because heavy objects stay in Rust and are exposed to Python only when needed.
-- Async safety and runtime control from Tokio while keeping Python application code simple.
-- Ability to cache expensive Python type lookups once (PyOnceLock) and reuse them across events.
-- Cleaner separation: Rust handles protocol/runtime mechanics, Python handles business logic and integrations.
-
-In practical terms, this means Python callbacks remain expressive while most protocol-heavy work stays fast and predictable.
-
-## Centralized PyOnceLock Cache
-
-Event protobuf type caches are centralized in `src/events/proto_cache.rs`.
-
-Why this helps:
-- All static PyOnceLock declarations are in one file.
-- All cache lookup helpers are in one place.
-- Easier maintenance and code search when adding/removing protobuf-backed fields.
-- Lower risk of duplicated cache logic in multiple event files.
-
-The event layer now consumes cache helpers from this module, keeping event structs focused on payload mapping instead of cache plumbing.
-
-## Concurrency and Overhead Model
-
-Tryx currently uses `watch::Receiver<Option<Arc<Client>>>` to expose the active client across binding objects.
-
-Why this is a good default for PyO3 async bindings:
-- `watch::Receiver` is read-optimized and cheap to clone.
-- Stored value is `Arc<Client>`, so clone cost is minimal (atomic refcount).
-- Works naturally with Tokio async context.
-- Avoids explicit lock management in Python-exposed methods.
-
-Compared to `RwLock<Option<Arc<Client>>>`:
-- `RwLock` adds lock acquisition on every read path.
-- It can increase contention under frequent method calls.
-- In mixed Python/Rust workloads, lock handoff can be noisier than `watch` read snapshots.
-
-Recommendation:
-- Keep `watch::Receiver<Option<Arc<Client>>>` for low overhead and async safety.
-- Use `RwLock` only if you need mutable shared state beyond swapping client snapshots.
-
-## Contact Client Design
-
-Tryx now exposes contact APIs through a dedicated `ContactClient` pyclass:
-
-- `client.contact.get_info(...)`
-- `client.contact.get_user_info(...)`
-- `client.contact.get_profile_picture(...)`
-- `client.contact.is_on_whatsapp(...)`
-
-This keeps `TryxClient` focused on messaging/media and keeps contacts grouped by responsibility with no extra heavy synchronization cost.
-
-## Project Structure
-
-- `src/lib.rs`: PyO3 module bootstrap and submodule registration
-- `src/clients/tryx.rs`: main `Tryx` runtime wrapper
-- `src/clients/tryx_client.rs`: messaging/media client methods
-- `src/clients/contacts.rs`: contact-specific client methods
-- `src/events/`: dispatcher and event payload classes
-- `src/types.rs`: core Python-exposed value types (`JID`, `MessageInfo`, ...)
-- `python/tryx/`: Python package surface and stubs
-- `python/tryx/waproto/`: generated protobuf Python files
-- `libs/whatsapp-rust/`: embedded rust stack dependencies
-
-## Documentation Site (MkDocs Material)
-
-A full documentation site is provided with MkDocs Material.
-
-Install docs dependencies:
-
-```bash
-uv sync --group docs
-```
-
-Run local docs server:
-
-```bash
-uv run mkdocs serve
-```
-
-Build docs in strict mode:
-
-```bash
-uv run mkdocs build --strict
-```
+- Documentation: http://krypton-byte.tech/tryx/
+- Contributing Guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Command Bot Example: [examples/command_bot.py](examples/command_bot.py)
 
 ## Installation
 
@@ -146,20 +41,18 @@ uv run mkdocs build --strict
 - Rust stable toolchain
 - `uv`
 
-### Development install (editable)
+### Development Install (Editable)
 
 ```bash
 uv sync --group dev
 uv run maturin develop
 ```
 
-### Build wheel
+### Build Wheels
 
 ```bash
 uv run maturin build --release
 ```
-
-Wheels are produced under `target/wheels` or project-specific wheel output depending on command options.
 
 ## Quick Start
 
@@ -186,365 +79,67 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## Command Bot Example (examples)
+## Feature Overview
 
-Contoh siap pakai tersedia di `examples/command_bot.py`.
+- Event-based handlers via `@bot.on(...)`
+- Runtime client namespaces:
+  - `contact`, `chat_actions`, `community`, `newsletter`, `groups`
+  - `status`, `chatstate`, `blocking`, `polls`, `presence`, `privacy`, `profile`
+- Media upload/download and message sending helpers
+- Typed helper utilities under `tryx.helpers`
 
-Fitur contoh:
-- command router berbasis `EvMessage`
-- quoted reply pada semua balasan command
-- download profile picture pengirim, lalu kirim kembali ke chat
-- ambil pushname dari metadata pesan
-- ambil bio/about dari contact API
-- log update pushname dan bio realtime (`EvPushNameUpdate`, `EvUserAboutUpdate`)
+For complete API coverage, see the docs site and generated API pages.
 
-Command yang tersedia:
-- `ping` -> `pong`
-- `pp` -> kirim ulang profile picture pengirim
-- `pushname` -> tampilkan pushname pengirim
-- `bio` -> tampilkan bio/about pengirim
-- `help` / `menu` -> tampilkan daftar command
+## Project Layout
 
-Run:
-
-```bash
-uv run python examples/command_bot.py
-```
-
-Opsional env:
-- `TRYX_DB_PATH` (default `whatsapp.db`)
-
-## Python API Reference (High Level)
-
-### Backend
-
-- `SqliteBackend(path: str)`
-
-### Bot controller
-
-- `Tryx(backend)`
-- `Tryx.on(event_type)`
-- `await Tryx.run()`
-- `Tryx.run_blocking()`
-- `Tryx.get_client() -> TryxClient`
-
-### Runtime client
-
-- `TryxClient.contact -> ContactClient`
-- `TryxClient.chat_actions -> ChatActionsClient`
-- `TryxClient.community -> CommunityClient`
-- `TryxClient.newsletter -> NewsletterClient`
-- `TryxClient.groups -> GroupsClient`
-- `TryxClient.status -> StatusClient`
-- `TryxClient.chatstate -> ChatstateClient`
-- `TryxClient.blocking -> BlockingClient`
-- `TryxClient.polls -> PollsClient`
-- `TryxClient.presence -> PresenceClient`
-- `TryxClient.privacy -> PrivacyClient`
-- `TryxClient.profile -> ProfileClient`
-- `TryxClient.send_message(...)`
-- `TryxClient.send_text(...)`
-- `TryxClient.send_photo(...)`
-- `TryxClient.send_document(...)`
-- `TryxClient.send_audio(...)`
-- `TryxClient.send_video(...)`
-- `TryxClient.send_gif(...)`
-- `TryxClient.send_sticker(...)`
-- `TryxClient.request_media_reupload(...)`
-- `TryxClient.download_media(...)`
-- `TryxClient.upload(...)`
-- `TryxClient.upload_file(...)`
-
-Return value penting:
-- `send_message/send_text/send_photo/send_document/send_audio/send_video/send_gif/send_sticker` mengembalikan `SendResult`.
-- `request_media_reupload` mengembalikan `MediaReuploadResult`.
-
-### Contact namespace
-
-- `ContactClient.get_info(phones)`
-- `ContactClient.get_user_info(jid)`
-- `ContactClient.get_profile_picture(jid, preview)`
-- `ContactClient.is_on_whatsapp(jids)`
-
-### Chat actions namespace
-
-- `ChatActionsClient.archive_chat(jid, message_range=None)`
-- `ChatActionsClient.unarchive_chat(jid, message_range=None)`
-- `ChatActionsClient.pin_chat(jid)`
-- `ChatActionsClient.unpin_chat(jid)`
-- `ChatActionsClient.mute_chat(jid)`
-- `ChatActionsClient.mute_chat_until(jid, mute_end_timestamp_ms)`
-- `ChatActionsClient.unmute_chat(jid)`
-- `ChatActionsClient.star_message(chat_jid, participant_jid, message_id, from_me)`
-- `ChatActionsClient.unstar_message(chat_jid, participant_jid, message_id, from_me)`
-- `ChatActionsClient.mark_chat_as_read(jid, read, message_range=None)`
-- `ChatActionsClient.delete_chat(jid, delete_media, message_range=None)`
-- `ChatActionsClient.delete_message_for_me(chat_jid, participant_jid, message_id, from_me, delete_media, message_timestamp=None)`
-- `ChatActionsClient.build_message_key(...)`
-- `ChatActionsClient.build_message_range(...)`
-
-### Community namespace
-
-- `CommunityClient.create(options)`
-- `CommunityClient.deactivate(community_jid)`
-- `CommunityClient.link_subgroups(community_jid, subgroup_jids)`
-- `CommunityClient.unlink_subgroups(community_jid, subgroup_jids, remove_orphan_members)`
-- `CommunityClient.get_subgroups(community_jid)`
-- `CommunityClient.get_subgroup_participant_counts(community_jid)`
-- `CommunityClient.query_linked_group(community_jid, subgroup_jid)`
-- `CommunityClient.join_subgroup(community_jid, subgroup_jid)`
-- `CommunityClient.get_linked_groups_participants(community_jid)`
-
-### Newsletter namespace
-
-- `NewsletterClient.list_subscribed()`
-- `NewsletterClient.get_metadata(jid)`
-- `NewsletterClient.get_metadata_by_invite(invite_code)`
-- `NewsletterClient.create(name, description=None)`
-- `NewsletterClient.join(jid)`
-- `NewsletterClient.leave(jid)`
-- `NewsletterClient.update(jid, name=None, description=None)`
-- `NewsletterClient.subscribe_live_updates(jid)`
-- `NewsletterClient.send_message(jid, message)`
-- `NewsletterClient.send_reaction(jid, server_id, reaction)`
-- `NewsletterClient.get_messages(jid, count, before=None)`
-
-### Groups namespace
-
-- `GroupsClient.query_info(jid)`
-- `GroupsClient.get_participating()`
-- `GroupsClient.get_metadata(jid)`
-- `GroupsClient.create_group(options)`
-- `GroupsClient.set_subject(jid, subject)`
-- `GroupsClient.set_description(jid, description=None, prev=None)`
-- `GroupsClient.leave(jid)`
-- `GroupsClient.add_participants(jid, participants)`
-- `GroupsClient.remove_participants(jid, participants)`
-- `GroupsClient.promote_participants(jid, participants)`
-- `GroupsClient.demote_participants(jid, participants)`
-- `GroupsClient.get_invite_link(jid, reset)`
-- `GroupsClient.set_locked(jid, locked)`
-- `GroupsClient.set_announce(jid, announce)`
-- `GroupsClient.set_ephemeral(jid, expiration)`
-- `GroupsClient.set_membership_approval(jid, mode)`
-- `GroupsClient.join_with_invite_code(code)`
-- `GroupsClient.join_with_invite_v4(group_jid, code, expiration, admin_jid)`
-- `GroupsClient.get_invite_info(code)`
-- `GroupsClient.get_membership_requests(jid)`
-- `GroupsClient.approve_membership_requests(jid, participants)`
-- `GroupsClient.reject_membership_requests(jid, participants)`
-- `GroupsClient.set_member_add_mode(jid, mode)`
-
-### Status namespace
-
-- `StatusClient.send_text(text, background_argb, font, recipients, options=None)`
-- `StatusClient.send_image(upload, thumbnail, recipients, caption=None, options=None)`
-- `StatusClient.send_video(upload, thumbnail, duration_seconds, recipients, caption=None, options=None)`
-- `StatusClient.send_raw(message, recipients, options=None)`
-- `StatusClient.revoke(message_id, recipients, options=None)`
-
-### Chatstate namespace
-
-- `ChatstateClient.send(to, state)`
-- `ChatstateClient.send_composing(to)`
-- `ChatstateClient.send_recording(to)`
-- `ChatstateClient.send_paused(to)`
-
-### Blocking namespace
-
-- `BlockingClient.block(jid)`
-- `BlockingClient.unblock(jid)`
-- `BlockingClient.get_blocklist()`
-- `BlockingClient.is_blocked(jid)`
-
-### Polls namespace
-
-- `PollsClient.create(to, name, options, selectable_count)`
-- `PollsClient.vote(chat_jid, poll_msg_id, poll_creator_jid, message_secret, option_names)`
-- `PollsClient.decrypt_vote(enc_payload, enc_iv, message_secret, poll_msg_id, poll_creator_jid, voter_jid)`
-- `PollsClient.aggregate_votes(poll_options, votes, message_secret, poll_msg_id, poll_creator_jid)`
-
-### Presence namespace
-
-- `PresenceClient.set(status)`
-- `PresenceClient.set_available()`
-- `PresenceClient.set_unavailable()`
-- `PresenceClient.subscribe(jid)`
-- `PresenceClient.unsubscribe(jid)`
-
-### Profile namespace
-
-- `ProfileClient.set_push_name(name)`
-- `ProfileClient.set_status_text(text)`
-- `ProfileClient.set_profile_picture(image_data)`
-- `ProfileClient.remove_profile_picture()`
-
-### Privacy namespace
-
-- `PrivacyClient.fetch_settings()`
-- `PrivacyClient.set_setting(category, value)`
-- `PrivacyClient.set_disallowed_list(category, update)`
-- `PrivacyClient.set_default_disappearing_mode(duration_seconds)`
-
-### Helper namespace
-
-- `NewsletterHelpers.parse_message(data)`
-- `NewsletterHelpers.serialize_message(message)`
-- `NewsletterHelpers.build_text_message(text)`
-- `GroupsHelpers.strip_invite_url(code)`
-- `GroupsHelpers.build_participant(...)`
-- `GroupsHelpers.build_create_options(...)`
-- `StatusHelpers.build_send_options(privacy=...)`
-- `StatusHelpers.default_privacy()`
-- `ChatstateHelpers.composing()`
-- `ChatstateHelpers.recording()`
-- `ChatstateHelpers.paused()`
-- `BlockingHelpers.same_user(a, b)`
-- `PollsHelpers.decrypt_vote(...)`
-- `PollsHelpers.aggregate_votes(...)`
-- `PresenceHelpers.default_status()`
-
-Related typed models:
-
-- `CreateCommunityOptions`
-- `CreateCommunityResult`
-- `CommunitySubgroup`
-- `LinkSubgroupsResult`
-- `UnlinkSubgroupsResult`
-- `GroupParticipant`
-- `GroupMetadata`
-- `GroupType`
-- `NewsletterVerification`
-- `NewsletterState`
-- `NewsletterRole`
-- `NewsletterReactionCount`
-- `NewsletterMetadata`
-- `NewsletterMessage`
-- `MemberLinkMode`
-- `MemberAddMode`
-- `MembershipApprovalMode`
-- `GroupParticipantOptions`
-- `CreateGroupOptions`
-- `CreateGroupResult`
-- `JoinGroupResult`
-- `ParticipantChangeResponse`
-- `MembershipRequest`
-- `GroupInfo`
-- `StatusPrivacySetting`
-- `StatusSendOptions`
-- `ChatStateType`
-- `BlocklistEntry`
-- `PollOptionResult`
-- `PresenceStatus`
-- `SendResult`
-- `MediaReuploadResult`
-
-## Typing Support
-
-Tryx ships as a typed Python package:
-- Stub files in `python/tryx/*.pyi`
-- Marker file `python/tryx/py.typed`
-
-Recommended type checkers:
-- Pyright
-- Mypy
-- Pylance
-
-## Events
-
-Event classes are generated from Rust-side event payloads and exposed under `tryx.events`.
-
-Common patterns:
-- `event.data` for structured payload
-- lazy-converted proto fields (for lower eager conversion overhead)
-- datetime and typed references where available
-
-## Error Handling
-
-Tryx exposes binding-level exceptions in `tryx.exceptions`, including:
-- `FailedBuildBot`
-- `EventDispatchError`
-- `UnsupportedBackend`
-- `UnsupportedEventType`
-
-Backward-compatible aliases are also available for older names.
+- `src/`: Rust core bindings and runtime integration
+- `python/tryx/`: Python package surface and type stubs
+- `python/tryx/waproto/`: generated protobuf Python modules
+- `examples/`: runnable usage examples
+- `docs/`: MkDocs sources
 
 ## Development Workflow
 
-### Rust checks
-
 ```bash
-cargo check
+# Lint and format check
+uv run ruff check .
+uv run ruff format --check .
+
+# Validate stubs
+uv run python scripts/check_stub_parity.py
+
+# Build docs locally
+uv sync --group docs
+uv run mkdocs serve
 ```
 
-### Python package sanity
+## Release Workflow (Maintainers)
 
-```bash
-uv run python -c "import tryx; print('ok')"
-```
-
-### Type checking example
-
-```bash
-uv run pyright
-# or
-uv run mypy examples/command_bot.py
-```
-
-### Pre-commit hooks
-
-```bash
-uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
-uv run pre-commit run --all-files
-```
-
-## Performance Notes
-
-- Avoid creating Python objects before `.await` points in Rust async methods.
-- Construct Python values inside `Python::attach(...)` after async IO completes.
-- Return owned `Py<T>` from futures when required by `Send` bounds.
-- Keep payload conversion lazy when field access is infrequent.
-- Centralize Python type/proto caches to minimize repeated import/lookups.
+- Release is triggered manually via GitHub Actions (`Semantic Release`).
+- Version bump is automatic from Conventional Commits:
+  - `feat` -> minor
+  - `fix` / `perf` -> patch
+  - breaking change -> major
+- The workflow creates a Git tag (`vX.Y.Z`), creates a GitHub Release, then triggers CI for publish.
 
 ## Troubleshooting
 
-### Import error for native module
+### Native Module Import Error
 
-Symptom:
-- `ModuleNotFoundError: No module named 'tryx._tryx'`
-
-Fix:
+If you see `ModuleNotFoundError: No module named 'tryx._tryx'`:
 
 ```bash
 uv run maturin develop --release
 ```
 
-### Bot is not running
+### Bot Not Running
 
-Symptom:
-- Python methods raise runtime error before run/start
-
-Fix:
-- Ensure bot is started (`run`/`run_blocking`) and connected before invoking runtime client methods.
-
-### Type checker not reading stubs
-
-Fix:
-- Ensure local install is active in your environment
-- Confirm `py.typed` is included in installed package
-- Restart language server
-
-## Security and Compliance
-
-- Keep secrets and session files outside version control
-- Use WhatsApp automation responsibly and within platform policy
-- Audit message handling callbacks before deploying production bots
+Ensure the bot runtime is started (`run` or `run_blocking`) before calling runtime client methods.
 
 ## Contributing
 
-- Contribution guideline: `CONTRIBUTING.md`
-- Docs page: `docs/getting-started/contributing.md`
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and release guidelines.
 
 ## License
 
-See `LICENSE` for license terms.
+This project is licensed under the terms in [LICENSE](LICENSE).
