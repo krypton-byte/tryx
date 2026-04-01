@@ -95,7 +95,7 @@ Include:
 - If commits do not qualify (for example docs/chore only), release is a no-op and no publish is triggered.
 - New `vX.Y.Z` tags trigger the CI workflow that builds multi-platform wheels and publishes to PyPI.
 
-## Simple Trigger Guide (No-Ribet)
+## Simple Trigger Guide
 
 Use this rule of thumb for automatic versioning:
 
