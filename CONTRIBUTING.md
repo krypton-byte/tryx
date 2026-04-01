@@ -96,5 +96,4 @@ Include:
 - New `vX.Y.Z` tags trigger the CI workflow that builds multi-platform wheels and publishes to PyPI.
 
 Required repository secrets:
-- `RELEASE_PUSH_TOKEN`: personal access token used by semantic-release workflow to push release commit and tags.
 - `PYPI_API_TOKEN`: token used by publish job to upload wheels/sdist to PyPI.
