@@ -44,11 +44,7 @@ jobs:
           - runner: ubuntu-22.04
             target: x86_64
           - runner: ubuntu-22.04
-            target: x86
-          - runner: ubuntu-22.04
             target: aarch64
-          - runner: ubuntu-22.04
-            target: armv7
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,68 +53,19 @@ jobs:
         with:
           python-version: "3.12"
       - name: Workaround ring ARM asm macro in cross builds
-        if: matrix.platform.target == 'aarch64' || matrix.platform.target == 'armv7'
-        run: |
-          if [ "${{ matrix.platform.target }}" = "aarch64" ]; then
-            echo "CFLAGS_aarch64_unknown_linux_gnu=-D__ARM_ARCH=8" >> "$GITHUB_ENV"
-          else
-            echo "CFLAGS_armv7_unknown_linux_gnueabihf=-D__ARM_ARCH=7" >> "$GITHUB_ENV"
-          fi
+        if: matrix.platform.target == 'aarch64'
+        run: echo "CFLAGS_aarch64_unknown_linux_gnu=-D__ARM_ARCH=8" >> "$GITHUB_ENV"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
-          sccache: ${{ !startsWith(github.ref, 'refs/tags/') && matrix.platform.target != 'aarch64' && matrix.platform.target != 'armv7' }}
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') && matrix.platform.target != 'aarch64' }}
           manylinux: auto
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-${{ matrix.platform.target }}
-          path: dist
-
-  musllinux:
-    name: Linux musllinux wheels
-    needs: quality
-    runs-on: ${{ matrix.platform.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - runner: ubuntu-22.04
-            target: x86_64
-          - runner: ubuntu-22.04
-            target: x86
-          - runner: ubuntu-22.04
-            target: aarch64
-          - runner: ubuntu-22.04
-            target: armv7
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Workaround ring ARM asm macro in cross builds
-        if: matrix.platform.target == 'aarch64' || matrix.platform.target == 'armv7'
-        run: |
-          if [ "${{ matrix.platform.target }}" = "aarch64" ]; then
-            echo "CFLAGS_aarch64_unknown_linux_musl=-D__ARM_ARCH=8" >> "$GITHUB_ENV"
-          else
-            echo "CFLAGS_armv7_unknown_linux_musleabihf=-D__ARM_ARCH=7" >> "$GITHUB_ENV"
-          fi
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
-          sccache: ${{ !startsWith(github.ref, 'refs/tags/') && matrix.platform.target != 'aarch64' && matrix.platform.target != 'armv7' }}
-          manylinux: musllinux_1_2
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-musllinux-${{ matrix.platform.target }}
           path: dist
 
   windows:
@@ -132,12 +79,6 @@ jobs:
           - runner: windows-latest
             target: x64
             python_arch: x64
-          - runner: windows-latest
-            target: x86
-            python_arch: x86
-          - runner: windows-11-arm
-            target: aarch64
-            python_arch: arm64
     steps:
       - uses: actions/checkout@v4
         with:
@@ -211,7 +152,7 @@ jobs:
   release:
     name: Publish to PyPI
     if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-    needs: [musllinux, linux, windows, macos, sdist]
+    needs: [linux, windows, macos, sdist]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
