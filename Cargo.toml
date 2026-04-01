@@ -10,13 +10,13 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.28.0", features = ["extension-module"] }
-whatsapp-rust = {path = "libs/whatsapp-rust"}
+whatsapp-rust = { path = "libs/whatsapp-rust", default-features = false, features = ["moka-cache", "sqlite-storage", "tokio-transport", "tokio-runtime", "ureq-client", "tokio-native", "signal"] }
 whatsapp-rust-sqlite-storage = {path = "libs/whatsapp-rust/storages/sqlite-storage"}
 whatsapp-rust-tokio-transport = {path = "libs/whatsapp-rust/transports/tokio-transport"}
 whatsapp-rust-ureq-http-client = {path = "libs/whatsapp-rust/http_clients/ureq-client"}
-wacore = {path = "libs/whatsapp-rust/wacore"}
+wacore = { path = "libs/whatsapp-rust/wacore", default-features = false }
 waproto = {path = "libs/whatsapp-rust/waproto"}
-wacore-binary = {path = "libs/whatsapp-rust/wacore/binary"}
+wacore-binary = { path = "libs/whatsapp-rust/wacore/binary", default-features = false }
 tokio = { version = "1.48", features = ["macros", "rt-multi-thread", "signal", "sync"] }
 async-trait = "0.1.89"
 pyo3-async-runtimes = { version = "0.28.0", features = ["attributes", "tokio-runtime"] }
