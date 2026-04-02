@@ -18,16 +18,17 @@ client = Tryx(backend)
 
 @client.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
-    info = event.message_info
+    data = event.data
+    info = data.message_info
     source = info.source
     sender = source.sender
 
-    text = event.get_text() or event.caption or "<non-text message>"
+    text = data.get_text() or data.caption or "<non-text message>"
     sender_jid = f"{sender.user}@{sender.server}"
     chat = source.chat
-    print(event.raw_proto)
+    print(data.raw_proto)
     print(f"[{info.id}] {sender_jid}: {text}")
-    print("text:", event.get_text())
+    print("text:", data.get_text())
     print("client:", client)
     print("chat:", chat, dir(chat))
     await client.send_message(chat, msg(conversation="Hello!"))
@@ -44,5 +45,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(main())
+    asyncio.run(main())

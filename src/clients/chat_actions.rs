@@ -25,7 +25,7 @@ impl ChatActionsClient {
         self.client_rx
             .borrow()
             .clone()
-            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running"))
+            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first."))
     }
 
     fn decode_sync_action_message_range(

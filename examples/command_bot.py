@@ -28,8 +28,12 @@ def jid_to_text(jid: object) -> str:
 
 
 async def download_bytes(url: str) -> bytes:
+    """Download bytes from an HTTPS URL. Rejects non-HTTPS schemes for safety."""
+    if not url.startswith("https://"):
+        raise ValueError(f"Refusing to download from non-HTTPS URL: {url}")
+
     def _download() -> bytes:
-        with urlopen(url, timeout=20) as response:
+        with urlopen(url, timeout=20) as response:  # noqa: S310
             return response.read()
 
     return await asyncio.to_thread(_download)

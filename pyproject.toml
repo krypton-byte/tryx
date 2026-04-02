@@ -69,6 +69,7 @@ dev = [
 docs = [
     "mkdocs>=1.6.0",
     "mkdocs-material>=9.6.0",
+    "mkdocs-minify-plugin>=0.8.0",
 ]
 # include = [
 #     { path = "python/tryx/__init__.py", format = ["sdist", "wheel"] },
@@ -79,6 +80,9 @@ docs = [
 line-length = 88
 target-version = "py38"
 extend-exclude = ["target", "site", "libs", "python/tryx/waproto/whatsapp_pb2.py", "python/tryx/waproto/whatsapp_pb2.pyi"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]

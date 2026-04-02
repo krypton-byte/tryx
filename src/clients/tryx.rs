@@ -21,6 +21,7 @@ use super::contacts::ContactClient;
 use super::chatstate::ChatstateClient;
 use super::blocking::BlockingClient;
 use super::groups::GroupsClient;
+use super::newsletter::NewsletterClient;
 use super::polls::PollsClient;
 use super::presence::PresenceClient;
 use super::privacy::PrivacyClient;
@@ -36,6 +37,13 @@ use crate::events::types::{
 use crate::exceptions::{EventDispatchError, FailedBuildBot, UnsupportedBackend};
 use crate::events::dispatcher::Dispatcher;
 use super::event_callbacks::EventCallbacks;
+
+/// Creates a `Py<T>` namespace client that shares the `client_rx` watch channel.
+macro_rules! new_namespace_client {
+    ($py:expr, $rx:expr, $ty:ident) => {
+        Py::new($py, $ty { client_rx: $rx.clone() })?
+    };
+}
 
 type PyCallbackFuture = Pin<Box<dyn Future<Output = PyResult<Py<PyAny>>> + Send>>;
 
@@ -65,94 +73,22 @@ impl Tryx {
                 .block_on(backends.connect())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))?;
             let (client_tx, client_rx) = watch::channel(None);
-            let contact_client = Py::new(
-                py,
-                ContactClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let chat_actions_client = Py::new(
-                py,
-                ChatActionsClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let community_client = Py::new(
-                py,
-                CommunityClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let newsletter_client = Py::new(
-                py,
-                crate::clients::newsletter::NewsletterClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let groups_client = Py::new(
-                py,
-                GroupsClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let status_client = Py::new(
-                py,
-                StatusClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let chatstate_client = Py::new(
-                py,
-                ChatstateClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let blocking_client = Py::new(
-                py,
-                BlockingClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let polls_client = Py::new(
-                py,
-                PollsClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let presence_client = Py::new(
-                py,
-                PresenceClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let privacy_client = Py::new(
-                py,
-                PrivacyClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let profile_client = Py::new(
-                py,
-                ProfileClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
             let tryx_client = Py::new(
                 py,
                 TryxClient {
-                    client_rx,
-                    contact: contact_client,
-                    chat_actions: chat_actions_client,
-                    community: community_client,
-                    newsletter: newsletter_client,
-                    groups: groups_client,
-                    status: status_client,
-                    chatstate: chatstate_client,
-                    blocking: blocking_client,
-                    polls: polls_client,
-                    presence: presence_client,
-                    privacy: privacy_client,
-                    profile: profile_client,
+                    client_rx: client_rx.clone(),
+                    contact: new_namespace_client!(py, client_rx, ContactClient),
+                    chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
+                    community: new_namespace_client!(py, client_rx, CommunityClient),
+                    newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
+                    groups: new_namespace_client!(py, client_rx, GroupsClient),
+                    status: new_namespace_client!(py, client_rx, StatusClient),
+                    chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
+                    blocking: new_namespace_client!(py, client_rx, BlockingClient),
+                    polls: new_namespace_client!(py, client_rx, PollsClient),
+                    presence: new_namespace_client!(py, client_rx, PresenceClient),
+                    privacy: new_namespace_client!(py, client_rx, PrivacyClient),
+                    profile: new_namespace_client!(py, client_rx, ProfileClient),
                 }
             )?;
             
