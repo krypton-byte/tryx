@@ -9,13 +9,13 @@ Deploy Tryx bots safely in production with stable session storage and predictabl
 
     ```ini
     [Unit]
-    Description=Tryx Bot
+    Description=Tryx Automation
     After=network.target
 
     [Service]
     WorkingDirectory=/srv/tryx
     Environment=PYTHONUNBUFFERED=1
-    ExecStart=/srv/tryx/.venv/bin/python bot.py
+    ExecStart=/srv/tryx/.venv/bin/python app.py
     Restart=always
     RestartSec=5
     User=tryx
@@ -35,7 +35,7 @@ Deploy Tryx bots safely in production with stable session storage and predictabl
     RUN uv sync --group dev
     RUN uv run maturin develop
 
-    CMD ["uv", "run", "python", "bot.py"]
+    CMD ["uv", "run", "python", "app.py"]
     ```
 
 ## Session Persistence Requirements

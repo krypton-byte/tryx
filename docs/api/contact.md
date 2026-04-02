@@ -33,7 +33,7 @@ from tryx.events import EvMessage
 from tryx.types import JID
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_lookup(client, event):
     text = (event.data.get_text() or "").strip()
     if not text.startswith("/check "):
@@ -73,4 +73,4 @@ async def enrich_contacts(client, phones: list[str]) -> dict[str, str]:
 
 - [Types API](types.md)
 - [Profile Namespace](profile.md)
-- [Tutorial: Command Bot](../tutorials/command-bot.md)
+- [Tutorial: Command Automation](../tutorials/command-bot.md)

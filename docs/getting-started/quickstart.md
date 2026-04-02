@@ -1,11 +1,11 @@
 # Quick Start
 
-Build and run a minimal echo bot, then expand it safely.
+Build and run a minimal echo client, then expand it safely.
 
 !!! tip "Expected outcome"
     You should receive incoming text and reply with an echo message in the same chat.
 
-## Minimal Bot
+## Minimal Client
 
 ```python
 import asyncio
@@ -16,10 +16,10 @@ from tryx.events import EvMessage
 from tryx.waproto.whatsapp_pb2 import Message
 
 backend = SqliteBackend("whatsapp.db")
-bot = Tryx(backend)
+app = Tryx(backend)
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     text = event.data.get_text() or "<non-text>"
     chat = event.data.message_info.source.chat
@@ -27,7 +27,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 
 async def main() -> None:
-    await bot.run()
+    await app.run()
 
 
 if __name__ == "__main__":
@@ -38,15 +38,15 @@ if __name__ == "__main__":
 
 1. backend persists pairing/session state
 2. `Tryx` runtime wires event dispatcher
-3. `@bot.on(EvMessage)` registers handler
+3. `@app.on(EvMessage)` registers handler
 4. `TryxClient` executes namespace/root API calls
 
 ## Runtime Flow
 
 1. Create backend storage.
-2. Create `Tryx` bot instance.
-3. Register handlers with `@bot.on(EventClass)`.
-4. Start runtime with `await bot.run()`.
+2. Create `Tryx` client instance.
+3. Register handlers with `@app.on(EventClass)`.
+4. Start runtime with `await app.run()`.
 5. Use `TryxClient` inside handlers for API calls.
 
 ## First Production Hardening
@@ -71,8 +71,8 @@ For quick scripts without manual event loop management:
 from tryx.backend import SqliteBackend
 from tryx.client import Tryx
 
-bot = Tryx(SqliteBackend("whatsapp.db"))
-bot.run_blocking()
+app = Tryx(SqliteBackend("whatsapp.db"))
+app.run_blocking()
 ```
 
 !!! warning
@@ -83,4 +83,4 @@ bot.run_blocking()
 - Read [Authentication Flow](authentication.md) to understand pairing and session persistence.
 - Explore [Client API Gateway](../api/client.md) for all namespace methods.
 - Review [Event Model](../core-concepts/event-model.md) before building complex logic.
-- Continue with [Tutorial: Command Bot](../tutorials/command-bot.md).
+- Continue with [Tutorial: Command Automation](../tutorials/command-bot.md).

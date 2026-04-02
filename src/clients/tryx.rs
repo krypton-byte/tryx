@@ -21,6 +21,7 @@ use super::contacts::ContactClient;
 use super::chatstate::ChatstateClient;
 use super::blocking::BlockingClient;
 use super::groups::GroupsClient;
+use super::newsletter::NewsletterClient;
 use super::polls::PollsClient;
 use super::presence::PresenceClient;
 use super::privacy::PrivacyClient;
@@ -33,9 +34,16 @@ use crate::backend::{SqliteBackend, BackendBase};
 use crate::events::types::{
     EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeleteChatUpdate, EvDeleteMessageForMeUpdate, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvJoinedGroup, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
 };
-use crate::exceptions::{EventDispatchError, FailedBuildBot, UnsupportedBackend};
+use crate::exceptions::{EventDispatchError, FailedBuildClient, UnsupportedBackend};
 use crate::events::dispatcher::Dispatcher;
 use super::event_callbacks::EventCallbacks;
+
+/// Creates a `Py<T>` namespace client that shares the `client_rx` watch channel.
+macro_rules! new_namespace_client {
+    ($py:expr, $rx:expr, $ty:ident) => {
+        Py::new($py, $ty { client_rx: $rx.clone() })?
+    };
+}
 
 type PyCallbackFuture = Pin<Box<dyn Future<Output = PyResult<Py<PyAny>>> + Send>>;
 
@@ -65,94 +73,22 @@ impl Tryx {
                 .block_on(backends.connect())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))?;
             let (client_tx, client_rx) = watch::channel(None);
-            let contact_client = Py::new(
-                py,
-                ContactClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let chat_actions_client = Py::new(
-                py,
-                ChatActionsClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let community_client = Py::new(
-                py,
-                CommunityClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let newsletter_client = Py::new(
-                py,
-                crate::clients::newsletter::NewsletterClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let groups_client = Py::new(
-                py,
-                GroupsClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let status_client = Py::new(
-                py,
-                StatusClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let chatstate_client = Py::new(
-                py,
-                ChatstateClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let blocking_client = Py::new(
-                py,
-                BlockingClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let polls_client = Py::new(
-                py,
-                PollsClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let presence_client = Py::new(
-                py,
-                PresenceClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let privacy_client = Py::new(
-                py,
-                PrivacyClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
-            let profile_client = Py::new(
-                py,
-                ProfileClient {
-                    client_rx: client_rx.clone(),
-                },
-            )?;
             let tryx_client = Py::new(
                 py,
                 TryxClient {
-                    client_rx,
-                    contact: contact_client,
-                    chat_actions: chat_actions_client,
-                    community: community_client,
-                    newsletter: newsletter_client,
-                    groups: groups_client,
-                    status: status_client,
-                    chatstate: chatstate_client,
-                    blocking: blocking_client,
-                    polls: polls_client,
-                    presence: presence_client,
-                    privacy: privacy_client,
-                    profile: profile_client,
+                    client_rx: client_rx.clone(),
+                    contact: new_namespace_client!(py, client_rx, ContactClient),
+                    chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
+                    community: new_namespace_client!(py, client_rx, CommunityClient),
+                    newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
+                    groups: new_namespace_client!(py, client_rx, GroupsClient),
+                    status: new_namespace_client!(py, client_rx, StatusClient),
+                    chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
+                    blocking: new_namespace_client!(py, client_rx, BlockingClient),
+                    polls: new_namespace_client!(py, client_rx, PollsClient),
+                    presence: new_namespace_client!(py, client_rx, PresenceClient),
+                    privacy: new_namespace_client!(py, client_rx, PrivacyClient),
+                    profile: new_namespace_client!(py, client_rx, ProfileClient),
                 }
             )?;
             
@@ -185,25 +121,25 @@ impl Tryx {
 
     fn run<'py>(&'py self, py: Python<'py>) -> Result<Bound<'py, PyAny>, PyErr> {
         init_logging();
-        info!("starting bot in async mode via Tryx.run");
+        info!("starting client in async mode via Tryx.run");
         let backend = self.backend.clone();
         let handlers = self.handlers.clone_ref(py);
         let tryx_client = self.tryx_client.clone_ref(py);
         let client_tx = self.client_tx.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals.clone(), async move {
-            Self::run_bot(backend, handlers, Some(locals), tryx_client, client_tx).await
+            Self::run_automation(backend, handlers, Some(locals), tryx_client, client_tx).await
         })
     
     }
 
-    /// Starts the bot and blocks until it exits.
+    /// Starts the client and blocks until it exits.
     ///
     /// Python usage:
     /// client.run_blocking()
     fn run_blocking(&self, py: Python<'_>) -> PyResult<()> {
         init_logging();
-        info!("starting bot in blocking mode via Tryx.run_blocking");
+        info!("starting client in blocking mode via Tryx.run_blocking");
         let backend = self.backend.clone();
         let handlers = self.handlers.clone_ref(py);
         let tryx_client = self.tryx_client.clone_ref(py);
@@ -216,14 +152,14 @@ impl Tryx {
                 })?;
 
             rt.block_on(async {
-                let mut bot_task = tokio::spawn(Self::run_bot(backend, handlers, None, tryx_client, client_tx));
+                let mut task = tokio::spawn(Self::run_automation(backend, handlers, None, tryx_client, client_tx));
                 let mut signal_tick = interval(Duration::from_millis(200));
 
                 loop {
                     tokio::select! {
                         _ = signal::ctrl_c() => {
-                            warn!("SIGINT received via tokio::signal, stopping bot task");
-                            bot_task.abort();
+                            warn!("SIGINT received via tokio::signal, stopping task");
+                            task.abort();
                             break;
                         }
                         _ = signal_tick.tick() => {
@@ -238,27 +174,27 @@ impl Tryx {
                             });
                             if let Err((err, is_keyboard_interrupt)) = signal_result {
                                 if is_keyboard_interrupt {
-                                    warn!("KeyboardInterrupt detected from Python, stopping bot task");
-                                    bot_task.abort();
+                                    warn!("KeyboardInterrupt detected from Python, stopping task");
+                                    task.abort();
                                     break;
                                 }
 
                                 error!(error = %err, "non-keyboard Python signal error while polling");
-                                bot_task.abort();
+                                task.abort();
                                 return Err(err);
                             }
                         }
-                        result = &mut bot_task => {
+                        result = &mut task => {
                             match result {
                                 Ok(inner) => {
-                                    info!("bot task finished in blocking mode");
+                                    info!("task finished in blocking mode");
                                     inner?;
                                 }
                                 Err(err) if err.is_cancelled() => {
-                                    info!("bot task cancelled");
+                                    info!("task cancelled");
                                 }
                                 Err(err) => {
-                                    error!(error = %err, "bot task join failed");
+                                    error!(error = %err, "task join failed");
                                     return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(err.to_string()));
                                 }
                             }
@@ -268,12 +204,12 @@ impl Tryx {
                     }
                 }
 
-                match bot_task.await {
-                    Ok(Ok(())) => info!("bot finished after interrupt"),
+                match task.await {
+                    Ok(Ok(())) => info!("client finished after interrupt"),
                     Ok(Err(err)) => return Err(err),
-                    Err(join_err) if join_err.is_cancelled() => info!("bot task cancelled successfully"),
+                    Err(join_err) if join_err.is_cancelled() => info!("task cancelled successfully"),
                     Err(join_err) => {
-                        error!(error = %join_err, "bot task join failed after interrupt");
+                        error!(error = %join_err, "task join failed after interrupt");
                         return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(join_err.to_string()));
                     }
                 }
@@ -360,11 +296,14 @@ impl Tryx {
     ) where
         F: FnOnce(Python<'_>) -> PyResult<Py<PyAny>>,
     {
+        if callbacks.is_empty() {
+            return;
+        }
         let payload = Python::attach(build_payload);
         Self::emit_event(callbacks, tryx_client, payload, locals, event_name).await;
     }
 
-    async fn run_bot(
+    async fn run_automation(
         backend: Arc<dyn Backend>,
         handlers: Py<Dispatcher>,
         locals: Option<TaskLocals>,
@@ -375,8 +314,8 @@ impl Tryx {
             let dispatcher = handlers.bind(py).borrow();
             EventCallbacks::from_dispatcher(py, &dispatcher)
         }));
-        info!("building WhatsApp bot");
-        let mut bot = Bot::builder()
+        info!("building WhatsApp automation client");
+        let mut automation = Bot::builder()
             .with_backend(backend)
             .with_transport_factory(TokioWebSocketTransportFactory::new())
             .with_http_client(UreqHttpClient::new())
@@ -475,7 +414,7 @@ impl Tryx {
                         }
                         Event::UndecryptableMessage(undecryptable_message) => {
                             Self::emit_built_event(&tryx_client, &callbacks.undecryptable_message, locals.clone(), "UndecryptableMessage", |py| {
-                                Py::new(py, EvUndecryptableMessage::new(undecryptable_message.info.clone(), undecryptable_message.is_unavailable, undecryptable_message.unavailable_type, undecryptable_message.decrypt_fail_mode)).map(|event| event.into_any())
+                                Py::new(py, EvUndecryptableMessage::new(undecryptable_message.info, undecryptable_message.is_unavailable, undecryptable_message.unavailable_type, undecryptable_message.decrypt_fail_mode)).map(|event| event.into_any())
                             }).await;
                         }
                         Event::Notification(notification) => {
@@ -643,29 +582,29 @@ impl Tryx {
             .build()
             .await
             .map_err(|e| {
-                error!(error = %e, "failed to build bot");
-                PyErr::new::<FailedBuildBot, _>(e.to_string())
+                error!(error = %e, "failed to build client");
+                PyErr::new::<FailedBuildClient, _>(e.to_string())
             })?;
 
-        let client = bot.client();
+        let client = automation.client();
         client_tx
             .send(Some(client))
             .map_err(|e| PyErr::new::<EventDispatchError, _>(e.to_string()))?;
 
-        info!("bot built successfully, starting run loop");
-        bot.run()
+        info!("client built successfully, starting run loop");
+        automation.run()
             .await
             .map_err(|e| {
-                error!(error = %e, "failed to start bot run stream");
+                error!(error = %e, "failed to start run stream");
                 PyErr::new::<EventDispatchError, _>(e.to_string())
             })?
             .await
             .map_err(|e| {
-                error!(error = %e, "bot run stream failed");
+                error!(error = %e, "run stream failed");
                 PyErr::new::<EventDispatchError, _>(e.to_string())
             })?;
 
-        info!("bot run loop finished");
+        info!("run loop finished");
 
         Ok(())
     }

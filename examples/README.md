@@ -2,7 +2,7 @@
 
 ## command_bot.py
 
-Contoh bot command sederhana dengan alur:
+Contoh automation command sederhana dengan alur:
 
 - menerima pesan masuk (`EvMessage`)
 - parsing command dari teks pesan
@@ -13,10 +13,10 @@ Contoh bot command sederhana dengan alur:
 
 ### Command yang didukung
 
-- `ping` -> bot membalas `pong`
-- `pp` -> bot download profile picture pengirim dan kirim balik ke chat
-- `pushname` -> bot membalas pushname pengirim
-- `bio` -> bot membalas bio/about pengirim
+- `ping` -> client membalas `pong`
+- `pp` -> client download profile picture pengirim dan kirim balik ke chat
+- `pushname` -> client membalas pushname pengirim
+- `bio` -> client membalas bio/about pengirim
 - `help` / `menu` -> menampilkan daftar command
 
 ### Menjalankan

@@ -111,10 +111,12 @@ impl MessageSource {
 }
 impl From<WhatsAppMessageSource> for MessageSource {
     fn from(source: WhatsAppMessageSource) -> Self {
+        let chat = Arc::new(source.chat.clone());
+        let sender = Arc::new(source.sender.clone());
         MessageSource {
-            inner: Arc::new(source.clone()),
-            chat: Arc::new(source.chat.clone()),
-            sender: Arc::new(source.sender.clone()),
+            inner: Arc::new(source),
+            chat,
+            sender,
         }
     }
 }
@@ -272,15 +274,15 @@ impl MessageInfo {
     fn verified_name(&self, py: Python<'_>) -> PyResult<Option<pyo3::Py<PyAny>>> {
         match self.inner.verified_name {
             Some(ref name) => {
-                let mut buffer = Vec::new();
+                let mut buffer = Vec::with_capacity(name.encoded_len());
                 name.encode(&mut buffer).map_err(|e| {
                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
                         format!("Failed to encode VerifiedNameCertificate: {}", e),
                     )
                 })?;
 
-                let verified_proto = py.import("waproto.whatsapp_pb2")?;
-                let proto_type = verified_proto.getattr("attr_name")?;
+                let verified_proto = py.import("tryx.waproto.whatsapp_pb2")?;
+                let proto_type = verified_proto.getattr("VerifiedNameCertificate")?;
                 let proto_instance = proto_type.call0()?;
                 proto_instance.call_method1("ParseFromString", (PyBytes::new(py, &buffer),))?;
                 Ok(Some(proto_instance.into()))

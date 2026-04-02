@@ -1,7 +1,10 @@
 """Typed exception hierarchy for Tryx."""
 
-class FailedBuildBot(Exception):
-    """Raised when the bot runtime cannot be initialized."""
+class FailedBuildClient(Exception):
+    """Raised when the automation client cannot be initialized."""
+
+# Backward-compatible alias.
+FailedBuildBot = FailedBuildClient
 
 class FailedToDecodeProto(Exception):
     """Raised when protobuf payload decoding fails."""
@@ -19,8 +22,8 @@ class UnsupportedEventType(Exception):
     """Raised when registering or dispatching an unknown event class."""
 
 # Backward-compatible aliases.
-class BuildBotError(FailedBuildBot):
-    """Backward-compatible alias of FailedBuildBot."""
+class BuildBotError(FailedBuildClient):
+    """Backward-compatible alias of FailedBuildClient."""
 
 class UnsupportedEventTypeError(UnsupportedEventType):
     """Backward-compatible alias of UnsupportedEventType."""

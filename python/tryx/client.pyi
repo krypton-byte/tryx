@@ -45,9 +45,9 @@ DownloadableMedia = (
 )
 
 class Tryx:
-    """Main bot runtime controller.
+    """Main automation runtime controller.
 
-    Use this class to register handlers and start the connection lifecycle.
+    Use this class to register event handlers and start the connection lifecycle.
     """
 
     handlers: Any

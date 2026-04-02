@@ -25,7 +25,7 @@ impl ChatActionsClient {
         self.client_rx
             .borrow()
             .clone()
-            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running"))
+            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first."))
     }
 
     fn decode_sync_action_message_range(
@@ -57,7 +57,7 @@ impl ChatActionsClient {
     }
 
     fn encode_message_key(py: Python<'_>, key: wa::MessageKey) -> PyResult<Py<PyAny>> {
-        let mut bytes = Vec::new();
+        let mut bytes = Vec::with_capacity(key.encoded_len());
         key.encode(&mut bytes).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
                 format!("Failed to encode MessageKey: {}", e),
@@ -70,7 +70,7 @@ impl ChatActionsClient {
         py: Python<'_>,
         range: SyncActionMessageRange,
     ) -> PyResult<Py<PyAny>> {
-        let mut bytes = Vec::new();
+        let mut bytes = Vec::with_capacity(range.encoded_len());
         range.encode(&mut bytes).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
                 format!("Failed to encode SyncActionMessageRange: {}", e),

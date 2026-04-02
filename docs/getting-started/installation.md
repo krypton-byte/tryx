@@ -43,8 +43,8 @@ from tryx.client import Tryx, TryxClient
 from tryx.backend import SqliteBackend
 
 backend = SqliteBackend("whatsapp.db")
-bot = Tryx(backend)
-client = bot.get_client()
+app = Tryx(backend)
+client = app.get_client()
 print(type(client).__name__)
 ```
 

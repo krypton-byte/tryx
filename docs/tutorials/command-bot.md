@@ -1,6 +1,6 @@
-# Tutorial: Command Bot
+# Tutorial: Command Automation
 
-Build a command-driven bot that stays maintainable as command count grows.
+Build a command-driven automation that stays maintainable as command count grows.
 
 !!! tip "Outcome"
     At the end of this tutorial you will have:
@@ -18,14 +18,14 @@ from tryx.client import Tryx, TryxClient
 from tryx.events import EvMessage
 
 backend = SqliteBackend("whatsapp.db")
-bot = Tryx(backend)
+app = Tryx(backend)
 
 
 def normalize(text: str | None) -> str:
     return (text or "").strip().lower()
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     text = normalize(event.data.get_text())
     chat = event.data.message_info.source.chat
@@ -36,7 +36,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
         await client.send_text(chat, "commands: ping, help", quoted=event)
 
 
-asyncio.run(bot.run())
+asyncio.run(app.run())
 ```
 
 ## Level 2: Table-driven Commands
@@ -63,7 +63,7 @@ COMMANDS: dict[str, CommandHandler] = {
 }
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_command(client: TryxClient, event: EvMessage) -> None:
     text = (event.data.get_text() or "").strip()
     if not text.startswith("/"):
@@ -100,7 +100,7 @@ async def on_command(client: TryxClient, event: EvMessage) -> None:
 seen_ids: set[str] = set()
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_idempotent(client: TryxClient, event: EvMessage) -> None:
     message_id = event.data.message_info.id
     if message_id in seen_ids:

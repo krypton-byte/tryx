@@ -107,7 +107,7 @@ use self::events::types::{
     EvPushNameUpdateData,
 };
 use self::backend::{BackendBase, SqliteBackend};
-use self::exceptions::{EventDispatchError, FailedBuildBot, FailedToDecodeProto, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
+use self::exceptions::{EventDispatchError, FailedBuildClient, FailedToDecodeProto, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
 use self::types::{DeviceSentMeta, JID, MediaReuploadResult, MessageInfo, MessageSource, MsgBotInfo, MsgMetaInfo, ProfilePicture, SendResult, UploadResponse};
 use self::wacore::download::MediaType;
 use self::wacore::node::{Attrs, Node, NodeContent, NodeValue};
@@ -310,7 +310,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     _py.add_submodule(&backend_module)?;
 
     let exceptions_module = PyModule::new(_py.py(), "exceptions")?;
-    exceptions_module.add_class::<FailedBuildBot>()?;
+    exceptions_module.add_class::<FailedBuildClient>()?;
     exceptions_module.add_class::<FailedToDecodeProto>()?;
     exceptions_module.add_class::<EventDispatchError>()?;
     exceptions_module.add_class::<PyPayloadBuildError>()?;

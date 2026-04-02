@@ -6,7 +6,11 @@ for name in dir(_exceptions):  # type: ignore
         globals()[name] = obj
 
 # Prefer modern names, but gracefully fall back to legacy names when needed.
-FailedBuildBot = globals().get("FailedBuildBot") or globals().get("BuildBotError")
+FailedBuildClient = (
+    globals().get("FailedBuildClient")
+    or globals().get("FailedBuildBot")
+    or globals().get("BuildBotError")
+)
 UnsupportedEventType = globals().get("UnsupportedEventType") or globals().get(
     "UnsupportedEventTypeError"
 )
@@ -15,8 +19,9 @@ UnsupportedBackend = globals().get("UnsupportedBackend") or globals().get(
 )
 
 # Backward-compatible aliases for older Python API names.
-if isinstance(FailedBuildBot, type):
-    BuildBotError = FailedBuildBot
+if isinstance(FailedBuildClient, type):
+    FailedBuildBot = FailedBuildClient  # backward compat
+    BuildBotError = FailedBuildClient  # backward compat
 
 if isinstance(UnsupportedEventType, type):
     UnsupportedEventTypeError = UnsupportedEventType

@@ -20,7 +20,7 @@ Use chatstate signals to indicate user-facing activity such as typing or recordi
 ## Runnable Example: Latency-Hiding Reply
 
 ```python
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def smart_reply(client, event):
     chat = event.data.message_info.source.chat
 
@@ -50,4 +50,4 @@ async def send_voice(client, chat, audio_bytes):
 
 - [Presence Namespace](presence.md)
 - [Events API](events.md)
-- [Tutorial: Command Bot](../tutorials/command-bot.md)
+- [Tutorial: Command Automation](../tutorials/command-bot.md)

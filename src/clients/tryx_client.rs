@@ -23,6 +23,18 @@ use crate::clients::status::StatusClient;
 use crate::events::types::{EvMessage};
 use crate::types::{JID, MediaReuploadResult, SendResult, UploadResponse};
 use crate::wacore::download::MediaType;
+
+/// Reduces the repeated decode-then-download pattern for each media type.
+macro_rules! decode_and_download {
+    ($client:expr, $data:expr, $msg_type:ty, $label:expr) => {{
+        let media = <$msg_type>::decode($data).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Failed to decode {}: {}", $label, e),
+            )
+        })?;
+        $client.download(&media).await
+    }};
+}
 #[pyclass]
 pub struct TryxClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
@@ -84,7 +96,7 @@ impl TryxClient {
     }
     // fn download_media_to_writter<'py>(&self, py: Python<'py>, message: Py<PyAny>, path: String) -> PyResult<Bound<'py, PyAny>> {
     //     let client = self.client_rx.borrow().clone().ok_or_else(|| {
-    //         PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+    //         PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
     //     })?;
     //     let message_type_name = message
     //         .getattr(py, "DESCRIPTOR")
@@ -159,7 +171,7 @@ impl TryxClient {
     //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     fn download_media<'py>(&self, py: Python<'py>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let message_type_name = message
             .getattr(py, "DESCRIPTOR")
@@ -173,48 +185,13 @@ impl TryxClient {
         let locals = get_current_locals(py)?;
         future_into_py_with_locals::<_, Vec<u8>>(py, locals, async move {
             let download = match message_type_name.as_str() {
-                "ImageMessage" => {
-                    let media = wa::ImageMessage::decode(serialized.as_slice()).map_err(|e| {
-                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                            format!("Failed to decode ImageMessage: {}", e),
-                        )
-                    })?;
-                    client.download(&media).await
-                }
-                "VideoMessage" => {
-                    let media = wa::VideoMessage::decode(serialized.as_slice()).map_err(|e| {
-                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                            format!("Failed to decode VideoMessage: {}", e),
-                        )
-                    })?;
-                    client.download(&media).await
-                }
-                "DocumentMessage" => {
-                    let media = wa::DocumentMessage::decode(serialized.as_slice()).map_err(|e| {
-                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                            format!("Failed to decode DocumentMessage: {}", e),
-                        )
-                    })?;
-                    client.download(&media).await
-                }
-                "AudioMessage" => {
-                    let media = wa::AudioMessage::decode(serialized.as_slice()).map_err(|e| {
-                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                            format!("Failed to decode AudioMessage: {}", e),
-                        )
-                    })?;
-                    client.download(&media).await
-                }
-                "StickerMessage" => {
-                    let media = wa::StickerMessage::decode(serialized.as_slice()).map_err(|e| {
-                        PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                            format!("Failed to decode StickerMessage: {}", e),
-                        )
-                    })?;
-                    client.download(&media).await
-                }
+                "ImageMessage" => decode_and_download!(client, serialized.as_slice(), wa::ImageMessage, "ImageMessage"),
+                "VideoMessage" => decode_and_download!(client, serialized.as_slice(), wa::VideoMessage, "VideoMessage"),
+                "DocumentMessage" => decode_and_download!(client, serialized.as_slice(), wa::DocumentMessage, "DocumentMessage"),
+                "AudioMessage" => decode_and_download!(client, serialized.as_slice(), wa::AudioMessage, "AudioMessage"),
+                "StickerMessage" => decode_and_download!(client, serialized.as_slice(), wa::StickerMessage, "StickerMessage"),
                 _ => {
-                    // Fallback path for unknown wrappers from Python side.
+                    // Fallback: try each media type in order.
                     if let Ok(media) = wa::ImageMessage::decode(serialized.as_slice()) {
                         client.download(&media).await
                     } else if let Ok(media) = wa::VideoMessage::decode(serialized.as_slice()) {
@@ -227,7 +204,7 @@ impl TryxClient {
                         client.download(&media).await
                     } else {
                         return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                            "Failed to decode message as supported media message",
+                            "Failed to decode message as supported media type. Expected one of: ImageMessage, VideoMessage, DocumentMessage, AudioMessage, StickerMessage",
                         ));
                     }
                 }
@@ -238,7 +215,7 @@ impl TryxClient {
     }
     fn upload_file<'py>(&self, py: Python<'py>, path: String, media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let media_type_enum = media_type.bind(py).borrow_mut().to_wacore_enum();
         let locals = get_current_locals(py)?;
@@ -262,7 +239,7 @@ impl TryxClient {
     }
     fn upload<'py>(&self, py: Python<'py>, data: &[u8], media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let data_vec = data.to_vec();
         let mtype = media_type.bind(py).borrow_mut().to_wacore_enum();
@@ -287,7 +264,7 @@ impl TryxClient {
     }
     fn send_message<'py>(&self, py: Python<'py>, to: Py<JID>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
 
         let jid = to.bind(py).borrow().as_whatsapp_jid();
@@ -315,7 +292,7 @@ impl TryxClient {
     #[pyo3(signature = (to, text, quoted=None))]
     fn send_text<'py>(&self, py: Python<'py>, to: Py<JID>, text: String, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let locals = get_current_locals(py)?;
@@ -354,7 +331,7 @@ impl TryxClient {
     #[pyo3(signature = (to, photo_data, caption=None, quoted=None))]
     fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: &[u8], caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let photo_clone = photo_data.to_vec();
@@ -399,7 +376,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = document_data.to_vec();
@@ -450,7 +427,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = audio_data.to_vec();
@@ -501,7 +478,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = video_data.to_vec();
@@ -563,7 +540,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = sticker_data.to_vec();
@@ -617,7 +594,7 @@ impl TryxClient {
         }
 
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
         let participant_value = participant
