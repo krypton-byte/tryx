@@ -37,7 +37,9 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v5
       - name: Build MkDocs site (strict)
-        run: uv run --no-project --with mkdocs==1.6.0 --with mkdocs-material==9.6.0 mkdocs build --strict
+        run: |
+        uv sync --group docs
+        uv run --no-project --with mkdocs==1.6.0 --with mkdocs-material==9.6.0 mkdocs build --strict
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
