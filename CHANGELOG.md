@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.5.1 (2026-04-02)
+
+### Bug Fixes
+
+- **typing**: Duplicate variable
+  ([`7c4de21`](https://github.com/krypton-byte/tryx/commit/7c4de21fdbe6f5a248d0ad0a1f7913f3fed916ce))
+
+
 ## v0.5.0 (2026-04-02)
 
 ### Bug Fixes
