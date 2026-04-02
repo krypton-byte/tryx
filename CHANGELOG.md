@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v0.5.0 (2026-04-02)
+
+### Bug Fixes
+
+- Correct indentation in MkDocs build step
+  ([`54ec811`](https://github.com/krypton-byte/tryx/commit/54ec811012014b2aea694a4c319a4d58222e8dbf))
+
+- **tryx**: Log unsupported event types in event handling
+  ([`1d168e6`](https://github.com/krypton-byte/tryx/commit/1d168e6f474a663ca56cfbbe84483b57cebbfa65))
+
+- **typing**: Add BuildBotError Exception
+  ([`dc50815`](https://github.com/krypton-byte/tryx/commit/dc50815b508210d6234fd98bb377babeff73feb5))
+
+### Features
+
+- Refactor MessageSource conversion and update proto import
+  ([`7d7782d`](https://github.com/krypton-byte/tryx/commit/7d7782d2e9e42c3b2628cb799d869709619a88da))
+
+- Simplified the conversion from WhatsAppMessageSource to MessageSource by using Arc for chat and
+  sender. - Updated the import path for the WhatsApp protobuf to use the correct module. - Added
+  unit tests for Tryx event classes and client initialization. - Introduced tests for JID type to
+  ensure proper construction and representation. - Added new dependencies for CSS, HTML, and JS
+  minification in the project. - Created initial test configuration and structure for integration
+  tests.
+
+- Update MkDocs build process and bump tryx version to 0.4.0
+  ([`a746479`](https://github.com/krypton-byte/tryx/commit/a7464797ee4c2cebd8370e27c943e1b2ef7c0c33))
+
+
 ## v0.4.0 (2026-04-01)
 
 ### Bug Fixes
