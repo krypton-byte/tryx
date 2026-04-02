@@ -3,9 +3,6 @@
 class FailedBuildClient(Exception):
     """Raised when the automation client cannot be initialized."""
 
-# Backward-compatible alias.
-FailedBuildBot = FailedBuildClient
-
 class FailedToDecodeProto(Exception):
     """Raised when protobuf payload decoding fails."""
 
