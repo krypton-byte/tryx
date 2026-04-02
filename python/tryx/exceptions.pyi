@@ -30,3 +30,6 @@ class UnsupportedEventTypeError(UnsupportedEventType):
 
 class UnsupportedBackendError(UnsupportedBackend):
     """Backward-compatible alias of UnsupportedBackend."""
+
+class FailedBuildBot(FailedBuildClient):
+    """Backward-compatible alias of FailedBuildClient."""

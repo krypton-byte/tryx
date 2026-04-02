@@ -22,6 +22,7 @@ UnsupportedBackend = globals().get("UnsupportedBackend") or globals().get(
 if isinstance(FailedBuildClient, type):
     FailedBuildBot = FailedBuildClient  # backward compat
     BuildBotError = FailedBuildClient  # backward compat
+    globals()["BuildBotError"] = BuildBotError  # Ensure explicit export
 
 if isinstance(UnsupportedEventType, type):
     UnsupportedEventTypeError = UnsupportedEventType
