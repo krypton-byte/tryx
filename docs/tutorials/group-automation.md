@@ -55,7 +55,7 @@ async def reconcile_group(client, group_jid):
 ## Operational Safety Rules
 
 !!! warning
-	Always verify the bot has required admin privileges before participant mutation.
+	Always verify the client has required admin privileges before participant mutation.
 
 !!! tip
 	Write audit logs for every moderator action: actor, target group, participant, action, timestamp.

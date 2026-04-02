@@ -14,7 +14,7 @@ Tryx follows the WhatsApp multi-device pairing flow. The first run links a sessi
 
 ## Typical First-Run Sequence
 
-1. Start bot runtime.
+1. Start client runtime.
 2. Wait for `EvPairingQrCode` or `EvPairingCode`.
 3. Complete pairing from your WhatsApp mobile app.
 4. Receive `EvPairSuccess`.

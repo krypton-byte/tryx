@@ -24,7 +24,7 @@ from tryx.events import EvMessage
 from tryx.types import JID
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def monitor_presence(client, event):
     text = (event.data.get_text() or "").strip()
     chat = event.data.message_info.source.chat

@@ -25,4 +25,4 @@ These appear in device/business sync event payloads.
 ## When to Use WACore Types
 
 Use these types only when high-level client/event abstractions are not enough.
-For normal bot logic, prefer typed event payload objects and client namespace methods.
+For normal client logic, prefer typed event payload objects and client namespace methods.

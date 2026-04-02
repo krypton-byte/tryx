@@ -12,7 +12,7 @@ Handlers are registered by event class and receive `(client, event)`.
 ## Handler Registration
 
 ```python
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     ...
 ```

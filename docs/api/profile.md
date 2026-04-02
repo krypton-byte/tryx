@@ -17,7 +17,7 @@
 from tryx.events import EvMessage
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def profile_admin(client, event):
     text = (event.data.get_text() or "").strip()
     chat = event.data.message_info.source.chat
@@ -53,7 +53,7 @@ async def rotate_profile_picture(client, image_bytes):
     - Log profile mutations with operator identity.
 
 !!! tip "Consistency"
-    Couple profile changes with privacy policy reviews if your bot identity is user-facing.
+    Couple profile changes with privacy policy reviews if your client identity is user-facing.
 
 ## Related Docs
 

@@ -13,10 +13,10 @@ DB_PATH = "whatsapp.db"
 #     print("Handling event with data:", event)
 
 backend = SqliteBackend(DB_PATH)
-client = Tryx(backend)
+app = Tryx(backend)
 
 
-@client.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     data = event.data
     info = data.message_info
@@ -41,7 +41,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 
 async def main() -> None:
-    await client.run()
+    await app.run()
 
 
 if __name__ == "__main__":

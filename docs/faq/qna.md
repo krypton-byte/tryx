@@ -11,7 +11,7 @@ Tryx is a Rust-powered Python SDK for event-driven WhatsApp automation.
 Rust handles protocol-heavy runtime work for better throughput and lower overhead, while Python keeps app logic easy to write.
 
 ### Is Tryx synchronous or asynchronous?
-Both: async-first (`await bot.run()`), plus blocking convenience (`bot.run_blocking()`).
+Both: async-first (`await app.run()`), plus blocking convenience (`app.run_blocking()`).
 
 See [Quick Start](../getting-started/quickstart.md).
 
@@ -91,7 +91,7 @@ Yes, the package includes `py.typed` for static analysis integration.
 ### How should I handle temporary bans?
 Listen to `EvTemporaryBan`, pause high-frequency operations, and avoid aggressive retries.
 
-### How can I make my bot idempotent?
+### How can I make my client idempotent?
 Store processed message IDs and guard side effects before calling external systems.
 
 See [Reliability](../operations/reliability.md).

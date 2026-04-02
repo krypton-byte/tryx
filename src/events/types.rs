@@ -553,7 +553,7 @@ impl LazyConversation {
         } else {
             let proto_type = get_lazy_conversation_proto_type(py)?;
             let proto = self.inner.get().ok_or_else(|| PyErr::new::<pyo3::exceptions::PyAttributeError, _>("LazyConversation does not contain conversation data"))?;
-            let mut proto_bytes = Vec::new();
+            let mut proto_bytes = Vec::with_capacity(proto.encoded_len());
             proto.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode conversation proto: {}", e)))?;
             let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
             self.parsed = Some(parsed_proto.clone_ref(py));

@@ -18,7 +18,7 @@ spam_hits: dict[str, int] = {}
 LIMIT = 5
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def anti_spam(client, event):
     sender = event.data.message_info.source.sender
     key = sender.user

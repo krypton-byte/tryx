@@ -1,21 +1,21 @@
 use pyo3::{pyclass, pymethods};
 use pyo3::exceptions::PyException;
 #[pyclass(extends=PyException)]
-pub struct FailedBuildBot {
+pub struct FailedBuildClient {
     message: String,
 }
 
 #[pymethods]
-impl FailedBuildBot {
+impl FailedBuildClient {
     #[new]
     fn new(message: String) -> Self {
-        FailedBuildBot { message }
+        FailedBuildClient { message }
     }
     fn __str__(&self) -> String {
         self.message.clone()
     }
     fn __repr__(&self) -> String {
-        format!("FailedBuildBot(message='{}')", self.message)
+        format!("FailedBuildClient(message='{}')", self.message)
     }
 }
 

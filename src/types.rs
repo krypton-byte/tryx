@@ -274,7 +274,7 @@ impl MessageInfo {
     fn verified_name(&self, py: Python<'_>) -> PyResult<Option<pyo3::Py<PyAny>>> {
         match self.inner.verified_name {
             Some(ref name) => {
-                let mut buffer = Vec::new();
+                let mut buffer = Vec::with_capacity(name.encoded_len());
                 name.encode(&mut buffer).map_err(|e| {
                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
                         format!("Failed to encode VerifiedNameCertificate: {}", e),

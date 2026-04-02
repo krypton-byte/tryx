@@ -31,7 +31,7 @@ It combines:
 
 - Documentation: http://krypton-byte.tech/tryx/
 - Contributing Guide: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Command Bot Example: [examples/command_bot.py](examples/command_bot.py)
+- Command Automation Example: [examples/command_bot.py](examples/command_bot.py)
 
 ## Installation
 
@@ -64,16 +64,16 @@ from tryx.events import EvMessage
 from tryx.waproto.whatsapp_pb2 import Message
 
 backend = SqliteBackend("whatsapp.db")
-bot = Tryx(backend)
+app = Tryx(backend)
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     text = event.data.get_text() or "<non-text>"
     chat = event.data.message_info.source.chat
     await client.send_message(chat, Message(conversation=f"Echo: {text}"))
 
 async def main() -> None:
-    await bot.run()
+    await app.run()
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
 ## Feature Overview
 
-- Event-based handlers via `@bot.on(...)`
+- Event-based handlers via `@app.on(...)`
 - Runtime client namespaces:
   - `contact`, `chat_actions`, `community`, `newsletter`, `groups`
   - `status`, `chatstate`, `blocking`, `polls`, `presence`, `privacy`, `profile`
@@ -132,9 +132,9 @@ If you see `ModuleNotFoundError: No module named 'tryx._tryx'`:
 uv run maturin develop --release
 ```
 
-### Bot Not Running
+### Client Not Running
 
-Ensure the bot runtime is started (`run` or `run_blocking`) before calling runtime client methods.
+Ensure the client runtime is started (`run` or `run_blocking`) before calling runtime client methods.
 
 ## Contributing
 

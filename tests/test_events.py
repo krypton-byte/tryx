@@ -70,8 +70,8 @@ class TestTryxInitialization:
 
         db = str(pathlib.Path(str(tmp_path)) / "test.db")
         backend = SqliteBackend(db)
-        bot = Tryx(backend)
-        client = bot.get_client()
+        app = Tryx(backend)
+        client = app.get_client()
         assert client is not None
         assert not client.is_connected()
 
@@ -80,8 +80,8 @@ class TestTryxInitialization:
 
         db = str(pathlib.Path(str(tmp_path)) / "test2.db")
         backend = SqliteBackend(db)
-        bot = Tryx(backend)
-        client = bot.get_client()
+        app = Tryx(backend)
+        client = app.get_client()
         for ns in [
             "contact",
             "chat_actions",
@@ -103,9 +103,9 @@ class TestTryxInitialization:
 
         db = str(pathlib.Path(str(tmp_path)) / "test3.db")
         backend = SqliteBackend(db)
-        bot = Tryx(backend)
+        app = Tryx(backend)
 
-        @bot.on(events.EvMessage)
+        @app.on(events.EvMessage)
         async def handler(client: object, event: object) -> None:
             pass
 

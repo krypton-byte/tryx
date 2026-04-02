@@ -1,4 +1,4 @@
-"""Command bot example for Tryx.
+"""Command automation example for Tryx.
 
 Commands:
 - ping      -> reply pong
@@ -40,10 +40,10 @@ async def download_bytes(url: str) -> bytes:
 
 
 backend = SqliteBackend(DB_PATH)
-bot = Tryx(backend)
+app = Tryx(backend)
 
 
-@bot.on(EvPushNameUpdate)
+@app.on(EvPushNameUpdate)
 async def on_push_name_update(_client: TryxClient, event: EvPushNameUpdate) -> None:
     data = event.data
     print(
@@ -54,13 +54,13 @@ async def on_push_name_update(_client: TryxClient, event: EvPushNameUpdate) -> N
     )
 
 
-@bot.on(EvUserAboutUpdate)
+@app.on(EvUserAboutUpdate)
 async def on_user_about_update(_client: TryxClient, event: EvUserAboutUpdate) -> None:
     data = event.data
     print("[bio-update]", jid_to_text(data.jid), "=>", repr(data.status))
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     data = event.data
     info = data.message_info
@@ -148,7 +148,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 async def main() -> None:
     print(f"Starting command bot with DB: {DB_PATH}")
-    await bot.run()
+    await app.run()
 
 
 if __name__ == "__main__":

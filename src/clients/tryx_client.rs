@@ -96,7 +96,7 @@ impl TryxClient {
     }
     // fn download_media_to_writter<'py>(&self, py: Python<'py>, message: Py<PyAny>, path: String) -> PyResult<Bound<'py, PyAny>> {
     //     let client = self.client_rx.borrow().clone().ok_or_else(|| {
-    //         PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+    //         PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
     //     })?;
     //     let message_type_name = message
     //         .getattr(py, "DESCRIPTOR")
@@ -171,7 +171,7 @@ impl TryxClient {
     //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     fn download_media<'py>(&self, py: Python<'py>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let message_type_name = message
             .getattr(py, "DESCRIPTOR")
@@ -215,7 +215,7 @@ impl TryxClient {
     }
     fn upload_file<'py>(&self, py: Python<'py>, path: String, media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let media_type_enum = media_type.bind(py).borrow_mut().to_wacore_enum();
         let locals = get_current_locals(py)?;
@@ -239,7 +239,7 @@ impl TryxClient {
     }
     fn upload<'py>(&self, py: Python<'py>, data: &[u8], media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let data_vec = data.to_vec();
         let mtype = media_type.bind(py).borrow_mut().to_wacore_enum();
@@ -264,7 +264,7 @@ impl TryxClient {
     }
     fn send_message<'py>(&self, py: Python<'py>, to: Py<JID>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
 
         let jid = to.bind(py).borrow().as_whatsapp_jid();
@@ -292,7 +292,7 @@ impl TryxClient {
     #[pyo3(signature = (to, text, quoted=None))]
     fn send_text<'py>(&self, py: Python<'py>, to: Py<JID>, text: String, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let locals = get_current_locals(py)?;
@@ -331,7 +331,7 @@ impl TryxClient {
     #[pyo3(signature = (to, photo_data, caption=None, quoted=None))]
     fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: &[u8], caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let photo_clone = photo_data.to_vec();
@@ -376,7 +376,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = document_data.to_vec();
@@ -427,7 +427,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = audio_data.to_vec();
@@ -478,7 +478,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = video_data.to_vec();
@@ -540,7 +540,7 @@ impl TryxClient {
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
         let data = sticker_data.to_vec();
@@ -594,7 +594,7 @@ impl TryxClient {
         }
 
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first.")
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
         let participant_value = participant

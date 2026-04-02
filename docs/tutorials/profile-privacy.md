@@ -13,7 +13,7 @@ from tryx.events import EvMessage
 ADMIN = "1234567890"
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def profile_commands(client, event):
     sender = event.data.message_info.source.sender.user
     if sender != ADMIN:
@@ -37,7 +37,7 @@ async def profile_commands(client, event):
 from tryx.client import PrivacyCategory, PrivacyValue
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def privacy_commands(client, event):
     text = (event.data.get_text() or "").strip()
     chat = event.data.message_info.source.chat

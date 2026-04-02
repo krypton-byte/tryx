@@ -29,7 +29,7 @@ impl GroupsClient {
         self.client_rx
             .borrow()
             .clone()
-            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Bot is not running. Call bot.run() or bot.run_blocking() first."))
+            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first."))
     }
 }
 

@@ -12,7 +12,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let backend = Arc::new(SqliteStore::new("whatsapp.db").await?);
 
     // Build the bot
-    let bot = Bot::builder()
+    let app = Bot::builder()
         .with_backend(backend)
         .with_transport_factory(TokioWebSocketTransportFactory::new())
         .with_http_client(UreqHttpClient::new())
@@ -32,10 +32,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .with_runtime(TokioRuntime)
         .build();
-        let mut bot2 = bot.await?;
-        let _g = bot2.client();
+        let mut app = app.await?;
+        let _g = app.client();
 
     // Start the bot
-    bot2.run().await?.await?;
+    app.run().await?.await?;
     Ok(())
 }

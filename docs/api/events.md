@@ -4,10 +4,10 @@ This page maps event classes in `tryx.events` to practical handler strategies.
 
 ## Dispatcher Contract
 
-`Dispatcher` is used internally by `Tryx` and by `@bot.on(EventClass)` registration.
+`Dispatcher` is used internally by `Tryx` and by `@app.on(EventClass)` registration.
 
 ```python
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client, event):
 	...
 ```
@@ -102,7 +102,7 @@ async def on_message(client, event):
 from tryx.events import EvMessage, EvPresence
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def on_message(client, event):
 	chat = event.data.message_info.source.chat
 	text = event.data.get_text() or ""
@@ -110,7 +110,7 @@ async def on_message(client, event):
 		await client.send_text(chat, "pong", quoted=event)
 
 
-@bot.on(EvPresence)
+@app.on(EvPresence)
 async def on_presence(client, event):
 	# keep side effects minimal; enqueue heavy processing
 	pass

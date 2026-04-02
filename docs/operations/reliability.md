@@ -17,7 +17,7 @@ This page focuses on idempotency, retry strategy, and safe handler design.
 processed: set[str] = set()
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def reliable_handler(client, event):
     msg_id = event.data.message_info.id
     if msg_id in processed:
@@ -51,6 +51,6 @@ async def retry(coro_factory, attempts=3):
 
 ## Related Docs
 
-- [Command Bot Tutorial](../tutorials/command-bot.md)
+- [Command Automation Tutorial](../tutorials/command-bot.md)
 - [Performance Guide](performance.md)
 - [Error Handling](../reference/error-handling.md)

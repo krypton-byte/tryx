@@ -6,7 +6,7 @@ Use this page as a decision tree first, checklist second.
 
 ```mermaid
 flowchart TD
-	A[Bot cannot connect] --> B{Network reachable?}
+	A[Client cannot connect] --> B{Network reachable?}
 	B -- No --> B1[Fix outbound network/DNS/TLS]
 	B -- Yes --> C{Backend path writable?}
 	C -- No --> C1[Fix storage permissions]

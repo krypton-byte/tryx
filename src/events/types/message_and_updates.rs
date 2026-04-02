@@ -270,7 +270,7 @@ impl MessageData {
         match self.message_proto.get() {
             Some(ref proto) => Ok(proto.clone_ref(py)),
             None => {
-                let mut buffer = Vec::new();
+                let mut buffer = Vec::with_capacity(self.inner.as_ref().encoded_len());
                 self.inner
                     .as_ref()
                     .encode(&mut buffer)

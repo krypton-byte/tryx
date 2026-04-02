@@ -1,6 +1,6 @@
 # Security Practices
 
-Secure your bot around four risk zones: session state, operator controls, user input, and outbound behavior.
+Secure your client around four risk zones: session state, operator controls, user input, and outbound behavior.
 
 ## Threat Model Snapshot
 
@@ -30,7 +30,7 @@ Secure your bot around four risk zones: session state, operator controls, user i
 
 - avoid repetitive high-frequency outbound sends
 - enforce explicit user intent for auto-responses
-- add anti-loop guardrails for bot-to-bot conversations
+- add anti-loop guardrails for client-to-client conversations
 
 ## Input Validation
 

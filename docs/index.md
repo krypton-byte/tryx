@@ -58,7 +58,7 @@
 ## Recommended Reading Path
 
 1. Start with [Installation](getting-started/installation.md).
-2. Follow [Quick Start](getting-started/quickstart.md) to build your first running bot.
+2. Follow [Quick Start](getting-started/quickstart.md) to build your first running client.
 3. Understand pairing in [Authentication Flow](getting-started/authentication.md).
 4. Learn internals in [Architecture](core-concepts/architecture.md) and [Event Model](core-concepts/event-model.md).
 5. Jump into [Client API Gateway](api/client.md) and namespace deep dives.
@@ -70,7 +70,7 @@
 
 This documentation set focuses on the Python SDK experience first:
 
-- Runtime setup and bot lifecycle
+- Runtime setup and client lifecycle
 - Event payload model and handler patterns
 - API reference for client/events/types/helpers/wacore
 - Performance, reliability, and security operations

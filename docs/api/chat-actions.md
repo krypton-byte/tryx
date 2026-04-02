@@ -3,7 +3,7 @@
 `client.chat_actions` manages chat state transitions and message-level actions (edit, revoke, react, star, archive, mute).
 
 !!! note "Why this namespace matters"
-    Many WhatsApp state changes are synchronization events. If your bot writes chat state, subscribe to related events so your local view stays consistent.
+    Many WhatsApp state changes are synchronization events. If your client writes chat state, subscribe to related events so your local view stays consistent.
 
 ## Builder Helpers
 
@@ -40,7 +40,7 @@ Build `SyncActionMessageRange` for operations that need explicit message windows
 from tryx.events import EvMessage
 
 
-@bot.on(EvMessage)
+@app.on(EvMessage)
 async def moderation_actions(client, event):
     text = (event.data.get_text() or "").strip()
     chat = event.data.message_info.source.chat
@@ -58,7 +58,7 @@ async def moderation_actions(client, event):
 ```python
 async def resolve_ticket(client, chat_jid, msg_id):
     await client.chat_actions.react_message(chat_jid, msg_id, "✅")
-    # Optional follow-up: revoke a stale bot message
+    # Optional follow-up: revoke a stale client message
     await client.chat_actions.revoke_message(chat_jid, msg_id)
 ```
 

@@ -2,7 +2,7 @@ mod exceptions;
 
 pub use exceptions::{
 	EventDispatchError,
-	FailedBuildBot,
+	FailedBuildClient,
 	FailedToDecodeProto,
 	PyPayloadBuildError,
 	UnsupportedBackend,
