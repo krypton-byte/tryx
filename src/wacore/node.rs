@@ -201,7 +201,7 @@ impl Node {
                 .iter()
                 .map(|(k, v)| {
                     let value = match v {
-                        wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.clone()),
+                        wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.to_string()),
                         wacore_binary::node::NodeValue::Jid(jid) => {
                             NodeValue::jid(Py::new(py, JID::from(jid.clone())).unwrap())
                         }
@@ -213,7 +213,7 @@ impl Node {
             let content = node.content.as_ref().map(|c| {
                 let content_enum = match c {
                     wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b.clone()),
-                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.clone()),
+                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.to_string()),
                     wacore_binary::node::NodeContent::Nodes(n) => {
                         let nodes = n
                             .iter()

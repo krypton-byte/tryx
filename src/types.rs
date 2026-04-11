@@ -42,7 +42,7 @@ impl JID {
     }
     #[getter]
     fn user(&self) -> String {
-        self.inner.user.clone()
+        self.inner.user.to_string()
     }
     #[getter]
     fn server(&self) -> String {
