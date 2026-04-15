@@ -17,14 +17,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_transport_factory(TokioWebSocketTransportFactory::new())
         .with_http_client(UreqHttpClient::new())
         .on_event(|event, _client| async move {
-            match event {
+            match &*event {
                 Event::PairingQrCode { code, .. } => {
                     println!("Scan this QR code with WhatsApp:\n{}", code);
                 }
                 Event::Message(msg, info) => {
                     println!("Message from {}: {:?}", info.source.sender, msg);
                 }
-                 Event::Connected(_e)=> {
+                Event::Connected(_e) => {
                     println!("Connected to WhatsApp");
                 }
                 _ => {}

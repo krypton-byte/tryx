@@ -221,14 +221,14 @@ impl EvStreamError {
 }
 #[pyclass]
 pub struct MessageData {
-    inner: Box<waproto::whatsapp::Message>,
-    inner_message_info: Box<wacore::types::message::MessageInfo>,
+    inner: Arc<waproto::whatsapp::Message>,
+    inner_message_info: Arc<wacore::types::message::MessageInfo>,
     message_info: OnceLock<Py<MessageInfo>>,
     message_proto: OnceLock<Py<PyAny>>,
 }
 impl MessageData {
-    pub fn new(inner: Box<waproto::whatsapp::Message>, inner_message_info: Box<wacore::types::message::MessageInfo>) -> Self {
-        Self { inner: inner, inner_message_info: inner_message_info, message_info: OnceLock::new(), message_proto: OnceLock::new() }
+    pub fn new(inner: Arc<waproto::whatsapp::Message>, inner_message_info: Arc<wacore::types::message::MessageInfo>) -> Self {
+        Self { inner, inner_message_info, message_info: OnceLock::new(), message_proto: OnceLock::new() }
     }
 }
 #[pymethods]
@@ -259,7 +259,7 @@ impl MessageData {
         if let Some(info) = self.message_info.get() {
             Ok(info.clone_ref(py))
         } else {
-            let info = MessageInfo::from(*self.inner_message_info.clone());
+            let info = MessageInfo::from((*self.inner_message_info).clone());
             let py_info = Py::new(py, info)?;
             self.message_info.set(py_info.clone_ref(py)).ok();
             Ok(py_info)
@@ -291,13 +291,13 @@ impl MessageData {
 
 #[pyclass]
 pub struct EvMessage {
-    pub inner: Box<waproto::whatsapp::Message>,
-    pub inner_message_info: Box<wacore::types::message::MessageInfo>,
+    pub inner: Arc<waproto::whatsapp::Message>,
+    pub inner_message_info: Arc<wacore::types::message::MessageInfo>,
     pub data_cache: OnceLock<Py<MessageData>>,
 }
 impl EvMessage {
     pub fn new(inner: waproto::whatsapp::Message, message_info: WhatsappMessageInfo) -> Self {
-        Self { inner: Box::new(inner), inner_message_info: Box::new(message_info), data_cache: OnceLock::new() }
+        Self { inner: Arc::new(inner), inner_message_info: Arc::new(message_info), data_cache: OnceLock::new() }
     }
 }
 #[pymethods]
@@ -307,7 +307,7 @@ impl EvMessage {
         if let Some(ref data) = self.data_cache.get() {
             Ok(data.clone_ref(py))
         } else {
-            let new_data = MessageData::new(Box::clone(&self.inner), Box::clone(&self.inner_message_info));
+            let new_data = MessageData::new(Arc::clone(&self.inner), Arc::clone(&self.inner_message_info));
             let py_data = Py::new(py, new_data)?;
             self.data_cache.set(py_data.clone_ref(py)).ok();
             Ok(py_data)
@@ -449,7 +449,7 @@ impl EvDisappearingModeChanged {
             let data = EvDisappearingModeChangedData {
                 from: Py::new(py, JID::from(self.inner.from.clone())).unwrap(),
                 duration: self.inner.duration,
-                setting_timestamp: self.inner.setting_timestamp,
+                setting_timestamp: self.inner.setting_timestamp.timestamp() as u64,
             };
             let py_data = Py::new(py, data)?;
             self.data_cache.set(py_data.clone_ref(py)).ok();
@@ -738,6 +738,18 @@ pub enum GroupNotificationAction {
     MembershipApprovalMode {
         enabled: bool,
     },
+    MembershipApprovalRequest {
+        request_method: String,
+        parent_group_jid: Option<Py<JID>>,
+    },
+    CreatedMembershipRequests {
+        request_method: String,
+        parent_group_jid: Option<Py<JID>>,
+        requests: Vec<Py<GroupParticipant>>,
+    },
+    RevokedMembershipRequests {
+        participants: Vec<Py<JID>>,
+    },
     MemberAddMode {
         mode: String,
     },
@@ -885,6 +897,27 @@ impl EvGroupUpdate {
                     GroupNotificationAction::Unlink { unlink_type: unlink_type.clone(), unlink_reason: unlink_reason.clone(), raw: py_raw }
                 },
                 wacore::stanza::groups::GroupNotificationAction::Unknown { tag } => GroupNotificationAction::Unknown { tag: tag.clone() },
+                wacore::stanza::groups::GroupNotificationAction::MembershipApprovalRequest { request_method, parent_group_jid } => {
+                    let method_str = format!("{:?}", request_method);
+                    let py_parent = parent_group_jid.as_ref().map(|j| Py::new(py, JID::from(j.clone())).unwrap());
+                    GroupNotificationAction::MembershipApprovalRequest { request_method: method_str, parent_group_jid: py_parent }
+                },
+                wacore::stanza::groups::GroupNotificationAction::CreatedMembershipRequests { request_method, parent_group_jid, requests } => {
+                    let method_str = format!("{:?}", request_method);
+                    let py_parent = parent_group_jid.as_ref().map(|j| Py::new(py, JID::from(j.clone())).unwrap());
+                    let py_requests = requests.iter().map(|p| {
+                        let gp = GroupParticipant {
+                            jid: Py::new(py, JID::from(p.jid.clone())).unwrap(),
+                            phone_number: p.phone_number.as_ref().map(|pn| Py::new(py, JID::from(pn.clone())).unwrap()),
+                        };
+                        Py::new(py, gp).unwrap()
+                    }).collect();
+                    GroupNotificationAction::CreatedMembershipRequests { request_method: method_str, parent_group_jid: py_parent, requests: py_requests }
+                },
+                wacore::stanza::groups::GroupNotificationAction::RevokedMembershipRequests { participants } => {
+                    let py_participants = participants.iter().map(|j| Py::new(py, JID::from(j.clone())).unwrap()).collect();
+                    GroupNotificationAction::RevokedMembershipRequests { participants: py_participants }
+                },
             };
             let action = Py::new(py, action)?;
             let data = GroupUpdateData {

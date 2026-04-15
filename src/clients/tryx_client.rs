@@ -237,16 +237,15 @@ impl TryxClient {
             Ok(result)
         })
     }
-    fn upload<'py>(&self, py: Python<'py>, data: &[u8], media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
+    fn upload<'py>(&self, py: Python<'py>, data: Vec<u8>, media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let data_vec = data.to_vec();
         let mtype = media_type.bind(py).borrow_mut().to_wacore_enum();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals::<_, UploadResponse>(py, locals, async move {
             let url = client
-                .upload(data_vec, mtype, UploadOptions::default())
+                .upload(data, mtype, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             let result= UploadResponse {
@@ -329,17 +328,16 @@ impl TryxClient {
         })
     }
     #[pyo3(signature = (to, photo_data, caption=None, quoted=None))]
-    fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: &[u8], caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
+    fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: Vec<u8>, caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
-        let photo_clone = photo_data.to_vec();
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             let upload = client
-                .upload(photo_clone, wacore::download::MediaType::Image, UploadOptions::default())
+                .upload(photo_data, wacore::download::MediaType::Image, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             let message = WhatsappMessage {
@@ -369,7 +367,7 @@ impl TryxClient {
         &self,
         py: Python<'py>,
         to: Py<JID>,
-        document_data: &[u8],
+        document_data: Vec<u8>,
         mimetype: String,
         file_name: Option<String>,
         caption: Option<String>,
@@ -379,13 +377,12 @@ impl TryxClient {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
-        let data = document_data.to_vec();
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             let upload = client
-                .upload(data, wacore::download::MediaType::Document, UploadOptions::default())
+                .upload(document_data, wacore::download::MediaType::Document, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
@@ -420,7 +417,7 @@ impl TryxClient {
         &self,
         py: Python<'py>,
         to: Py<JID>,
-        audio_data: &[u8],
+        audio_data: Vec<u8>,
         mimetype: Option<String>,
         ptt: bool,
         seconds: Option<u32>,
@@ -430,13 +427,12 @@ impl TryxClient {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
-        let data = audio_data.to_vec();
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             let upload = client
-                .upload(data, wacore::download::MediaType::Audio, UploadOptions::default())
+                .upload(audio_data, wacore::download::MediaType::Audio, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
@@ -470,7 +466,7 @@ impl TryxClient {
         &self,
         py: Python<'py>,
         to: Py<JID>,
-        video_data: &[u8],
+        video_data: Vec<u8>,
         mimetype: Option<String>,
         caption: Option<String>,
         seconds: Option<u32>,
@@ -481,13 +477,12 @@ impl TryxClient {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
-        let data = video_data.to_vec();
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             let upload = client
-                .upload(data, wacore::download::MediaType::Video, UploadOptions::default())
+                .upload(video_data, wacore::download::MediaType::Video, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
@@ -522,7 +517,7 @@ impl TryxClient {
         &self,
         py: Python<'py>,
         to: Py<JID>,
-        gif_data: &[u8],
+        gif_data: Vec<u8>,
         caption: Option<String>,
         seconds: Option<u32>,
         quoted: Option<Py<EvMessage>>,
@@ -535,7 +530,7 @@ impl TryxClient {
         &self,
         py: Python<'py>,
         to: Py<JID>,
-        sticker_data: &[u8],
+        sticker_data: Vec<u8>,
         is_animated: bool,
         quoted: Option<Py<EvMessage>>,
     ) -> PyResult<Bound<'py, PyAny>> {
@@ -543,13 +538,12 @@ impl TryxClient {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let jid = to.bind(py).borrow().as_whatsapp_jid();
-        let data = sticker_data.to_vec();
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
             let upload = client
-                .upload(data, wacore::download::MediaType::Sticker, UploadOptions::default())
+                .upload(sticker_data, wacore::download::MediaType::Sticker, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
