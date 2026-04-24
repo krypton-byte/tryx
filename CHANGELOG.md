@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.6.1 (2026-04-24)
+
+### Code Style
+
+- Format code for better readability in command_bot.py
+  ([`dfc0fc0`](https://github.com/krypton-byte/tryx/commit/dfc0fc049fc395bf674f9b12afd80aca5568e353))
+
+
 ## v0.6.0 (2026-04-24)
 
 ### Bug Fixes
