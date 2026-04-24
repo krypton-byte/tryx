@@ -7,6 +7,7 @@ Commands:
 - bio       -> fetch sender about/bio using contact user info API
 - help      -> show available commands
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -88,12 +89,18 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
         return
 
     if text == "ping":
-        await client.chatstate.send_composing(chat_jid)  # Show typing indicator for a more interactive feel.
+        await client.chatstate.send_composing(
+            chat_jid
+        )  # Show typing indicator for a more interactive feel.
         await asyncio.sleep(2)  # Simulate some processing delay.
-        await client.chatstate.send_recording(chat_jid)  # Stop typing indicator before sending the reply.
+        await client.chatstate.send_recording(
+            chat_jid
+        )  # Stop typing indicator before sending the reply.
         await client.send_text(chat_jid, "pong", quoted=event)
         await asyncio.sleep(1)  # Brief pause before sending follow-up message.
-        await client.chatstate.send_paused(chat_jid)  # Clear any lingering typing indicators.
+        await client.chatstate.send_paused(
+            chat_jid
+        )  # Clear any lingering typing indicators.
         return
 
     if text == "pushname":
@@ -124,7 +131,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             )
             k = await client.send_photo(
                 chat_jid,
-                open("/home/krypton-byte/Downloads/ai.jpg.jpeg","rb").read(),  # Send empty photo first to indicate loading state.
+                open(
+                    "/home/krypton-byte/Downloads/ai.jpg.jpeg", "rb"
+                ).read(),  # Send empty photo first to indicate loading state.
                 # mimetype="image/jpeg",
                 # caption="Mengambil profile picture...",
                 # quoted=event,
