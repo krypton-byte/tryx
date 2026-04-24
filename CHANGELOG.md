@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.6.3 (2026-04-24)
+
+### Chores
+
+- Update Rust toolchain to stable and bump tryx version to 0.6.2
+  ([`beca26e`](https://github.com/krypton-byte/tryx/commit/beca26e0d865e64b183a48eafd6d4716bcdf2c13))
+
+
 ## v0.6.2 (2026-04-24)
 
 
