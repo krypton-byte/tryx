@@ -1,6 +1,36 @@
 # CHANGELOG
 
 
+## v0.6.0 (2026-04-24)
+
+### Bug Fixes
+
+- **dependencies**: Add 'bytes' dependency to Cargo.lock
+  ([`48f2dba`](https://github.com/krypton-byte/tryx/commit/48f2dba2591c962ecefe262c7354f406c55cb208))
+
+- **dependencies**: Remove unused 'aead' and 'aes-gcm' packages from Cargo.lock
+  ([`e95e40a`](https://github.com/krypton-byte/tryx/commit/e95e40a2a70bff4b17c36430b65bb76db5c7703d))
+
+- **dependencies**: Update 'yoke' and 'yoke-derive' packages to version 0.8.2
+  ([`dc6b871`](https://github.com/krypton-byte/tryx/commit/dc6b871eebb7a6a0f1b6d27025a3ea0fa68a7ae6))
+
+- **dependencies**: Update tryx version to 0.5.1
+  ([`a318d40`](https://github.com/krypton-byte/tryx/commit/a318d405af1ab729d2f2b8eb83edf5243bc1b2fc))
+
+### Chores
+
+- **whatsapp-rust**: Update
+  ([`5db7b64`](https://github.com/krypton-byte/tryx/commit/5db7b644450fbc0ef2d782c6cb21c87b3f3cf1ce))
+
+- **whatsapp-rust**: Update subproject commit reference
+  ([`f741f4c`](https://github.com/krypton-byte/tryx/commit/f741f4c11e3659cd4159dddd58557d5712ebe32a))
+
+### Features
+
+- **dependencies**: Add new packages and update existing ones in Cargo.lock
+  ([`adbea2c`](https://github.com/krypton-byte/tryx/commit/adbea2c17b6bb238923df3c4820dd0919c7e9395))
+
+
 ## v0.5.1 (2026-04-02)
 
 ### Bug Fixes
