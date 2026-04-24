@@ -195,13 +195,14 @@ pub struct GroupParticipant {
 
 impl GroupParticipant {
     pub fn from_inner(py: Python<'_>, value: WaGroupParticipant) -> PyResult<Self> {
+        let is_admin = value.is_admin();
         Ok(Self {
             jid: Py::new(py, JID::from(value.jid))?,
             phone_number: value
                 .phone_number
                 .map(|jid| Py::new(py, JID::from(jid)))
                 .transpose()?,
-            is_admin: value.is_admin,
+            is_admin,
         })
     }
 }

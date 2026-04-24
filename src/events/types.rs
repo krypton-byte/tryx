@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::sync::OnceLock;
 
 use prost::Message as ProstMessage;
@@ -173,12 +174,10 @@ pub struct EvReceipt {
     timestamp: Py<PyDateTime>,
     #[pyo3(get)]
     receipt_type: Py<ReceiptType>,
-    #[pyo3(get)]
-    message_sender: Py<JID>
 }
 
 impl EvReceipt {
-    pub fn new(inner: wacore::types::message::MessageSource, message_ids: Vec<String>, timestamp: DateTime<Utc>, r#type: wacore::types::presence::ReceiptType, message_sender: Jid) -> Py<Self> {
+    pub fn new(inner: wacore::types::message::MessageSource, message_ids: Vec<String>, timestamp: DateTime<Utc>, r#type: wacore::types::presence::ReceiptType) -> Py<Self> {
         let receipt_type = match r#type {
             wacore::types::presence::ReceiptType::Delivered => ReceiptType::Delivered,
             wacore::types::presence::ReceiptType::Sender => ReceiptType::Sender,
@@ -201,7 +200,6 @@ impl EvReceipt {
                 message_ids,
                 timestamp: PyDateTime::from_timestamp(py, timestamp.naive_utc().and_utc().timestamp_millis() as f64 / 1000.0, None).unwrap().into(),
                 receipt_type: Py::new(py, receipt_type).unwrap(),
-                message_sender: Py::new(py, JID::from(message_sender.clone())).unwrap(),
             })
         })
         .unwrap()
@@ -536,11 +534,11 @@ impl EvUserAboutUpdate {
 
 #[pyclass]
 pub struct LazyConversation {
-    inner: Box<wacore::types::events::LazyConversation>,
+    inner: Box<waproto::whatsapp::Conversation>,
     parsed: Option<Py<PyAny>>,
 }
 impl LazyConversation {
-    pub fn new(inner: wacore::types::events::LazyConversation) -> Self {
+    pub fn new(inner: waproto::whatsapp::Conversation) -> Self {
         Self { inner: Box::new(inner), parsed: None }
     }
 }
@@ -552,7 +550,7 @@ impl LazyConversation {
             Ok(Some(parsed.clone_ref(py)))
         } else {
             let proto_type = get_lazy_conversation_proto_type(py)?;
-            let proto = self.inner.get().ok_or_else(|| PyErr::new::<pyo3::exceptions::PyAttributeError, _>("LazyConversation does not contain conversation data"))?;
+            let proto = &*self.inner;
             let mut proto_bytes = Vec::with_capacity(proto.encoded_len());
             proto.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode conversation proto: {}", e)))?;
             let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
@@ -564,11 +562,11 @@ impl LazyConversation {
 
 #[pyclass]
 pub struct EvJoinedGroup{
-    inner: wacore::types::events::LazyConversation,
+    inner: waproto::whatsapp::Conversation,
     conversation_cached: Option<Py<LazyConversation>>,
 }
 impl EvJoinedGroup {
-    pub fn new(inner: wacore::types::events::LazyConversation) -> Self {
+    pub fn new(inner: waproto::whatsapp::Conversation) -> Self {
         Self { inner, conversation_cached: None }
     }
 }

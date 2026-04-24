@@ -540,7 +540,7 @@ impl EvBusinessStatusUpdate {
                 wacore::types::events::BusinessUpdateType::SubscriptionsUpdated => BusinessStatusUpdateType::SubscriptionsUpdated,
                 wacore::types::events::BusinessUpdateType::Unknown => BusinessStatusUpdateType::Unknown,
             };
-            let new_data = BusinessStatusUpdateData::new(self.inner.jid.clone().into(), update_type, self.inner.timestamp, self.inner.target_jid.clone().map(|j| j.into()), self.inner.hash.clone(), self.inner.product_ids.clone(), self.inner.collection_ids.clone(), self.inner.subscriptions.iter().map(|s| s.clone().into()).collect());
+            let new_data = BusinessStatusUpdateData::new(self.inner.jid.clone().into(), update_type, self.inner.timestamp.timestamp(), self.inner.target_jid.clone().map(|j| j.into()), self.inner.hash.clone(), self.inner.product_ids.clone(), self.inner.collection_ids.clone(), self.inner.subscriptions.iter().map(|s| s.clone().into()).collect());
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data

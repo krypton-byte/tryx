@@ -31,18 +31,23 @@ impl JID {
         (*self.inner).clone()
     }
 
+    pub fn as_whatsapp_jid_ref(&self) -> &WhatsAppJID {
+        &self.inner
+    }
 }
 
 #[pymethods]
 impl JID {
     #[new]
     fn new(user: String, server: String) -> PyResult<Self> {
-        let inner = WhatsAppJID::new(&user, &server);
+        let server_enum = wacore_binary::jid::Server::try_from(server.as_str())
+            .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("Invalid server: {e}")))?;
+        let inner = WhatsAppJID::new(&user, server_enum);
         Ok(JID { inner: Arc::new(inner) })
     }
     #[getter]
     fn user(&self) -> String {
-        self.inner.user.clone()
+        self.inner.user.to_string()
     }
     #[getter]
     fn server(&self) -> String {

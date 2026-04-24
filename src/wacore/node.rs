@@ -1,8 +1,26 @@
+use std::collections::HashSet;
+use std::sync::Mutex;
+
 use pyo3::types::PyString;
 use pyo3::{Python, pyclass, pymethods};
 use pyo3::{IntoPyObjectExt, prelude::*};
 use whatsapp_rust::NodeBuilder;
 use crate::types::JID;
+
+/// Intern pool for attribute keys to avoid `Box::leak` on every call.
+/// Keys are interned once and reused for the lifetime of the process.
+static INTERNED_KEYS: std::sync::LazyLock<Mutex<HashSet<&'static str>>> =
+    std::sync::LazyLock::new(|| Mutex::new(HashSet::new()));
+
+fn intern_key(key: &str) -> &'static str {
+    let mut set = INTERNED_KEYS.lock().unwrap();
+    if let Some(&existing) = set.get(key) {
+        return existing;
+    }
+    let leaked: &'static str = Box::leak(key.to_owned().into_boxed_str());
+    set.insert(leaked);
+    leaked
+}
 
 pub enum NodeValueEnum {
     String(String),
@@ -44,16 +62,20 @@ impl NodeValue {
     }
 
     #[setter]
-    pub fn set_value(&mut self, value: Py<PyAny>) {
+    pub fn set_value(&mut self, value: Py<PyAny>) -> PyResult<()> {
         Python::attach(|py| {
             if let Ok(s) = value.extract::<String>(py) {
                 self.inner = NodeValueEnum::String(s);
+                Ok(())
             } else if let Ok(jid) = value.extract::<pyo3::Py<JID>>(py) {
                 self.inner = NodeValueEnum::Jid(jid);
+                Ok(())
             } else {
-                panic!("Invalid type for NodeValue. Expected String or JID.");
+                Err(pyo3::exceptions::PyTypeError::new_err(
+                    "Invalid type for NodeValue. Expected String or JID.",
+                ))
             }
-        });
+        })
     }
 
     pub fn __repr__(&self, py: Python<'_>) -> String {
@@ -83,11 +105,11 @@ pub struct NodeContent {
 #[pymethods]
 impl NodeContent {
     #[getter]
-    fn value(&self, py: Python<'_>) -> Py<PyAny> {
+    fn value(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         match &self.inner {
-            NodeContentEnum::Bytes(b) => b.into_py_any(py).unwrap(),
-            NodeContentEnum::String(s) => s.into_py_any(py).unwrap(),
-            NodeContentEnum::Nodes(n) => n.into_py_any(py).unwrap(),
+            NodeContentEnum::Bytes(b) => b.into_py_any(py).map_err(|e| e.into()),
+            NodeContentEnum::String(s) => s.into_py_any(py).map_err(|e| e.into()),
+            NodeContentEnum::Nodes(n) => n.into_py_any(py).map_err(|e| e.into()),
         }
     }
 
@@ -177,10 +199,7 @@ impl Node {
             let attr_ref = attr.bind(py).borrow();
             let value_ref = attr_ref.value.bind(py).borrow();
 
-            // Ensure the key lives long enough for the builder which expects '&'static str'.
-            // Minimal overhead: leak the owned String (intentional small leak for static lifetime).
-            let key_owned = attr_ref.key.clone();
-            let key_static: &'static str = Box::leak(key_owned.into_boxed_str());
+            let key_static: &'static str = intern_key(&attr_ref.key);
 
             builder = match &value_ref.inner {
                 NodeValueEnum::String(s) => builder.attr(key_static, s.clone()),
@@ -195,35 +214,36 @@ impl Node {
     }
 
     pub fn from_node(node: &wacore_binary::node::Node) -> Self {
-        let (attrs, content) = Python::attach(|py| {
+        let (attrs, content) = Python::attach(|py| -> (Vec<Py<Attrs>>, Option<Py<NodeContent>>) {
             let attrs = node
                 .attrs
                 .iter()
-                .map(|(k, v)| {
+                .filter_map(|(k, v)| {
                     let value = match v {
-                        wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.clone()),
+                        wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.to_string()),
                         wacore_binary::node::NodeValue::Jid(jid) => {
-                            NodeValue::jid(Py::new(py, JID::from(jid.clone())).unwrap())
+                            NodeValue::jid(Py::new(py, JID::from(jid.clone())).ok()?)
                         }
                     };
-                    Py::new(py, Attrs::new(k.to_string(), Py::new(py, value).unwrap())).unwrap()
+                    let py_value = Py::new(py, value).ok()?;
+                    Py::new(py, Attrs::new(k.to_string(), py_value)).ok()
                 })
                 .collect::<Vec<_>>();
 
-            let content = node.content.as_ref().map(|c| {
+            let content = node.content.as_ref().and_then(|c| {
                 let content_enum = match c {
                     wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b.clone()),
-                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.clone()),
+                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.to_string()),
                     wacore_binary::node::NodeContent::Nodes(n) => {
                         let nodes = n
                             .iter()
                             .map(Self::from_node)
-                            .map(|node| Py::new(py, node).unwrap())
+                            .filter_map(|node| Py::new(py, node).ok())
                             .collect();
                         NodeContentEnum::Nodes(nodes)
                     }
                 };
-                Py::new(py, NodeContent { inner: content_enum }).unwrap()
+                Py::new(py, NodeContent { inner: content_enum }).ok()
             });
 
             (attrs, content)

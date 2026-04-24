@@ -22,6 +22,7 @@ pub struct EventCallbacks {
     pub presence: CallbackList,
     pub picture_update: CallbackList,
     pub user_about_update: CallbackList,
+    #[allow(dead_code)] // Reserved for future JoinedGroup event variant
     pub joined_group: CallbackList,
     pub group_info_update: CallbackList,
     pub contact_update: CallbackList,

@@ -300,7 +300,7 @@ impl GroupInfo {
         let lid_to_pn_map = value
             .lid_to_pn_map()
             .iter()
-            .map(|(lid, jid)| Ok((lid.clone(), Py::new(py, JID::from(jid.clone()))?)))
+            .map(|(lid, jid)| Ok((lid.to_string(), Py::new(py, JID::from(jid.clone()))?)))
             .collect::<PyResult<Vec<_>>>()?;
 
         let participants = value
