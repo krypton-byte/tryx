@@ -56,11 +56,6 @@ flowchart TB
     Tokio <--> |"Rust async calls"| Client
     Client <--> Protocol
     Protocol <--> |"WSS"| WhatsAppCloud
-
-    style Python fill:#3776AB,color:#fff,stroke:#fff
-    style Rust fill:#dea584,color:#000,stroke:#fff
-    style Submodule fill:#000,color:#fff,stroke:#fff
-    style WhatsAppCloud fill:#25D366,color:#fff,stroke:#fff
 ```
 
 ## Quick Links
