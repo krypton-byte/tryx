@@ -93,13 +93,15 @@ impl CreateCommunityOptions {
 pub struct CreateCommunityResult {
     #[pyo3(get)]
     pub gid: Py<JID>,
+    #[pyo3(get)]
+    pub metadata: Py<GroupMetadata>,
 }
 
 impl CreateCommunityResult {
     pub fn from_inner(py: Python<'_>, value: WaCreateCommunityResult) -> PyResult<Self> {
-        Ok(Self {
-            gid: Py::new(py, JID::from(value.gid))?,
-        })
+        let gid = Py::new(py, JID::from(value.metadata.id.clone()))?;
+        let metadata = Py::new(py, GroupMetadata::from_inner(py, value.metadata)?)?;
+        Ok(Self { gid, metadata })
     }
 }
 

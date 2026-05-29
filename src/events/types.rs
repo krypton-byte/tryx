@@ -590,3 +590,4 @@ pub struct EvGroupInfoUpdate;
 
 include!("types/profile_sync.rs");
 include!("types/message_and_updates.rs");
+include!("types/client.rs");

@@ -207,6 +207,8 @@ impl CreateGroupOptions {
             closed: self.closed,
             allow_non_admin_sub_group_creation: self.allow_non_admin_sub_group_creation,
             create_general_chat: self.create_general_chat,
+            linked_parent: None,
+            description: None,
         }
     }
 }
@@ -215,13 +217,15 @@ impl CreateGroupOptions {
 pub struct CreateGroupResult {
     #[pyo3(get)]
     pub gid: Py<JID>,
+    #[pyo3(get)]
+    pub metadata: Py<crate::wacore::iq::community::GroupMetadata>,
 }
 
 impl CreateGroupResult {
     pub fn from_inner(py: Python<'_>, value: WaCreateGroupResult) -> PyResult<Self> {
-        Ok(Self {
-            gid: Py::new(py, JID::from(value.gid))?,
-        })
+        let gid = Py::new(py, JID::from(value.metadata.id.clone()))?;
+        let metadata = Py::new(py, crate::wacore::iq::community::GroupMetadata::from_inner(py, value.metadata)?)?;
+        Ok(Self { gid, metadata })
     }
 }
 

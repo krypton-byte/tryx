@@ -89,6 +89,10 @@ impl PollsClient {
 		})
 	}
 
+	/// Decrypt a poll vote without LID/PN fallback (stateless helper).
+	///
+	/// Uses `wacore::poll::decrypt_poll_vote_with_secret` directly since this
+	/// is a static method with no access to a `Client` for namespace resolution.
 	#[staticmethod]
 	fn decrypt_vote(
 		py: Python<'_>,
@@ -102,17 +106,21 @@ impl PollsClient {
 		let creator = poll_creator_jid.bind(py).borrow().as_whatsapp_jid();
 		let voter = voter_jid.bind(py).borrow().as_whatsapp_jid();
 
-		whatsapp_rust::features::Polls::decrypt_vote(
+		wacore::poll::decrypt_poll_vote_with_secret(
 			enc_payload,
 			enc_iv,
 			message_secret,
 			poll_msg_id.as_str(),
-			&creator,
-			&voter,
+			&creator.to_string(),
+			&voter.to_string(),
 		)
 		.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
 	}
 
+	/// Aggregate poll votes without LID/PN fallback (stateless helper).
+	///
+	/// Uses `wacore::poll` primitives directly since this is a static method
+	/// with no access to a `Client` for namespace resolution.
 	#[staticmethod]
 	fn aggregate_votes(
 		py: Python<'_>,
@@ -123,31 +131,66 @@ impl PollsClient {
 		poll_creator_jid: Py<JID>,
 	) -> PyResult<Vec<Py<PollOptionResult>>> {
 		let creator = poll_creator_jid.bind(py).borrow().as_whatsapp_jid();
+		let creator_str = creator.to_string();
 
-		let vote_values = votes
+		let option_hashes: Vec<([u8; 32], &str)> = poll_options
+			.iter()
+			.map(|name| (wacore::poll::compute_option_hash(name), name.as_str()))
+			.collect();
+
+		let vote_values: Vec<(String, Vec<u8>, Vec<u8>)> = votes
 			.iter()
 			.map(|(jid, enc_payload, enc_iv)| {
-				(
-					jid.bind(py).borrow().as_whatsapp_jid(),
-					enc_payload.as_slice(),
-					enc_iv.as_slice(),
-				)
+				let voter_jid = jid.bind(py).borrow().as_whatsapp_jid();
+				(voter_jid.to_string(), enc_payload.clone(), enc_iv.clone())
 			})
-			.collect::<Vec<_>>();
+			.collect();
 
-		let refs = vote_values
+		let mut latest_votes: std::collections::HashMap<String, (String, Vec<Vec<u8>>)> =
+			std::collections::HashMap::with_capacity(votes.len());
+
+		for (voter_str, enc_payload, enc_iv) in &vote_values {
+			match wacore::poll::decrypt_poll_vote_with_secret(
+				enc_payload,
+				enc_iv,
+				message_secret,
+				poll_msg_id.as_str(),
+				&creator_str,
+				voter_str,
+			) {
+				Ok(selected_hashes) => {
+					if selected_hashes.is_empty() {
+						latest_votes.remove(voter_str);
+					} else {
+						latest_votes.insert(
+							voter_str.clone(),
+							(voter_str.clone(), selected_hashes),
+						);
+					}
+				}
+				Err(_) => {
+					// Skip votes that fail to decrypt without a client for fallback
+				}
+			}
+		}
+
+		let mut results: Vec<whatsapp_rust::features::PollOptionResult> = poll_options
 			.iter()
-			.map(|(jid, enc_payload, enc_iv)| (jid, *enc_payload, *enc_iv))
-			.collect::<Vec<_>>();
+			.map(|name| whatsapp_rust::features::PollOptionResult {
+				name: name.clone(),
+				voters: Vec::new(),
+			})
+			.collect();
 
-		let results = whatsapp_rust::features::Polls::aggregate_votes(
-			poll_options.as_slice(),
-			refs.as_slice(),
-			message_secret,
-			poll_msg_id.as_str(),
-			&creator,
-		)
-		.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+		for (display_jid, selected_hashes) in latest_votes.values() {
+			for hash in selected_hashes {
+				if let Ok(hash_arr) = <[u8; 32]>::try_from(hash.as_slice()) {
+					if let Some(idx) = option_hashes.iter().position(|(h, _)| *h == hash_arr) {
+						results[idx].voters.push(display_jid.clone());
+					}
+				}
+			}
+		}
 
 		results
 			.into_iter()

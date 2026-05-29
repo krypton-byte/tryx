@@ -779,6 +779,35 @@ pub enum GroupNotificationAction {
         unlink_reason: Option<String>,
         raw: Py<Node>,
     },
+    LinkedGroupPromote {
+        participants: Vec<Py<GroupParticipant>>,
+    },
+    LinkedGroupDemote {
+        participants: Vec<Py<GroupParticipant>>,
+    },
+    Suspended(),
+    Unsuspended(),
+    AutoAddDisabled(),
+    IsCapiHostedGroup(),
+    GroupSafetyCheck(),
+    LimitSharingEnabled {
+        trigger: Option<u32>,
+    },
+    AllowAdminReports(),
+    NotAllowAdminReports(),
+    Reports(),
+    AllowNonAdminSubGroupCreation(),
+    NotAllowNonAdminSubGroupCreation(),
+    CreatedSubGroupSuggestion {
+        raw: Py<Node>,
+    },
+    RevokedSubGroupSuggestions {
+        raw: Py<Node>,
+    },
+    ChangeNumber {
+        new_owner: Option<Py<JID>>,
+        sub_group_suggestions: Vec<Py<JID>>,
+    },
     Unknown {
         tag: String,
     }
@@ -896,7 +925,6 @@ impl EvGroupUpdate {
                     let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
                     GroupNotificationAction::Unlink { unlink_type: unlink_type.clone(), unlink_reason: unlink_reason.clone(), raw: py_raw }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Unknown { tag } => GroupNotificationAction::Unknown { tag: tag.clone() },
                 wacore::stanza::groups::GroupNotificationAction::MembershipApprovalRequest { request_method, parent_group_jid } => {
                     let method_str = format!("{:?}", request_method);
                     let py_parent = parent_group_jid.as_ref().map(|j| Py::new(py, JID::from(j.clone())).unwrap());
@@ -918,6 +946,41 @@ impl EvGroupUpdate {
                     let py_participants = participants.iter().map(|j| Py::new(py, JID::from(j.clone())).unwrap()).collect();
                     GroupNotificationAction::RevokedMembershipRequests { participants: py_participants }
                 },
+                wacore::stanza::groups::GroupNotificationAction::LinkedGroupPromote { participants } => {
+                    let py_participants = py_group_participants(participants);
+                    GroupNotificationAction::LinkedGroupPromote { participants: py_participants }
+                },
+                wacore::stanza::groups::GroupNotificationAction::LinkedGroupDemote { participants } => {
+                    let py_participants = py_group_participants(participants);
+                    GroupNotificationAction::LinkedGroupDemote { participants: py_participants }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Suspended => GroupNotificationAction::Suspended(),
+                wacore::stanza::groups::GroupNotificationAction::Unsuspended => GroupNotificationAction::Unsuspended(),
+                wacore::stanza::groups::GroupNotificationAction::AutoAddDisabled => GroupNotificationAction::AutoAddDisabled(),
+                wacore::stanza::groups::GroupNotificationAction::IsCapiHostedGroup => GroupNotificationAction::IsCapiHostedGroup(),
+                wacore::stanza::groups::GroupNotificationAction::GroupSafetyCheck => GroupNotificationAction::GroupSafetyCheck(),
+                wacore::stanza::groups::GroupNotificationAction::LimitSharingEnabled { trigger } => {
+                    GroupNotificationAction::LimitSharingEnabled { trigger: *trigger }
+                },
+                wacore::stanza::groups::GroupNotificationAction::AllowAdminReports => GroupNotificationAction::AllowAdminReports(),
+                wacore::stanza::groups::GroupNotificationAction::NotAllowAdminReports => GroupNotificationAction::NotAllowAdminReports(),
+                wacore::stanza::groups::GroupNotificationAction::Reports => GroupNotificationAction::Reports(),
+                wacore::stanza::groups::GroupNotificationAction::AllowNonAdminSubGroupCreation => GroupNotificationAction::AllowNonAdminSubGroupCreation(),
+                wacore::stanza::groups::GroupNotificationAction::NotAllowNonAdminSubGroupCreation => GroupNotificationAction::NotAllowNonAdminSubGroupCreation(),
+                wacore::stanza::groups::GroupNotificationAction::CreatedSubGroupSuggestion { raw } => {
+                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                    GroupNotificationAction::CreatedSubGroupSuggestion { raw: py_raw }
+                },
+                wacore::stanza::groups::GroupNotificationAction::RevokedSubGroupSuggestions { raw } => {
+                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                    GroupNotificationAction::RevokedSubGroupSuggestions { raw: py_raw }
+                },
+                wacore::stanza::groups::GroupNotificationAction::ChangeNumber { new_owner, sub_group_suggestions } => {
+                    let py_new_owner = new_owner.as_ref().map(|j| Py::new(py, JID::from(j.clone())).unwrap());
+                    let py_suggestions = sub_group_suggestions.iter().map(|j| Py::new(py, JID::from(j.clone())).unwrap()).collect();
+                    GroupNotificationAction::ChangeNumber { new_owner: py_new_owner, sub_group_suggestions: py_suggestions }
+                },
+                wacore::stanza::groups::GroupNotificationAction::Unknown { tag } => GroupNotificationAction::Unknown { tag: tag.clone() },
             };
             let action = Py::new(py, action)?;
             let data = GroupUpdateData {
