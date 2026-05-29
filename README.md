@@ -27,6 +27,42 @@ It combines:
 - Typed interfaces for better editor support and safer integrations
 - Supports both async and blocking runtime styles
 
+## Architecture
+
+Tryx acts as an interoperability layer (using **PyO3**) between Python's `asyncio` and Rust's `tokio` runtimes. It wraps the powerful `whatsapp-rust` core library, converting low-level Rust structs into ergonomic, strongly-typed Python objects without sacrificing performance.
+
+```mermaid
+flowchart TB
+    subgraph Python["Python Environment"]
+        UserScript["User Application\n(asyncio)"]
+        TryxPackage["tryx (Python Package)\nAPI & Type Stubs (.pyi)"]
+    end
+
+    subgraph Rust["Rust Native Extension (tryx)"]
+        PyO3["PyO3 Bridge\n(Type Conversion & FFI)"]
+        Tokio["Tokio Runtime\n(Async Event Loop)"]
+    end
+
+    subgraph Submodule["whatsapp-rust (Submodule)"]
+        Client["wacore Client"]
+        Protocol["WhatsApp Web Protocol\n(Noise, Protobuf, WebSockets)"]
+    end
+
+    WhatsAppCloud(("WhatsApp Servers"))
+
+    UserScript <--> |"Events & Method Calls"| TryxPackage
+    TryxPackage <--> |"FFI boundary"| PyO3
+    PyO3 <--> |"Cross-runtime task spawning"| Tokio
+    Tokio <--> |"Rust async calls"| Client
+    Client <--> Protocol
+    Protocol <--> |"WSS"| WhatsAppCloud
+
+    style Python fill:#3776AB,color:#fff,stroke:#fff
+    style Rust fill:#dea584,color:#000,stroke:#fff
+    style Submodule fill:#000,color:#fff,stroke:#fff
+    style WhatsAppCloud fill:#25D366,color:#fff,stroke:#fff
+```
+
 ## Quick Links
 
 - Documentation: http://krypton-byte.tech/tryx/

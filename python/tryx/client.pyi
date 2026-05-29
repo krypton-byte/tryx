@@ -267,6 +267,7 @@ class CreateCommunityResult:
     """Type stub for CreateCommunityResult."""
 
     gid: JID
+    metadata: GroupMetadata
 
 class CommunitySubgroup:
     """Type stub for CommunitySubgroup."""
@@ -507,6 +508,7 @@ class CreateGroupResult:
     """Type stub for CreateGroupResult."""
 
     gid: JID
+    metadata: GroupMetadata
 
 class JoinGroupResult:
     """Type stub for JoinGroupResult."""
