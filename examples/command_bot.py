@@ -9,14 +9,16 @@ Commands:
 """
 
 from __future__ import annotations
-from httpx import AsyncClient
+
 import asyncio
 import os
 from urllib.request import urlopen
+
 import segno
+
 from tryx.backend import SqliteBackend
 from tryx.client import Tryx, TryxClient
-from tryx.events import EvMessage, EvPushNameUpdate, EvUserAboutUpdate, EvPairingQrCode
+from tryx.events import EvMessage, EvPairingQrCode, EvPushNameUpdate, EvUserAboutUpdate
 
 DB_PATH = os.getenv("TRYX_DB_PATH", "whatsapp.db")
 
@@ -42,12 +44,13 @@ async def download_bytes(url: str) -> bytes:
 backend = SqliteBackend(DB_PATH)
 app = Tryx(backend)
 
+
 @app.on(EvPairingQrCode)
 async def on_pairing_qr_code(_client: TryxClient, event: EvPairingQrCode) -> None:
     data = event.code
     print("[pairing-qr]", data)
     segno.make_qr(data).terminal(compact=True)
-    
+
 
 @app.on(EvPushNameUpdate)
 async def on_push_name_update(_client: TryxClient, event: EvPushNameUpdate) -> None:
@@ -160,7 +163,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             quoted=event,
         )
     elif text == "picture":
-        response = await download_bytes("https://download.samplelib.com/png/sample-boat-400x300.png")
+        response = await download_bytes(
+            "https://download.samplelib.com/png/sample-boat-400x300.png"
+        )
         photo_data = response
 
         await client.send_photo(
@@ -170,7 +175,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             quoted=event,
         )
     elif text == "video":
-        video_data = await download_bytes("https://download.samplelib.com/mp4/sample-5s.mp4")
+        video_data = await download_bytes(
+            "https://download.samplelib.com/mp4/sample-5s.mp4"
+        )
 
         await client.send_video(
             chat_jid,
@@ -179,7 +186,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             quoted=event,
         )
     elif text == "audio":
-        audio_data = await download_bytes("https://download.samplelib.com/mp3/sample-3s.mp3")
+        audio_data = await download_bytes(
+            "https://download.samplelib.com/mp3/sample-3s.mp3"
+        )
 
         await client.send_audio(
             chat_jid,
@@ -187,7 +196,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             quoted=event,
         )
     elif text == "document":
-        document_data = await download_bytes("https://download.samplelib.com/pdf/sample-3s.pdf")
+        document_data = await download_bytes(
+            "https://download.samplelib.com/pdf/sample-3s.pdf"
+        )
 
         await client.send_document(
             chat_jid,
