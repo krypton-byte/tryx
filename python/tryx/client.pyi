@@ -88,6 +88,7 @@ class TryxClient:
         self,
         to: JID,
         photo_data: bytes,
+        mimetype: str | None = None,
         caption: str | None = None,
         quoted: EvMessage | None = None,
     ) -> SendResult: ...
@@ -95,7 +96,7 @@ class TryxClient:
         self,
         to: JID,
         document_data: bytes,
-        mimetype: str,
+        mimetype: str | None = None,
         file_name: str | None = None,
         caption: str | None = None,
         quoted: EvMessage | None = None,

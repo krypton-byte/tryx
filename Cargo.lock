@@ -186,6 +186,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cfb"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb9b414dc579b1b0194d06e65472b6ee2e87f623f970a715e3bb04e105400ffa"
+dependencies = [
+ "fnv",
+ "uuid",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -861,6 +871,14 @@ dependencies = [
  "hashbrown 0.16.1",
  "serde",
  "serde_core",
+]
+
+[[package]]
+name = "infer"
+version = "0.21.0"
+source = "git+https://github.com/bojand/infer?branch=master#7e6b1d00762cbfbef480333cd137582b3e4aba32"
+dependencies = [
+ "cfb",
 ]
 
 [[package]]
@@ -1868,6 +1886,7 @@ version = "0.6.3"
 dependencies = [
  "async-trait",
  "chrono",
+ "infer",
  "prost",
  "pyo3",
  "pyo3-async-runtimes",

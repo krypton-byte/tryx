@@ -9,14 +9,14 @@ Commands:
 """
 
 from __future__ import annotations
-
+from httpx import AsyncClient
 import asyncio
 import os
 from urllib.request import urlopen
-
+import segno
 from tryx.backend import SqliteBackend
 from tryx.client import Tryx, TryxClient
-from tryx.events import EvMessage, EvPushNameUpdate, EvUserAboutUpdate
+from tryx.events import EvMessage, EvPushNameUpdate, EvUserAboutUpdate, EvPairingQrCode
 
 DB_PATH = os.getenv("TRYX_DB_PATH", "whatsapp.db")
 
@@ -42,6 +42,12 @@ async def download_bytes(url: str) -> bytes:
 backend = SqliteBackend(DB_PATH)
 app = Tryx(backend)
 
+@app.on(EvPairingQrCode)
+async def on_pairing_qr_code(_client: TryxClient, event: EvPairingQrCode) -> None:
+    data = event.code
+    print("[pairing-qr]", data)
+    segno.make_qr(data).terminal(compact=True)
+    
 
 @app.on(EvPushNameUpdate)
 async def on_push_name_update(_client: TryxClient, event: EvPushNameUpdate) -> None:
@@ -70,17 +76,16 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
     sender_jid = source.sender
 
     text = (data.get_text() or data.caption or "").strip().lower()
-    if not text:
-        return
-
     print(
         "[message] "
         f"from={jid_to_text(sender_jid)} "
         f"chat={jid_to_text(chat_jid)} "
         f"text={text!r}"
     )
+    if not text:
+        return
 
-    if text in {"help", "menu"}:
+    elif text in {"help", "menu"}:
         await client.send_text(
             chat_jid,
             "Perintah: ping | pp | pushname | bio",
@@ -88,7 +93,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
         )
         return
 
-    if text == "ping":
+    elif text == "ping":
         await client.chatstate.send_composing(
             chat_jid
         )  # Show typing indicator for a more interactive feel.
@@ -103,12 +108,12 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
         )  # Clear any lingering typing indicators.
         return
 
-    if text == "pushname":
+    elif text == "pushname":
         push_name = info.push_name.strip() if info.push_name else "(kosong)"
         await client.send_text(chat_jid, f"Pushname: {push_name}", quoted=event)
         return
 
-    if text == "bio":
+    elif text == "bio":
         try:
             info_map = await client.contact.get_user_info(sender_jid)
         except Exception as exc:
@@ -123,22 +128,11 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
         )
         await client.send_text(chat_jid, f"Bio: {status_text}", quoted=event)
         return
-
-    if text == "pp":
+    elif text == "pp":
         try:
             profile_picture = await client.contact.get_profile_picture(
                 sender_jid, False
             )
-            k = await client.send_photo(
-                chat_jid,
-                open(
-                    "/home/krypton-byte/Downloads/ai.jpg.jpeg", "rb"
-                ).read(),  # Send empty photo first to indicate loading state.
-                # mimetype="image/jpeg",
-                # caption="Mengambil profile picture...",
-                # quoted=event,
-            )
-            print("Sent loading message with ID:", k)
         except Exception as exc:
             await client.send_text(
                 chat_jid, f"Gagal ambil profile picture: {exc}", quoted=event
@@ -163,6 +157,43 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             chat_jid,
             photo_data,
             caption=f"Profile picture dari {jid_to_text(sender_jid)}",
+            quoted=event,
+        )
+    elif text == "picture":
+        response = await download_bytes("https://download.samplelib.com/png/sample-boat-400x300.png")
+        photo_data = response
+
+        await client.send_photo(
+            chat_jid,
+            photo_data,
+            caption="Sample picture",
+            quoted=event,
+        )
+    elif text == "video":
+        video_data = await download_bytes("https://download.samplelib.com/mp4/sample-5s.mp4")
+
+        await client.send_video(
+            chat_jid,
+            video_data,
+            caption="Sample video",
+            quoted=event,
+        )
+    elif text == "audio":
+        audio_data = await download_bytes("https://download.samplelib.com/mp3/sample-3s.mp3")
+
+        await client.send_audio(
+            chat_jid,
+            audio_data,
+            quoted=event,
+        )
+    elif text == "document":
+        document_data = await download_bytes("https://download.samplelib.com/pdf/sample-3s.pdf")
+
+        await client.send_document(
+            chat_jid,
+            document_data,
+            file_name="sample.pdf",
+            caption="Sample document",
             quoted=event,
         )
 

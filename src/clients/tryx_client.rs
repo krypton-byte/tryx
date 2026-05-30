@@ -24,6 +24,12 @@ use crate::events::types::{EvMessage};
 use crate::types::{JID, MediaReuploadResult, SendResult, UploadResponse};
 use crate::wacore::download::MediaType;
 
+/// Guess the MIME type from the raw data bytes using magic number signatures.
+/// Returns the detected MIME string or `None` if unrecognized.
+fn guess_mimetype(data: &[u8]) -> Option<String> {
+    infer::get(data).map(|kind| kind.mime_type().to_string())
+}
+
 /// Reduces the repeated decode-then-download pattern for each media type.
 macro_rules! decode_and_download {
     ($client:expr, $data:expr, $msg_type:ty, $label:expr) => {{
@@ -327,8 +333,8 @@ impl TryxClient {
             }
         })
     }
-    #[pyo3(signature = (to, photo_data, caption=None, quoted=None))]
-    fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: Vec<u8>, caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
+    #[pyo3(signature = (to, photo_data, mimetype=None, caption=None, quoted=None))]
+    fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: Vec<u8>, mimetype: Option<String>, caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
@@ -336,22 +342,26 @@ impl TryxClient {
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let mime = mimetype.unwrap_or_else(|| {
+                guess_mimetype(&photo_data).unwrap_or_else(|| "image/jpeg".to_string())
+            });
             let upload = client
                 .upload(photo_data, wacore::download::MediaType::Image, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             let message = WhatsappMessage {
                 image_message: Some(Box::new(wa::ImageMessage {
-                url: Some(upload.url),
-                direct_path: Some(upload.direct_path),
-                media_key: Some(upload.media_key.to_vec()),
-                file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
-                file_sha256: Some(upload.file_sha256.to_vec()),
-                file_length: Some(upload.file_length),
-                caption,
-                context_info: context_info.map(Box::new),
-                ..Default::default()
-            })),
+                    url: Some(upload.url),
+                    mimetype: Some(mime),
+                    direct_path: Some(upload.direct_path),
+                    media_key: Some(upload.media_key.to_vec()),
+                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
+                    file_sha256: Some(upload.file_sha256.to_vec()),
+                    file_length: Some(upload.file_length),
+                    caption,
+                    context_info: context_info.map(Box::new),
+                    ..Default::default()
+                })),
                 ..Default::default()
             };
             let send_result = client
@@ -362,13 +372,13 @@ impl TryxClient {
         })
     }
 
-    #[pyo3(signature = (to, document_data, mimetype, file_name=None, caption=None, quoted=None))]
+    #[pyo3(signature = (to, document_data, mimetype=None, file_name=None, caption=None, quoted=None))]
     fn send_document<'py>(
         &self,
         py: Python<'py>,
         to: Py<JID>,
         document_data: Vec<u8>,
-        mimetype: String,
+        mimetype: Option<String>,
         file_name: Option<String>,
         caption: Option<String>,
         quoted: Option<Py<EvMessage>>,
@@ -381,6 +391,9 @@ impl TryxClient {
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let mime = mimetype.unwrap_or_else(|| {
+                guess_mimetype(&document_data).unwrap_or_else(|| "application/octet-stream".to_string())
+            });
             let upload = client
                 .upload(document_data, wacore::download::MediaType::Document, UploadOptions::default())
                 .await
@@ -389,7 +402,7 @@ impl TryxClient {
             let message = WhatsappMessage {
                 document_message: Some(Box::new(wa::DocumentMessage {
                     url: Some(upload.url),
-                    mimetype: Some(mimetype),
+                    mimetype: Some(mime),
                     title: file_name.clone(),
                     file_sha256: Some(upload.file_sha256.to_vec()),
                     file_length: Some(upload.file_length),
@@ -431,6 +444,9 @@ impl TryxClient {
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let mime = mimetype.unwrap_or_else(|| {
+                guess_mimetype(&audio_data).unwrap_or_else(|| "audio/ogg; codecs=opus".to_string())
+            });
             let upload = client
                 .upload(audio_data, wacore::download::MediaType::Audio, UploadOptions::default())
                 .await
@@ -439,7 +455,7 @@ impl TryxClient {
             let message = WhatsappMessage {
                 audio_message: Some(Box::new(wa::AudioMessage {
                     url: Some(upload.url),
-                    mimetype: Some(mimetype.unwrap_or_else(|| "audio/ogg; codecs=opus".to_string())),
+                    mimetype: Some(mime),
                     file_sha256: Some(upload.file_sha256.to_vec()),
                     file_length: Some(upload.file_length),
                     seconds,
@@ -481,6 +497,9 @@ impl TryxClient {
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let mime = mimetype.unwrap_or_else(|| {
+                guess_mimetype(&video_data).unwrap_or_else(|| "video/mp4".to_string())
+            });
             let upload = client
                 .upload(video_data, wacore::download::MediaType::Video, UploadOptions::default())
                 .await
@@ -489,7 +508,7 @@ impl TryxClient {
             let message = WhatsappMessage {
                 video_message: Some(Box::new(wa::VideoMessage {
                     url: Some(upload.url),
-                    mimetype: Some(mimetype.unwrap_or_else(|| "video/mp4".to_string())),
+                    mimetype: Some(mime),
                     file_sha256: Some(upload.file_sha256.to_vec()),
                     file_length: Some(upload.file_length),
                     seconds,
@@ -542,6 +561,7 @@ impl TryxClient {
         let context_info = Self::quote_context(py, quoted.as_ref());
 
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            let mime = guess_mimetype(&sticker_data).unwrap_or_else(|| "image/webp".to_string());
             let upload = client
                 .upload(sticker_data, wacore::download::MediaType::Sticker, UploadOptions::default())
                 .await
@@ -553,7 +573,7 @@ impl TryxClient {
                     file_sha256: Some(upload.file_sha256.to_vec()),
                     file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
                     media_key: Some(upload.media_key.to_vec()),
-                    mimetype: Some("image/webp".to_string()),
+                    mimetype: Some(mime),
                     direct_path: Some(upload.direct_path),
                     file_length: Some(upload.file_length),
                     is_animated: Some(is_animated),

@@ -24,3 +24,4 @@ prost = "0.14.3"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "fmt"] }
 chrono = "0.4.44"
+infer = { git = "https://github.com/bojand/infer", branch = "master" }
