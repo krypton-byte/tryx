@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.6.4 (2026-05-31)
+
+### Documentation
+
+- Add architectural diagram to README and update CreateCommunityResult and CreateGroupResult type
+  stubs with metadata field
+  ([`ea39426`](https://github.com/krypton-byte/tryx/commit/ea39426374c67b45a03b453a1470648d32072e71))
+
+- Remove diagram styling from README architecture chart
+  ([`1b581f2`](https://github.com/krypton-byte/tryx/commit/1b581f2850a3657ac31d4d4d83c53351fd87d545))
+
+### Features
+
+- Add support for dynamic MIME type detection in media sending functions and implement pairing QR
+  code handling
+  ([`0ab2af9`](https://github.com/krypton-byte/tryx/commit/0ab2af9106254be4078fc385ee464241a4febb2b))
+
+- Expand group notification types, update group metadata results, and refactor poll handling to
+  stateless logic
+  ([`41b1e15`](https://github.com/krypton-byte/tryx/commit/41b1e15cd6d8d49f410dfae621992734b390435b))
+
+### Refactoring
+
+- Improve code formatting and organization in command_bot.py
+  ([`d7cb48b`](https://github.com/krypton-byte/tryx/commit/d7cb48ba0c0e8eddbf6a85b3dd8545c02d5d285a))
+
+
 ## v0.6.3 (2026-04-24)
 
 ### Chores
