@@ -8,24 +8,26 @@
 [![Typed](https://img.shields.io/badge/Typing-PEP%20561-0ea5e9?style=for-the-badge)](https://peps.python.org/pep-0561/)
 [![License](https://img.shields.io/github/license/krypton-byte/tryx?style=for-the-badge)](LICENSE)
 
-Tryx is a Rust-powered Python SDK for building WhatsApp automations with an async-first API, strong typing, and production-focused performance.
+Tryx is a Rust-powered Python SDK for building WhatsApp automations. It bridges Python's `asyncio` and Rust's `tokio` through PyO3, giving you a typed, async-first API backed by a native protocol core.
 
 It combines:
 
-- Rust for protocol and runtime-heavy paths
-- PyO3 for Python bindings
-- Tokio for async orchestration
-- Typed Python package distribution (`.pyi` + `py.typed`)
+- **Rust** for the WhatsApp Web protocol, Signal encryption, and async I/O
+- **PyO3** for zero-overhead Python ↔ Rust type conversion
+- **Tokio** for the async runtime that drives connections and event dispatch
+- **Pluggable storage** — built-in SQLite, native FFI (Postgres, etc.), or pure-Python custom backends
+- **PEP 561 typing** — full `.pyi` stubs and `py.typed` marker for editor and type-checker support
 
 > Note: This project is an independent developer SDK and is not affiliated with WhatsApp or Meta.
 
 ## Why Tryx
 
-- Async-first architecture for event-driven bots
-- Python-friendly API with namespace-based clients
-- High-performance native core for protocol and transport workloads
-- Typed interfaces for better editor support and safer integrations
-- Supports both async and blocking runtime styles
+- **Async-first** — event-driven architecture with `@app.on(EventType)` handlers and native `async/await`
+- **Pluggable storage** — 3-tier backend system: built-in SQLite for zero-config, native C-ABI shared libraries for maximum throughput, or pure-Python `StoreBase` subclasses for custom databases (Redis, MongoDB, DynamoDB, etc.)
+- **Decoupled backends** — third-party storage packages (like `tryx-store-postgres`) don't depend on Tryx at all; they just expose a standard interface
+- **Low-overhead Python bridge** — the Rust core uses `Python::attach` (PyO3 0.28+) with GIL released during I/O, keeping bridge overhead at microseconds per call
+- **Typed everywhere** — namespace-based client API (`contact`, `groups`, `polls`, etc.) with full type stubs, so your editor catches errors before runtime
+- **Both runtime styles** — `await app.run()` for async applications, `app.run_blocking()` for simple scripts
 
 ## Architecture
 
