@@ -140,6 +140,38 @@ impl Tryx {
                 tryx_client,
                 client_tx,
             })
+        } else if backend.getattr(py, "put_identity").is_ok() {
+            debug!("detected python store backend via duck-typing");
+            
+            let python_store = crate::backend::python_store::PythonStore::new(backend.clone_ref(py));
+
+            let (client_tx, client_rx) = watch::channel(None);
+            let tryx_client = Py::new(
+                py,
+                TryxClient {
+                    client_rx: client_rx.clone(),
+                    contact: new_namespace_client!(py, client_rx, ContactClient),
+                    chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
+                    community: new_namespace_client!(py, client_rx, CommunityClient),
+                    newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
+                    groups: new_namespace_client!(py, client_rx, GroupsClient),
+                    status: new_namespace_client!(py, client_rx, StatusClient),
+                    chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
+                    blocking: new_namespace_client!(py, client_rx, BlockingClient),
+                    polls: new_namespace_client!(py, client_rx, PollsClient),
+                    presence: new_namespace_client!(py, client_rx, PresenceClient),
+                    privacy: new_namespace_client!(py, client_rx, PrivacyClient),
+                    profile: new_namespace_client!(py, client_rx, ProfileClient),
+                }
+            )?;
+
+            info!("python backend connected and dispatcher initialized");
+            Ok(Tryx {
+                backend: Arc::new(python_store),
+                handlers: Py::new(py, Dispatcher::empty())?,
+                tryx_client,
+                client_tx,
+            })
         } else {
             error!("unsupported backend type passed to Tryx");
             Err(PyErr::new::<UnsupportedBackend, _>("Unsupported backend type"))

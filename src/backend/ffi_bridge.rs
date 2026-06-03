@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-use std::ffi::{c_char, c_void, CStr, CString};
+use std::ffi::{c_char, c_void, CString};
 use std::ptr;
 use std::sync::Arc;
 
 use async_trait::async_trait;
 use bytes::Bytes;
 use libloading::{Library, Symbol};
-use serde::{Deserialize, Serialize};
 
 use wacore::appstate::hash::HashState;
 use wacore::store::traits::*;
@@ -436,7 +434,7 @@ impl ProtocolStore for FfiBridgeStore {
         } else { Ok(None) }
     }
 
-    async fn get_pn_mapping(&self, phone: &str) -> StoreResult<Option<LidPnMappingEntry>> {
+    async fn get_pn_mapping(&self, _phone: &str) -> StoreResult<Option<LidPnMappingEntry>> {
         Ok(None) // Unused by core client except internal
     }
 
@@ -450,39 +448,39 @@ impl ProtocolStore for FfiBridgeStore {
         Ok(Vec::new()) // Unused by core client
     }
 
-    async fn save_base_key(&self, address: &str, message_id: &str, base_key: &[u8]) -> StoreResult<()> {
+    async fn save_base_key(&self, _address: &str, _message_id: &str, _base_key: &[u8]) -> StoreResult<()> {
         Ok(()) // Not critical for basic function
     }
 
-    async fn has_same_base_key(&self, address: &str, message_id: &str, current_base_key: &[u8]) -> StoreResult<bool> {
+    async fn has_same_base_key(&self, _address: &str, _message_id: &str, _current_base_key: &[u8]) -> StoreResult<bool> {
         Ok(false)
     }
 
-    async fn delete_base_key(&self, address: &str, message_id: &str) -> StoreResult<()> {
+    async fn delete_base_key(&self, _address: &str, _message_id: &str) -> StoreResult<()> {
         Ok(())
     }
 
-    async fn update_device_list(&self, record: DeviceListRecord) -> StoreResult<()> {
+    async fn update_device_list(&self, _record: DeviceListRecord) -> StoreResult<()> {
         Ok(())
     }
 
-    async fn get_devices(&self, user: &str) -> StoreResult<Option<DeviceListRecord>> {
+    async fn get_devices(&self, _user: &str) -> StoreResult<Option<DeviceListRecord>> {
         Ok(None)
     }
 
-    async fn delete_devices(&self, user: &str) -> StoreResult<()> {
+    async fn delete_devices(&self, _user: &str) -> StoreResult<()> {
         Ok(())
     }
 
-    async fn get_tc_token(&self, jid: &str) -> StoreResult<Option<TcTokenEntry>> {
+    async fn get_tc_token(&self, _jid: &str) -> StoreResult<Option<TcTokenEntry>> {
         Ok(None)
     }
 
-    async fn put_tc_token(&self, jid: &str, entry: &TcTokenEntry) -> StoreResult<()> {
+    async fn put_tc_token(&self, _jid: &str, _entry: &TcTokenEntry) -> StoreResult<()> {
         Ok(())
     }
 
-    async fn delete_tc_token(&self, jid: &str) -> StoreResult<()> {
+    async fn delete_tc_token(&self, _jid: &str) -> StoreResult<()> {
         Ok(())
     }
 
@@ -490,7 +488,7 @@ impl ProtocolStore for FfiBridgeStore {
         Ok(Vec::new())
     }
 
-    async fn delete_expired_tc_tokens(&self, cutoff: i64) -> StoreResult<u32> {
+    async fn delete_expired_tc_tokens(&self, _cutoff: i64) -> StoreResult<u32> {
         Ok(0)
     }
 
@@ -512,7 +510,7 @@ impl ProtocolStore for FfiBridgeStore {
         self.call(53, args)
     }
 
-    async fn delete_expired_sent_messages(&self, cutoff: i64) -> StoreResult<u32> {
+    async fn delete_expired_sent_messages(&self, _cutoff: i64) -> StoreResult<u32> {
         Ok(0)
     }
 }
