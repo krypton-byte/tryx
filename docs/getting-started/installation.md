@@ -40,9 +40,9 @@ Typical wheel output appears under `target/wheels/`.
 
 ```python
 from tryx.client import Tryx, TryxClient
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 
-backend = SqliteBackend("whatsapp.db")
+backend = SqliteStore("whatsapp.db")
 app = Tryx(backend)
 client = app.get_client()
 print(type(client).__name__)

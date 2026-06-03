@@ -16,7 +16,7 @@ from urllib.request import urlopen
 
 import segno
 
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 from tryx.client import Tryx, TryxClient
 from tryx.events import EvMessage, EvPairingQrCode, EvPushNameUpdate, EvUserAboutUpdate
 
@@ -41,7 +41,7 @@ async def download_bytes(url: str) -> bytes:
     return await asyncio.to_thread(_download)
 
 
-backend = SqliteBackend(DB_PATH)
+backend = SqliteStore(DB_PATH)
 app = Tryx(backend)
 
 

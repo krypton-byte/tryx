@@ -10,12 +10,12 @@ Build and run a minimal echo client, then expand it safely.
 ```python
 import asyncio
 
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 from tryx.client import Tryx, TryxClient
 from tryx.events import EvMessage
 from tryx.waproto.whatsapp_pb2 import Message
 
-backend = SqliteBackend("whatsapp.db")
+backend = SqliteStore("whatsapp.db")
 app = Tryx(backend)
 
 
@@ -68,10 +68,10 @@ if __name__ == "__main__":
 For quick scripts without manual event loop management:
 
 ```python
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 from tryx.client import Tryx
 
-app = Tryx(SqliteBackend("whatsapp.db"))
+app = Tryx(SqliteStore("whatsapp.db"))
 app.run_blocking()
 ```
 

@@ -89,12 +89,12 @@ uv run maturin build --release
 
 ```python
 import asyncio
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 from tryx.client import Tryx, TryxClient
 from tryx.events import EvMessage
 from tryx.waproto.whatsapp_pb2 import Message
 
-backend = SqliteBackend("whatsapp.db")
+backend = SqliteStore("whatsapp.db")
 app = Tryx(backend)
 
 @app.on(EvMessage)

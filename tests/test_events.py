@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import tryx.events as events
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 from tryx.client import Tryx
 
 
@@ -69,7 +69,7 @@ class TestTryxInitialization:
         import pathlib
 
         db = str(pathlib.Path(str(tmp_path)) / "test.db")
-        backend = SqliteBackend(db)
+        backend = SqliteStore(db)
         app = Tryx(backend)
         client = app.get_client()
         assert client is not None
@@ -79,7 +79,7 @@ class TestTryxInitialization:
         import pathlib
 
         db = str(pathlib.Path(str(tmp_path)) / "test2.db")
-        backend = SqliteBackend(db)
+        backend = SqliteStore(db)
         app = Tryx(backend)
         client = app.get_client()
         for ns in [
@@ -102,7 +102,7 @@ class TestTryxInitialization:
         import pathlib
 
         db = str(pathlib.Path(str(tmp_path)) / "test3.db")
-        backend = SqliteBackend(db)
+        backend = SqliteStore(db)
         app = Tryx(backend)
 
         @app.on(events.EvMessage)

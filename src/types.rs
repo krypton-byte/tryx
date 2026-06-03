@@ -162,11 +162,23 @@ pub struct MsgMetaInfo {
     #[pyo3(get)]
     target_sender: Option<pyo3::Py<JID>>,
     #[pyo3(get)]
+    target_chat: Option<pyo3::Py<JID>>,
+    #[pyo3(get)]
     deprecated_lid_session: Option<bool>,
     #[pyo3(get)]
     thread_message_id: Option<String>,
     #[pyo3(get)]
     thread_message_sender_jid: Option<pyo3::Py<JID>>,
+    #[pyo3(get)]
+    content_type: Option<String>,
+    #[pyo3(get)]
+    appdata: Option<String>,
+    #[pyo3(get)]
+    reporting_tag: Option<Vec<u8>>,
+    #[pyo3(get)]
+    reporting_token: Option<Vec<u8>>,
+    #[pyo3(get)]
+    reporting_token_version: Option<i64>,
 }
 
 #[pyclass(skip_from_py_object)]
@@ -264,6 +276,10 @@ impl MessageInfo {
                 Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
             },
+            target_chat: match self.inner.meta_info.target_chat {
+                Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
+                None => None,
+            },
             deprecated_lid_session: self.inner.meta_info.deprecated_lid_session,
             thread_message_id: match self.inner.meta_info.thread_message_id {
                 Some(ref s) => Some(s.clone()),
@@ -273,6 +289,11 @@ impl MessageInfo {
                 Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
             },
+            content_type: self.inner.meta_info.content_type.clone(),
+            appdata: self.inner.meta_info.appdata.clone(),
+            reporting_tag: self.inner.meta_info.reporting_tag.clone(),
+            reporting_token: self.inner.meta_info.reporting_token.clone(),
+            reporting_token_version: self.inner.meta_info.reporting_token_version,
         }
     }
     #[getter]
@@ -302,6 +323,46 @@ impl MessageInfo {
             phash: meta.phash.clone(),
         })
     }
+    #[getter]
+    fn category(&self) -> &str {
+        match self.inner.category {
+            wacore::types::message::MessageCategory::Empty => "",
+            wacore::types::message::MessageCategory::Peer => "peer",
+            wacore::types::message::MessageCategory::Other(ref s) => s.as_str(),
+        }
+    }
+    #[getter]
+    fn ephemeral_expiration(&self) -> Option<u32> {
+        self.inner.ephemeral_expiration
+    }
+    #[getter]
+    fn is_offline(&self) -> bool {
+        self.inner.is_offline
+    }
+    #[getter]
+    fn unavailable_request_id(&self) -> Option<String> {
+        self.inner.unavailable_request_id.clone()
+    }
+    #[getter]
+    fn server_timestamp_us(&self) -> Option<i64> {
+        self.inner.server_timestamp_us
+    }
+    #[getter]
+    fn verified_level(&self) -> Option<String> {
+        self.inner.verified_level.clone()
+    }
+    #[getter]
+    fn verified_name_serial(&self) -> Option<i64> {
+        self.inner.verified_name_serial
+    }
+    #[getter]
+    fn peer_recipient_pn(&self, py: Python<'_>) -> Option<pyo3::Py<JID>> {
+        self.inner.peer_recipient_pn.as_ref().map(|jid| pyo3::Py::new(py, JID::from(jid.clone())).unwrap())
+    }
+    #[getter]
+    fn bcl_participants(&self, py: Python<'_>) -> Vec<pyo3::Py<JID>> {
+        self.inner.bcl_participants.iter().map(|jid| pyo3::Py::new(py, JID::from(jid.clone())).unwrap()).collect()
+    }
     fn __repr__(&self) -> String {
         format!("MessageInfo(id='{}', type='{}', push_name='{}')", self.id, self.r#type, self.push_name)
     }
@@ -321,6 +382,10 @@ pub struct UploadResponse {
     pub file_sha256: Vec<u8>,
     #[pyo3(get)]
     pub file_length: u64,
+    #[pyo3(get)]
+    pub media_key_timestamp: i64,
+    #[pyo3(get)]
+    pub streaming_sidecar: Option<Vec<u8>>,
 }
 
 #[pyclass]

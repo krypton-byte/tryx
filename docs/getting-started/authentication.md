@@ -34,9 +34,9 @@ Tryx follows the WhatsApp multi-device pairing flow. The first run links a sessi
 Use a stable backend path:
 
 ```python
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 
-backend = SqliteBackend("/srv/tryx/session.db")
+backend = SqliteStore("/srv/tryx/session.db")
 ```
 
 If the same backend path is reused, you usually do not need to pair again.

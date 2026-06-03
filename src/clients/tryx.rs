@@ -30,7 +30,7 @@ use super::status::StatusClient;
 use super::tryx_client::TryxClient;
 use crate::clients::chat_actions::ChatActionsClient;
 use crate::log::init_logging;
-use crate::backend::{SqliteBackend, BackendBase};
+use crate::backend::{SqliteStore, BackendBase};
 use crate::events::types::{
     EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeleteChatUpdate, EvDeleteMessageForMeUpdate, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
 };
@@ -64,7 +64,7 @@ impl Tryx {
     fn new(py: Python, backend: Py<BackendBase>) -> PyResult<Self> {
         init_logging();
         info!("initializing Tryx client");
-        if let Ok(sqlite) = backend.extract::<Py<SqliteBackend>>(py) {
+        if let Ok(sqlite) = backend.extract::<Py<SqliteStore>>(py) {
             debug!("detected sqlite backend from Python");
             let backends = sqlite.borrow(py);
             let rt = runtime::Runtime::new()
@@ -95,6 +95,47 @@ impl Tryx {
             info!("backend connected and dispatcher initialized");
             Ok(Tryx {
                 backend: Arc::new(store),
+                handlers: Py::new(py, Dispatcher::empty())?,
+                tryx_client,
+                client_tx,
+            })
+        } else if let (Ok(lib_path), Ok(config_json)) = (
+            backend.getattr(py, "lib_path").and_then(|v| v.extract::<String>(py)),
+            backend.getattr(py, "config_json").and_then(|v| v.extract::<String>(py)),
+        ) {
+            debug!("detected FFI backend from Python via duck-typing");
+
+            let rt = runtime::Runtime::new()
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            let ffi_store = rt
+                .block_on(crate::backend::ffi_bridge::FfiBridgeStore::connect(
+                    &lib_path, &config_json,
+                ))
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+
+            let (client_tx, client_rx) = watch::channel(None);
+            let tryx_client = Py::new(
+                py,
+                TryxClient {
+                    client_rx: client_rx.clone(),
+                    contact: new_namespace_client!(py, client_rx, ContactClient),
+                    chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
+                    community: new_namespace_client!(py, client_rx, CommunityClient),
+                    newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
+                    groups: new_namespace_client!(py, client_rx, GroupsClient),
+                    status: new_namespace_client!(py, client_rx, StatusClient),
+                    chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
+                    blocking: new_namespace_client!(py, client_rx, BlockingClient),
+                    polls: new_namespace_client!(py, client_rx, PollsClient),
+                    presence: new_namespace_client!(py, client_rx, PresenceClient),
+                    privacy: new_namespace_client!(py, client_rx, PrivacyClient),
+                    profile: new_namespace_client!(py, client_rx, ProfileClient),
+                }
+            )?;
+
+            info!("ffi backend connected and dispatcher initialized");
+            Ok(Tryx {
+                backend: Arc::new(ffi_store),
                 handlers: Py::new(py, Dispatcher::empty())?,
                 tryx_client,
                 client_tx,

@@ -239,6 +239,8 @@ impl TryxClient {
                 file_enc_sha256: url.file_enc_sha256.to_vec(),
                 file_sha256: url.file_sha256.to_vec(),
                 file_length: url.file_length,
+                media_key_timestamp: url.media_key_timestamp,
+                streaming_sidecar: url.streaming_sidecar,
             };
             Ok(result)
         })
@@ -261,6 +263,8 @@ impl TryxClient {
                 file_enc_sha256: url.file_enc_sha256.to_vec(),
                 file_sha256: url.file_sha256.to_vec(),
                 file_length: url.file_length,
+                media_key_timestamp: url.media_key_timestamp,
+                streaming_sidecar: url.streaming_sidecar,
             };
             Ok(result)
         })

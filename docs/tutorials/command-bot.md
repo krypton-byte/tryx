@@ -13,11 +13,11 @@ Build a command-driven automation that stays maintainable as command count grows
 ```python
 import asyncio
 
-from tryx.backend import SqliteBackend
+from tryx.backend import SqliteStore
 from tryx.client import Tryx, TryxClient
 from tryx.events import EvMessage
 
-backend = SqliteBackend("whatsapp.db")
+backend = SqliteStore("whatsapp.db")
 app = Tryx(backend)
 
 

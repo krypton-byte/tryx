@@ -326,12 +326,12 @@ pub fn connect_failure_reason_to_string(reason: &ConnectFailureReason) -> String
         ConnectFailureReason::Generic => "Generic".into(),
         ConnectFailureReason::TempBanned => "TempBanned".into(),
         ConnectFailureReason::UnknownLogout => "Unknown".into(),
-        ConnectFailureReason::MainDeviceGone => "MainDeviceGone".into(),
         ConnectFailureReason::NotFound => "NotFound".into(),
         ConnectFailureReason::ServiceUnavailable => "ServiceUnavailable".into(),
         ConnectFailureReason::InternalServerError => "InternalServerError".into(),
         ConnectFailureReason::Experimental => "Experimental".into(),
-        ConnectFailureReason::Unknown(value) => format!("Unknown({})", value).into(), 
+        ConnectFailureReason::Unknown(value) => format!("Unknown({})", value).into(),
+        ConnectFailureReason::AccountLocked => "AccountLocked".into(), 
     }
 }
 
