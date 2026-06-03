@@ -2,7 +2,7 @@
 
 from typing import Any, Awaitable, Callable, TypeVar
 
-from .backend import BackendBase
+from .backend import BackendBase, FfiStoreProtocol, StoreBase
 from .events import EvMessage
 from .types import JID, MediaReuploadResult, ProfilePicture, SendResult, UploadResponse
 from .wacore import MediaType
@@ -48,11 +48,17 @@ class Tryx:
     """Main automation runtime controller.
 
     Use this class to register event handlers and start the connection lifecycle.
+
+    Accepts any of the 3 storage backend tiers:
+
+    - ``SqliteStore`` — built-in SQLite backend
+    - ``FfiStoreProtocol`` — native FFI backend (e.g. tryx-store-postgres)
+    - ``StoreBase`` subclass — pure Python custom backend
     """
 
     handlers: Any
 
-    def __init__(self, backend: BackendBase | FfiStoreProtocol) -> None: ...
+    def __init__(self, backend: BackendBase | FfiStoreProtocol | StoreBase) -> None: ...
     def get_client(self) -> TryxClient: ...
     def on(
         self, event_type: type[EventT]

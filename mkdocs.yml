@@ -14,6 +14,7 @@ nav:
       - Authentication Flow: getting-started/authentication.md
   - Core Concepts:
       - Architecture: core-concepts/architecture.md
+      - Storage Backends: core-concepts/storage-backends.md
       - Event Model: core-concepts/event-model.md
       - Type System: core-concepts/type-system.md
   - API Reference:
@@ -109,7 +110,11 @@ markdown_extensions:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.highlight:

@@ -110,6 +110,37 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## Storage Backends
+
+Tryx supports 3 storage tiers — pick the right one for your use case:
+
+| Tier | Backend | Overhead | Use case |
+|------|---------|----------|----------|
+| Built-in | `SqliteStore` | Zero | Default / prototyping |
+| Native FFI | `FfiStoreProtocol` | Near-zero | Max throughput (Postgres, custom C) |
+| Pure Python | `StoreBase` | Low | Redis, MongoDB, or any async DB |
+
+```python
+# Tier 1: Built-in SQLite (default)
+from tryx.backend import SqliteStore
+app = Tryx(SqliteStore("whatsapp.db"))
+
+# Tier 2: Native FFI (e.g. tryx-store-postgres)
+app = Tryx(PostgresStore(lib_path="./libtryx_pg.so", connect_string="..."))
+
+# Tier 3: Pure Python custom backend
+from tryx.backend import StoreBase
+
+class RedisStore(StoreBase):
+    async def put_identity(self, address: str, key: bytes) -> None:
+        await self.redis.set(f"identity:{address}", key)
+    # ... implement all abstract methods ...
+
+app = Tryx(RedisStore())
+```
+
+For the full API specification, JSON schemas, and implementation guide, see [Storage Backends](docs/core-concepts/storage-backends.md).
+
 ## Feature Overview
 
 - Event-based handlers via `@app.on(...)`
