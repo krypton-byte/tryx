@@ -47,7 +47,7 @@ impl GroupsClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Python::attach(|py| {
-                let py_result = GroupInfo::from_inner(py, result)?;
+                let py_result = GroupInfo::from_inner(py, &result)?;
                 Py::new(py, py_result)
             })
         })
@@ -67,7 +67,8 @@ impl GroupsClient {
                 let dict = PyDict::new(py);
                 for (jid, meta) in result {
                     let py_meta = GroupMetadata::from_inner(py, meta)?;
-                    dict.set_item(jid, Py::new(py, py_meta)?)?;
+                    let py_jid = Py::new(py, JID::from(jid))?;
+                    dict.set_item(py_jid, Py::new(py, py_meta)?)?;
                 }
                 Ok(dict.unbind())
             })
@@ -158,7 +159,7 @@ impl GroupsClient {
         future_into_py_with_locals(py, locals, async move {
             client
                 .groups()
-                .set_description(&jid_value, description_value, prev)
+                .set_description(&jid_value, description_value, prev.as_deref())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())

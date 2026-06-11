@@ -94,19 +94,7 @@ impl StatusClient {
         }
 
         let upload_ref = upload.bind(py).borrow();
-        let media_key = as_32_bytes("upload.media_key", &upload_ref.media_key)?;
-        let file_enc_sha256 = as_32_bytes("upload.file_enc_sha256", &upload_ref.file_enc_sha256)?;
-        let file_sha256 = as_32_bytes("upload.file_sha256", &upload_ref.file_sha256)?;
-        let upload_value = whatsapp_rust::upload::UploadResponse {
-            url: upload_ref.url.clone(),
-            streaming_sidecar: upload_ref.streaming_sidecar.clone(),
-            direct_path: upload_ref.direct_path.clone(),
-            media_key,
-            file_enc_sha256,
-            file_sha256,
-            file_length: upload_ref.file_length,
-            media_key_timestamp: upload_ref.media_key_timestamp,
-        };
+        let upload_value = upload_ref.inner.clone();
 
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
@@ -154,19 +142,7 @@ impl StatusClient {
         }
 
         let upload_ref = upload.bind(py).borrow();
-        let media_key = as_32_bytes("upload.media_key", &upload_ref.media_key)?;
-        let file_enc_sha256 = as_32_bytes("upload.file_enc_sha256", &upload_ref.file_enc_sha256)?;
-        let file_sha256 = as_32_bytes("upload.file_sha256", &upload_ref.file_sha256)?;
-        let upload_value = whatsapp_rust::upload::UploadResponse {
-            url: upload_ref.url.clone(),
-            streaming_sidecar: upload_ref.streaming_sidecar.clone(),
-            direct_path: upload_ref.direct_path.clone(),
-            media_key,
-            file_enc_sha256,
-            file_sha256,
-            file_length: upload_ref.file_length,
-            media_key_timestamp: upload_ref.media_key_timestamp,
-        };
+        let upload_value = upload_ref.inner.clone();
 
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;

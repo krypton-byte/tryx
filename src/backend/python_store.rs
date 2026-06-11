@@ -439,6 +439,10 @@ impl AppSyncStore for PythonStore {
         })
     }
 
+    async fn clear_mutation_macs(&self, _name: &str) -> StoreResult<()> {
+        Ok(())
+    }
+
     async fn set_sync_key(&self, key_id: &[u8], key: AppStateSyncKey) -> StoreResult<()> {
         let key_id_c = key_id.to_vec();
         let key_c = serde_json::to_vec(&key).map_err(|e| make_err(e.to_string()))?;
@@ -564,6 +568,10 @@ impl SignalStore for PythonStore {
         Python::attach(|_py| {
             Ok(())
         })
+    }
+
+    async fn mark_prekeys_uploaded(&self, _ids: &[u32]) -> StoreResult<()> {
+        Ok(())
     }
 
     async fn load_identity(&self, address: &str) -> StoreResult<Option<[u8; 32]>> {

@@ -106,7 +106,7 @@ use self::events::types::{
     DeviceListUpdateData,
     EvPushNameUpdateData,
 };
-use self::backend::{BackendBase, SqliteStore, };
+use self::backend::{BackendBase, SqliteStore, store_types::*};
 use self::exceptions::{EventDispatchError, FailedBuildClient, FailedToDecodeProto, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
 use self::types::{DeviceSentMeta, JID, MediaReuploadResult, MessageInfo, MessageSource, MsgBotInfo, MsgMetaInfo, ProfilePicture, SendResult, UploadResponse};
 use self::wacore::download::MediaType;
@@ -307,6 +307,14 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     let backend_module = PyModule::new(_py.py(), "backend")?;
     backend_module.add_class::<BackendBase>()?;
     backend_module.add_class::<SqliteStore>()?;
+    backend_module.add_class::<PyDevice>()?;
+    backend_module.add_class::<PyLidPnMappingEntry>()?;
+    backend_module.add_class::<PyDeviceListRecord>()?;
+    backend_module.add_class::<PyTcTokenEntry>()?;
+    backend_module.add_class::<PyAppStateSyncKey>()?;
+    backend_module.add_class::<PyHashState>()?;
+    backend_module.add_class::<PyAppStateMutationMAC>()?;
+    backend_module.add_class::<PyMsgSecretEntry>()?;
     _py.add_submodule(&backend_module)?;
 
     let exceptions_module = PyModule::new(_py.py(), "exceptions")?;

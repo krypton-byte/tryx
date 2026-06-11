@@ -249,6 +249,11 @@ impl SignalStore for FfiBridgeStore {
         if res == 0 { Ok(Some(Bytes::from(out.into_vec()))) } else if res == 1 { Ok(None) } else { Err(make_err("load_prekey failed")) }
     }
 
+    async fn mark_prekeys_uploaded(&self, _ids: &[u32]) -> StoreResult<()> {
+        // Fallback for FFI bridge (can be implemented as dispatch opcode later if needed)
+        Ok(())
+    }
+
     async fn remove_prekey(&self, id: u32) -> StoreResult<()> {
         let res = unsafe { (self.ffi.remove_prekey)(self.ffi.handle, id) };
         if res == 0 { Ok(()) } else { Err(make_err("remove_prekey failed")) }
@@ -339,6 +344,11 @@ impl AppSyncStore for FfiBridgeStore {
             "macs": mutations,
         });
         self.call(24, args)?;
+        Ok(())
+    }
+
+    async fn clear_mutation_macs(&self, _name: &str) -> StoreResult<()> {
+        // Fallback for FFI bridge
         Ok(())
     }
 

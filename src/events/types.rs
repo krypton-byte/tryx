@@ -192,6 +192,7 @@ impl EvReceipt {
             wacore::types::presence::ReceiptType::HistorySync => ReceiptType::HistorySync,
             wacore::types::presence::ReceiptType::EncRekeyRetry => ReceiptType::EncRekeyRetry,
             wacore::types::presence::ReceiptType::Other(_) => ReceiptType::Other,
+            _ => ReceiptType::Other,
         };
         Python::attach(|py| {
             pyo3::Py::new(py, Self {

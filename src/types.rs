@@ -369,23 +369,45 @@ impl MessageInfo {
 }
 
 #[pyclass]
+#[derive(Clone)]
 pub struct UploadResponse {
-    #[pyo3(get)]
-    pub url: String,
-    #[pyo3(get)]
-    pub direct_path: String,
-    #[pyo3(get)]
-    pub media_key: Vec<u8>,
-    #[pyo3(get)]
-    pub file_enc_sha256: Vec<u8>,
-    #[pyo3(get)]
-    pub file_sha256: Vec<u8>,
-    #[pyo3(get)]
-    pub file_length: u64,
-    #[pyo3(get)]
-    pub media_key_timestamp: i64,
-    #[pyo3(get)]
-    pub streaming_sidecar: Option<Vec<u8>>,
+    pub inner: whatsapp_rust::upload::UploadResponse,
+}
+
+#[pymethods]
+impl UploadResponse {
+    #[getter]
+    pub fn url(&self) -> String {
+        self.inner.url.clone()
+    }
+    #[getter]
+    pub fn direct_path(&self) -> String {
+        self.inner.direct_path.clone()
+    }
+    #[getter]
+    pub fn media_key(&self) -> Vec<u8> {
+        self.inner.media_key.to_vec()
+    }
+    #[getter]
+    pub fn file_enc_sha256(&self) -> Vec<u8> {
+        self.inner.file_enc_sha256.to_vec()
+    }
+    #[getter]
+    pub fn file_sha256(&self) -> Vec<u8> {
+        self.inner.file_sha256.to_vec()
+    }
+    #[getter]
+    pub fn file_length(&self) -> u64 {
+        self.inner.file_length
+    }
+    #[getter]
+    pub fn media_key_timestamp(&self) -> i64 {
+        self.inner.media_key_timestamp
+    }
+    #[getter]
+    pub fn streaming_sidecar(&self) -> Option<Vec<u8>> {
+        self.inner.streaming_sidecar.clone()
+    }
 }
 
 #[pyclass]

@@ -26,8 +26,7 @@ impl PollsHelpers {
         let voter = voter_jid.bind(py).borrow().as_whatsapp_jid();
 
         wacore::poll::decrypt_poll_vote_with_secret(
-            enc_payload,
-            enc_iv,
+            wacore::poll::PollVoteCiphertext { enc_payload, enc_iv },
             message_secret,
             poll_msg_id.as_str(),
             &creator.to_string(),
@@ -70,8 +69,7 @@ impl PollsHelpers {
 
         for (voter_str, enc_payload, enc_iv) in &vote_values {
             match wacore::poll::decrypt_poll_vote_with_secret(
-                enc_payload,
-                enc_iv,
+                wacore::poll::PollVoteCiphertext { enc_payload, enc_iv },
                 message_secret,
                 poll_msg_id.as_str(),
                 &creator_str,

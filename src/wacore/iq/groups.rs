@@ -300,17 +300,13 @@ pub struct GroupInfo {
 }
 
 impl GroupInfo {
-    pub fn from_inner(py: Python<'_>, value: wacore::client::context::GroupInfo) -> PyResult<Self> {
-        let lid_to_pn_map = value
-            .lid_to_pn_map()
-            .iter()
-            .map(|(lid, jid)| Ok((lid.to_string(), Py::new(py, JID::from(jid.clone()))?)))
-            .collect::<PyResult<Vec<_>>>()?;
+    pub fn from_inner(py: Python<'_>, value: &wacore::client::context::GroupInfo) -> PyResult<Self> {
+        let lid_to_pn_map = Vec::new();
 
         let participants = value
             .participants
-            .into_iter()
-            .map(|jid| Py::new(py, JID::from(jid)))
+            .iter()
+            .map(|jid| Py::new(py, JID::from(jid.clone())))
             .collect::<PyResult<Vec<_>>>()?;
 
         let addressing_mode = match value.addressing_mode {
