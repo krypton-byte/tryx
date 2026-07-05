@@ -28,8 +28,8 @@ class BackendBase:
     - :class:`StoreBase` for a custom pure-Python backend.
     - The ``FfiStoreProtocol`` protocol for native FFI-based backends.
     """
-    ...
 
+    ...
 
 class SqliteStore(BackendBase):
     """Built-in SQLite storage backend.
@@ -51,7 +51,6 @@ class SqliteStore(BackendBase):
     path: str
 
     def __init__(self, path: str) -> None: ...
-
 
 # ── FFI Store Protocol (for tryx-store-postgres, etc.) ───────────────────────
 
@@ -82,7 +81,6 @@ class FfiStoreProtocol(Protocol):
 
     lib_path: str
     connect_string: str
-
 
 # ── Pure Python Store Base ───────────────────────────────────────────────────
 
@@ -302,7 +300,9 @@ class StoreBase(ABC):
         ...
 
     @abstractmethod
-    async def put_mutation_macs(self, name: str, version: int, mutations: bytes) -> None:
+    async def put_mutation_macs(
+        self, name: str, version: int, mutations: bytes
+    ) -> None:
         """Store mutation MACs for a version.
 
         Args:
@@ -436,12 +436,16 @@ class StoreBase(ABC):
     # ── ProtocolStore: Base Key Collision Detection ───────────────────────
 
     @abstractmethod
-    async def save_base_key(self, address: str, message_id: str, base_key: bytes) -> None:
+    async def save_base_key(
+        self, address: str, message_id: str, base_key: bytes
+    ) -> None:
         """Save a base key for retry collision detection."""
         ...
 
     @abstractmethod
-    async def has_same_base_key(self, address: str, message_id: str, current_base_key: bytes) -> bool:
+    async def has_same_base_key(
+        self, address: str, message_id: str, current_base_key: bytes
+    ) -> bool:
         """Check if the current session has the same base key as the saved one."""
         ...
 
@@ -506,7 +510,9 @@ class StoreBase(ABC):
         ...
 
     @abstractmethod
-    async def delete_expired_tc_tokens(self, token_cutoff: int, sender_cutoff: int) -> int:
+    async def delete_expired_tc_tokens(
+        self, token_cutoff: int, sender_cutoff: int
+    ) -> int:
         """Delete tc tokens whose received token and sender bucket are both expired.
 
         A row is removed only when its received token is expired-or-absent
@@ -527,7 +533,9 @@ class StoreBase(ABC):
     # ── ProtocolStore: Sent Message Store ─────────────────────────────────
 
     @abstractmethod
-    async def store_sent_message(self, chat_jid: str, message_id: str, payload: bytes) -> None:
+    async def store_sent_message(
+        self, chat_jid: str, message_id: str, payload: bytes
+    ) -> None:
         """Store a sent message's serialized payload for retry handling."""
         ...
 
