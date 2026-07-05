@@ -506,11 +506,18 @@ class StoreBase(ABC):
         ...
 
     @abstractmethod
-    async def delete_expired_tc_tokens(self, cutoff: int) -> int:
-        """Delete tc tokens with timestamp older than cutoff.
+    async def delete_expired_tc_tokens(self, token_cutoff: int, sender_cutoff: int) -> int:
+        """Delete tc tokens whose received token and sender bucket are both expired.
+
+        A row is removed only when its received token is expired-or-absent
+        (older than ``token_cutoff``) AND its sender bucket is expired-or-absent
+        (older than ``sender_cutoff``), so recent state on one axis keeps the row.
 
         Args:
-            cutoff: Unix timestamp in seconds.
+            token_cutoff: Unix timestamp in seconds; received tokens older than
+                this are considered expired.
+            sender_cutoff: Unix timestamp in seconds; sender buckets older than
+                this are considered expired.
 
         Returns:
             Number of rows deleted.

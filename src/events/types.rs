@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use std::sync::OnceLock;
 
-use prost::Message as ProstMessage;
-use pyo3::{Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
+use buffa::Message as ProstMessage;
+use pyo3::{Py, PyAny, PyResult, Python, pyclass, pymethods};
 use pyo3::types::{PyDateTime};
 use chrono::{DateTime, Utc};
 use wacore::types::events::QrScannedWithoutMultidevice;
@@ -227,6 +227,8 @@ impl EvReceipt {
 pub enum UnavailableType {
     Unknown,
     ViewOnce,
+    Hosted,
+    Bot,
 }
 
 #[pyclass]
@@ -258,6 +260,8 @@ impl EvUndecryptableMessage {
         let py_unavailable_type = match unavailable_type {
             wacore::types::events::UnavailableType::Unknown => UnavailableType::Unknown,
             wacore::types::events::UnavailableType::ViewOnce => UnavailableType::ViewOnce,
+            wacore::types::events::UnavailableType::Hosted => UnavailableType::Hosted,
+            wacore::types::events::UnavailableType::Bot => UnavailableType::Bot,
         };
         let py_decrypt_fail_mode = match decrypt_fail_mode {
             wacore::types::events::DecryptFailMode::Show => DecryptFailMode::Show,
@@ -552,8 +556,7 @@ impl LazyConversation {
         } else {
             let proto_type = get_lazy_conversation_proto_type(py)?;
             let proto = &*self.inner;
-            let mut proto_bytes = Vec::with_capacity(proto.encoded_len());
-            proto.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode conversation proto: {}", e)))?;
+            let proto_bytes = proto.encode_to_vec();
             let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
             self.parsed = Some(parsed_proto.clone_ref(py));
             Ok(Some(parsed_proto))

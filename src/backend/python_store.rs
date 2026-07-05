@@ -360,11 +360,11 @@ impl ProtocolStore for PythonStore {
         })
     }
 
-    async fn delete_expired_tc_tokens(&self, cutoff: i64) -> StoreResult<u32> {
-        let cutoff_c = cutoff.clone();
+    async fn delete_expired_tc_tokens(&self, token_cutoff: i64, sender_cutoff: i64) -> StoreResult<u32> {
         let fut = Python::attach(|_py| {
             let kwargs = pyo3::types::PyDict::new(_py);
-            kwargs.set_item("cutoff", cutoff_c).unwrap();
+            kwargs.set_item("token_cutoff", token_cutoff).unwrap();
+            kwargs.set_item("sender_cutoff", sender_cutoff).unwrap();
             let coro = self.py_obj.bind(_py).call_method("delete_expired_tc_tokens", (), Some(&kwargs)).map_err(|e| make_err(e.to_string()))?;
             pyo3_async_runtimes::tokio::into_future(coro).map_err(|e| make_err(e.to_string()))
         })?;

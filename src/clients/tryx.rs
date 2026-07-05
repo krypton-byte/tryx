@@ -388,8 +388,8 @@ impl Tryx {
             EventCallbacks::from_dispatcher(py, &dispatcher)
         }));
         info!("building WhatsApp automation client");
-        let mut automation = Bot::builder()
-            .with_backend(backend)
+        let automation = Bot::builder()
+            .with_backend_arc(backend)
             .with_transport_factory(TokioWebSocketTransportFactory::new())
             .with_http_client(UreqHttpClient::new())
             .on_event(move |event, _client| {
@@ -469,12 +469,17 @@ impl Tryx {
                                 Py::new(py, EvClientOutDated {}).map(|event| event.into_any())
                             }).await;
                         }
-                        Event::Message(msg, info) => {
-                            let msg = (**msg).clone();
-                            let info = (**info).clone();
-                            Self::emit_built_event(&tryx_client, &callbacks.message, locals.clone(), "Message", |py| {
-                                Py::new(py, EvMessage::new(msg, info)).map(|event| event.into_any())
-                            }).await;
+                        Event::Messages(batch) => {
+                            // Upstream now delivers messages in arrival-ordered
+                            // batches (Baileys `messages.upsert` shape); emit one
+                            // "Message" event per inbound message, preserving order.
+                            for inbound in batch.messages.iter() {
+                                let msg = (*inbound.message).clone();
+                                let info = (*inbound.info).clone();
+                                Self::emit_built_event(&tryx_client, &callbacks.message, locals.clone(), "Message", |py| {
+                                    Py::new(py, EvMessage::new(msg, info)).map(|event| event.into_any())
+                                }).await;
+                            }
                         }
                         Event::Receipt(receipt) => {
                             let receipt = receipt.clone();
@@ -708,17 +713,9 @@ impl Tryx {
             .map_err(|e| PyErr::new::<EventDispatchError, _>(e.to_string()))?;
 
         info!("client built successfully, starting run loop");
-        automation.run()
-            .await
-            .map_err(|e| {
-                error!(error = %e, "failed to start run stream");
-                PyErr::new::<EventDispatchError, _>(e.to_string())
-            })?
-            .await
-            .map_err(|e| {
-                error!(error = %e, "run stream failed");
-                PyErr::new::<EventDispatchError, _>(e.to_string())
-            })?;
+        // `Bot::run` now consumes the bot and drives the event loop to
+        // completion, returning `()` instead of a fallible stream handle.
+        automation.run().await;
 
         info!("run loop finished");
 

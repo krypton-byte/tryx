@@ -158,8 +158,7 @@ impl MuteUpdateData {
             Ok(cached.clone_ref(py))
         } else {
             let proto_type = get_proto_mute_action_proto_type(py)?;
-            let mut proto_bytes = Vec::with_capacity(self.action.encoded_len());
-            self.action.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode MuteAction proto: {}", e)))?;
+            let proto_bytes = self.action.as_ref().encode_to_vec();
             let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
             self.action_cached.set(parsed_proto.clone_ref(py)).ok();
             Ok(parsed_proto)
@@ -229,8 +228,7 @@ impl MarkChatAsReadUpdateData {
             Ok(cached.clone_ref(py))
         } else {
             let proto_type = get_proto_mark_chat_as_read_action_proto_type(py)?;
-            let mut proto_bytes = Vec::with_capacity(self.action.encoded_len());
-            self.action.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode MarkChatAsReadAction proto: {}", e)))?;
+            let proto_bytes = self.action.as_ref().encode_to_vec();
             let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
             self.action_cached.set(parsed_proto.clone_ref(py)).ok();
             Ok(parsed_proto)
@@ -292,8 +290,7 @@ impl EvHistorySync {
             Ok(proto.clone_ref(py))
         } else {
             let proto_type = get_proto_history_sync_proto_type(py)?;
-            let mut proto_bytes = Vec::with_capacity(self.inner.encoded_len());
-            self.inner.encode(&mut proto_bytes).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to encode HistorySync proto: {}", e)))?;
+            let proto_bytes = self.inner.as_ref().encode_to_vec();
             let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
             self.proto_cached.set(parsed_proto.clone_ref(py)).ok();
             Ok(parsed_proto)

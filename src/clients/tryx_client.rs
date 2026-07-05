@@ -6,7 +6,7 @@ use tokio::sync::watch;
 use waproto::whatsapp::Message as WhatsappMessage;
 use waproto::whatsapp::message::{self as wa};
 use wacore::proto_helpers::build_quote_context;
-use prost::Message;
+use buffa::Message;
 use whatsapp_rust::{Client, UploadOptions};
 use crate::clients::chat_actions::ChatActionsClient;
 use crate::clients::chatstate::ChatstateClient;
@@ -33,7 +33,7 @@ fn guess_mimetype(data: &[u8]) -> Option<String> {
 /// Reduces the repeated decode-then-download pattern for each media type.
 macro_rules! decode_and_download {
     ($client:expr, $data:expr, $msg_type:ty, $label:expr) => {{
-        let media = <$msg_type>::decode($data).map_err(|e| {
+        let media = <$msg_type>::decode(&mut $data).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 format!("Failed to decode {}: {}", $label, e),
             )
@@ -117,7 +117,7 @@ impl TryxClient {
     //     future_into_py_with_locals(py, locals, async move {
     //         match message_type_name.as_str() {
     //             "ImageMessage" => {
-    //                 let media = wa::ImageMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                 let media = wa::ImageMessage::decode(&mut serialized.as_slice()).map_err(|e| {
     //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
     //                         format!("Failed to decode ImageMessage: {}", e),
     //                     )
@@ -125,7 +125,7 @@ impl TryxClient {
     //                 client.download_to_writer(&media, path).await
     //             }
     //             "VideoMessage" => {
-    //                 let media = wa::VideoMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                 let media = wa::VideoMessage::decode(&mut serialized.as_slice()).map_err(|e| {
     //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
     //                         format!("Failed to decode VideoMessage: {}", e),
     //                     )
@@ -133,7 +133,7 @@ impl TryxClient {
     //                 client.download_to_writer(&media, path).await
     //             }
     //             "DocumentMessage" => {
-    //                 let media = wa::DocumentMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                 let media = wa::DocumentMessage::decode(&mut serialized.as_slice()).map_err(|e| {
     //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
     //                         format!("Failed to decode DocumentMessage: {}", e),
     //                     )
@@ -141,7 +141,7 @@ impl TryxClient {
     //                 client.download_to_writer(&media, path).await
     //             }
     //             "AudioMessage" => {
-    //                 let media = wa::AudioMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                 let media = wa::AudioMessage::decode(&mut serialized.as_slice()).map_err(|e| {
     //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
     //                         format!("Failed to decode AudioMessage: {}", e),
     //                     )
@@ -149,7 +149,7 @@ impl TryxClient {
     //                 client.download_to_writer(&media, path).await
     //             }
     //             "StickerMessage" => {
-    //                 let media = wa::StickerMessage::decode(serialized.as_slice()).map_err(|e| {
+    //                 let media = wa::StickerMessage::decode(&mut serialized.as_slice()).map_err(|e| {
     //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
     //                         format!("Failed to decode StickerMessage: {}", e),
     //                     )
@@ -158,15 +158,15 @@ impl TryxClient {
     //             }
     //             _ => {
     //                 // Fallback path for unknown wrappers from Python side.
-    //                 if let Ok(media) = wa::ImageMessage::decode(serialized.as_slice()) {
+    //                 if let Ok(media) = wa::ImageMessage::decode(&mut serialized.as_slice()) {
     //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::VideoMessage::decode(serialized.as_slice()) {
+    //                 } else if let Ok(media) = wa::VideoMessage::decode(&mut serialized.as_slice()) {
     //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::DocumentMessage::decode(serialized.as_slice()) {
+    //                 } else if let Ok(media) = wa::DocumentMessage::decode(&mut serialized.as_slice()) {
     //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::AudioMessage::decode(serialized.as_slice()) {
+    //                 } else if let Ok(media) = wa::AudioMessage::decode(&mut serialized.as_slice()) {
     //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::StickerMessage::decode(serialized.as_slice()) {
+    //                 } else if let Ok(media) = wa::StickerMessage::decode(&mut serialized.as_slice()) {
     //                     client.download_to_writer(&media, path).await
     //                 } else {
     //                     return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
@@ -198,15 +198,15 @@ impl TryxClient {
                 "StickerMessage" => decode_and_download!(client, serialized.as_slice(), wa::StickerMessage, "StickerMessage"),
                 _ => {
                     // Fallback: try each media type in order.
-                    if let Ok(media) = wa::ImageMessage::decode(serialized.as_slice()) {
+                    if let Ok(media) = wa::ImageMessage::decode(&mut serialized.as_slice()) {
                         client.download(&media).await
-                    } else if let Ok(media) = wa::VideoMessage::decode(serialized.as_slice()) {
+                    } else if let Ok(media) = wa::VideoMessage::decode(&mut serialized.as_slice()) {
                         client.download(&media).await
-                    } else if let Ok(media) = wa::DocumentMessage::decode(serialized.as_slice()) {
+                    } else if let Ok(media) = wa::DocumentMessage::decode(&mut serialized.as_slice()) {
                         client.download(&media).await
-                    } else if let Ok(media) = wa::AudioMessage::decode(serialized.as_slice()) {
+                    } else if let Ok(media) = wa::AudioMessage::decode(&mut serialized.as_slice()) {
                         client.download(&media).await
-                    } else if let Ok(media) = wa::StickerMessage::decode(serialized.as_slice()) {
+                    } else if let Ok(media) = wa::StickerMessage::decode(&mut serialized.as_slice()) {
                         client.download(&media).await
                     } else {
                         return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
@@ -269,7 +269,7 @@ impl TryxClient {
             .call_method0(py, "SerializeToString")?
             .extract(py)?;
 
-        let whatsapp_message = WhatsappMessage::decode(serialized.as_slice()).map_err(|e| {
+        let whatsapp_message = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 format!("Failed to decode WhatsAppMessage proto: {}", e),
             )
@@ -296,11 +296,11 @@ impl TryxClient {
             match quoted {
                 Some(_) => {
                     let message = WhatsappMessage {
-                        extended_text_message: Some(Box::new(wa::ExtendedTextMessage {
+                        extended_text_message: buffa::MessageField::some(wa::ExtendedTextMessage {
                             text: Some(text),
-                            context_info: context_info.map(Box::new),
+                            context_info: context_info.into(),
                             ..Default::default()
-                        })),
+                        }),
                         ..Default::default()
                     };
                     let send_result = client
@@ -340,7 +340,7 @@ impl TryxClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             let message = WhatsappMessage {
-                image_message: Some(Box::new(wa::ImageMessage {
+                image_message: buffa::MessageField::some(wa::ImageMessage {
                     url: Some(upload.url),
                     mimetype: Some(mime),
                     direct_path: Some(upload.direct_path),
@@ -349,9 +349,9 @@ impl TryxClient {
                     file_sha256: Some(upload.file_sha256.to_vec()),
                     file_length: Some(upload.file_length),
                     caption,
-                    context_info: context_info.map(Box::new),
+                    context_info: context_info.into(),
                     ..Default::default()
-                })),
+                }),
                 ..Default::default()
             };
             let send_result = client
@@ -390,7 +390,7 @@ impl TryxClient {
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
             let message = WhatsappMessage {
-                document_message: Some(Box::new(wa::DocumentMessage {
+                document_message: buffa::MessageField::some(wa::DocumentMessage {
                     url: Some(upload.url),
                     mimetype: Some(mime),
                     title: file_name.clone(),
@@ -401,9 +401,9 @@ impl TryxClient {
                     file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
                     direct_path: Some(upload.direct_path),
                     caption,
-                    context_info: context_info.map(Box::new),
+                    context_info: context_info.into(),
                     ..Default::default()
-                })),
+                }),
                 ..Default::default()
             };
 
@@ -443,7 +443,7 @@ impl TryxClient {
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
             let message = WhatsappMessage {
-                audio_message: Some(Box::new(wa::AudioMessage {
+                audio_message: buffa::MessageField::some(wa::AudioMessage {
                     url: Some(upload.url),
                     mimetype: Some(mime),
                     file_sha256: Some(upload.file_sha256.to_vec()),
@@ -453,9 +453,9 @@ impl TryxClient {
                     media_key: Some(upload.media_key.to_vec()),
                     file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
                     direct_path: Some(upload.direct_path),
-                    context_info: context_info.map(Box::new),
+                    context_info: context_info.into(),
                     ..Default::default()
-                })),
+                }),
                 ..Default::default()
             };
 
@@ -496,7 +496,7 @@ impl TryxClient {
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
             let message = WhatsappMessage {
-                video_message: Some(Box::new(wa::VideoMessage {
+                video_message: buffa::MessageField::some(wa::VideoMessage {
                     url: Some(upload.url),
                     mimetype: Some(mime),
                     file_sha256: Some(upload.file_sha256.to_vec()),
@@ -507,9 +507,9 @@ impl TryxClient {
                     gif_playback: Some(gif_playback),
                     file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
                     direct_path: Some(upload.direct_path),
-                    context_info: context_info.map(Box::new),
+                    context_info: context_info.into(),
                     ..Default::default()
-                })),
+                }),
                 ..Default::default()
             };
 
@@ -558,7 +558,7 @@ impl TryxClient {
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
             let message = WhatsappMessage {
-                sticker_message: Some(Box::new(wa::StickerMessage {
+                sticker_message: buffa::MessageField::some(wa::StickerMessage {
                     url: Some(upload.url),
                     file_sha256: Some(upload.file_sha256.to_vec()),
                     file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
@@ -567,9 +567,9 @@ impl TryxClient {
                     direct_path: Some(upload.direct_path),
                     file_length: Some(upload.file_length),
                     is_animated: Some(is_animated),
-                    context_info: context_info.map(Box::new),
+                    context_info: context_info.into(),
                     ..Default::default()
-                })),
+                }),
                 ..Default::default()
             };
 

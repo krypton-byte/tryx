@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Build the bot
     let app = Bot::builder()
-        .with_backend(backend)
+        .with_backend_arc(backend)
         .with_transport_factory(TokioWebSocketTransportFactory::new())
         .with_http_client(UreqHttpClient::new())
         .on_event(|event, _client| async move {
@@ -21,8 +21,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Event::PairingQrCode { code, .. } => {
                     println!("Scan this QR code with WhatsApp:\n{}", code);
                 }
-                Event::Message(msg, info) => {
-                    println!("Message from {}: {:?}", info.source.sender, msg);
+                Event::Messages(batch) => {
+                    for inbound in batch.messages.iter() {
+                        println!("Message from {}: {:?}", inbound.info.source.sender, inbound.message);
+                    }
                 }
                 Event::Connected(_e) => {
                     println!("Connected to WhatsApp");
@@ -32,10 +34,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .with_runtime(TokioRuntime)
         .build();
-        let mut app = app.await?;
+        let app = app.await?;
         let _g = app.client();
 
-    // Start the bot
-    app.run().await?.await?;
+    // Start the bot (run now consumes the bot and drives the loop to completion)
+    app.run().await;
     Ok(())
 }

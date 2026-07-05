@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use prost::Message;
+use buffa::Message;
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -211,7 +211,7 @@ impl NewsletterClient {
         let locals = get_current_locals(py)?;
         let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
         let serialized: Vec<u8> = message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = WhatsappMessage::decode(serialized.as_slice()).map_err(|e| {
+        let message_value = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 format!("Failed to decode WhatsAppMessage proto: {}", e),
             )

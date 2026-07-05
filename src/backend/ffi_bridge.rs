@@ -498,7 +498,7 @@ impl ProtocolStore for FfiBridgeStore {
         Ok(Vec::new())
     }
 
-    async fn delete_expired_tc_tokens(&self, _cutoff: i64) -> StoreResult<u32> {
+    async fn delete_expired_tc_tokens(&self, _token_cutoff: i64, _sender_cutoff: i64) -> StoreResult<u32> {
         Ok(0)
     }
 

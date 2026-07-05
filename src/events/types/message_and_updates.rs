@@ -109,7 +109,7 @@ impl EvDeleteMessageForMeUpdate {
             let action_proto = from_string_to_python_proto(
                 py,
                 get_proto_delete_message_for_me_action_proto_type(py)?,
-                self.inner.action.encode_to_vec().as_slice(),
+                self.inner.action.as_ref().encode_to_vec().as_slice(),
             )?;
             let data = DeleteMessageForMeUpdateData {
                 chat_jid: Py::new(py, JID::from(self.inner.chat_jid.clone())).unwrap(),
@@ -239,12 +239,12 @@ impl MessageData {
     }
     #[getter]
     fn caption(&self) -> Option<&str> {
-        self.inner.image_message.as_ref().and_then(|img| img.caption.as_deref())
-            .or_else(|| self.inner.video_message.as_ref().and_then(|vid| vid.caption.as_deref()))
-            .or_else(|| self.inner.document_message.as_ref().and_then(|doc| doc.caption.as_deref()))
+        self.inner.image_message.as_option().and_then(|img| img.caption.as_deref())
+            .or_else(|| self.inner.video_message.as_option().and_then(|vid| vid.caption.as_deref()))
+            .or_else(|| self.inner.document_message.as_option().and_then(|doc| doc.caption.as_deref()))
     }
     fn get_extended_text_message(&self) -> Option<&str> {
-        if let Some(etm) = self.inner.extended_text_message.as_ref() {
+        if let Some(etm) = self.inner.extended_text_message.as_option() {
             etm.text.as_deref()
         } else {
             None
@@ -252,7 +252,7 @@ impl MessageData {
     }
     fn get_text(&self) -> Option<&str> {
         self.inner.conversation.as_deref()
-            .or_else(|| self.inner.extended_text_message.as_ref().and_then(|etm| etm.text.as_deref()))
+            .or_else(|| self.inner.extended_text_message.as_option().and_then(|etm| etm.text.as_deref()))
     }
     #[getter]
     fn message_info(&self, py: Python) -> PyResult<Py<MessageInfo>> {
@@ -270,11 +270,7 @@ impl MessageData {
         match self.message_proto.get() {
             Some(ref proto) => Ok(proto.clone_ref(py)),
             None => {
-                let mut buffer = Vec::with_capacity(self.inner.as_ref().encoded_len());
-                self.inner
-                    .as_ref()
-                    .encode(&mut buffer)
-                    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+                let buffer = self.inner.as_ref().encode_to_vec();
 
                 let new_proto = parse_message_proto(py, &buffer)?;
                 let out_proto = new_proto.clone_ref(py);

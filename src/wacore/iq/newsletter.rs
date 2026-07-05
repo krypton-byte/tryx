@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-use prost::Message;
+use buffa::Message;
 use pyo3::prelude::*;
 
 use whatsapp_rust::{

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use pyo3::{PyAny, Py, PyErr, PyResult, Python, exceptions::PyRuntimeError, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyDateTime}};
 use whatsapp_rust::{Jid as WhatsAppJID};
 use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo};
-use prost::Message;
+use buffa::Message;
 #[pyclass]
 pub struct JID {
     inner: Arc<WhatsAppJID>,
@@ -300,12 +300,7 @@ impl MessageInfo {
     fn verified_name(&self, py: Python<'_>) -> PyResult<Option<pyo3::Py<PyAny>>> {
         match self.inner.verified_name {
             Some(ref name) => {
-                let mut buffer = Vec::with_capacity(name.encoded_len());
-                name.encode(&mut buffer).map_err(|e| {
-                    PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                        format!("Failed to encode VerifiedNameCertificate: {}", e),
-                    )
-                })?;
+                let buffer = name.encode_to_vec();
 
                 let verified_proto = py.import("tryx.waproto.whatsapp_pb2")?;
                 let proto_type = verified_proto.getattr("VerifiedNameCertificate")?;

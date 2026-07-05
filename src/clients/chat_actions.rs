@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use prost::Message;
+use buffa::Message;
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -36,7 +36,7 @@ impl ChatActionsClient {
             Some(range) => {
                 let serialized: Vec<u8> =
                     range.call_method0(py, "SerializeToString")?.extract(py)?;
-                let parsed = SyncActionMessageRange::decode(serialized.as_slice()).map_err(|e| {
+                let parsed = SyncActionMessageRange::decode(&mut serialized.as_slice()).map_err(|e| {
                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
                         format!("Failed to decode SyncActionMessageRange: {}", e),
                     )
@@ -49,7 +49,7 @@ impl ChatActionsClient {
 
     fn decode_message_key(py: Python<'_>, key: Py<PyAny>) -> PyResult<wa::MessageKey> {
         let serialized: Vec<u8> = key.call_method0(py, "SerializeToString")?.extract(py)?;
-        wa::MessageKey::decode(serialized.as_slice()).map_err(|e| {
+        wa::MessageKey::decode(&mut serialized.as_slice()).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 format!("Failed to decode MessageKey: {}", e),
             )
@@ -57,12 +57,7 @@ impl ChatActionsClient {
     }
 
     fn encode_message_key(py: Python<'_>, key: wa::MessageKey) -> PyResult<Py<PyAny>> {
-        let mut bytes = Vec::with_capacity(key.encoded_len());
-        key.encode(&mut bytes).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
-                format!("Failed to encode MessageKey: {}", e),
-            )
-        })?;
+        let bytes = key.encode_to_vec();
         parse_proto_bytes(py, proto_message_key(py)?, bytes.as_slice())
     }
 
@@ -70,12 +65,7 @@ impl ChatActionsClient {
         py: Python<'_>,
         range: SyncActionMessageRange,
     ) -> PyResult<Py<PyAny>> {
-        let mut bytes = Vec::with_capacity(range.encoded_len());
-        range.encode(&mut bytes).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
-                format!("Failed to encode SyncActionMessageRange: {}", e),
-            )
-        })?;
+        let bytes = range.encode_to_vec();
         parse_proto_bytes(py, proto_sync_action_message_range(py)?, bytes.as_slice())
     }
 }
@@ -389,7 +379,7 @@ impl ChatActionsClient {
         let client = self.get_client()?;
         let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
         let serialized: Vec<u8> = new_message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = wa::Message::decode(serialized.as_slice()).map_err(|e| {
+        let message_value = wa::Message::decode(&mut serialized.as_slice()).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 format!("Failed to decode WhatsAppMessage proto: {}", e),
             )
@@ -447,8 +437,8 @@ impl ChatActionsClient {
             .as_ref()
             .map(|jid| jid.bind(py).borrow().as_whatsapp_jid().to_string());
         let reaction_message = wa::Message {
-            reaction_message: Some(wa::message::ReactionMessage {
-                key: Some(wa::MessageKey {
+            reaction_message: buffa::MessageField::some(wa::message::ReactionMessage {
+                key: buffa::MessageField::some(wa::MessageKey {
                     remote_jid: Some(chat_jid_value.to_string()),
                     id: Some(message_id),
                     from_me: Some(from_me),

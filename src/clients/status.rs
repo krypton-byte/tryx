@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use prost::Message;
+use buffa::Message;
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -60,6 +60,10 @@ impl StatusClient {
             .as_ref()
             .map(|v| v.bind(py).borrow().to_rust_options())
             .unwrap_or_default();
+        // The upstream API switched `font` from a raw `i32` to the `FontType`
+        // enum; map the Python-supplied int, falling back to the default font.
+        let font_value = <waproto::whatsapp::message::extended_text_message::FontType as buffa::Enumeration>::from_i32(font)
+            .unwrap_or_default();
 
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
@@ -67,7 +71,7 @@ impl StatusClient {
                 .send_text(
                     text.as_str(),
                     background_argb,
-                    font,
+                    font_value,
                     recipient_values.as_slice(),
                     options_value,
                 )
@@ -188,7 +192,7 @@ impl StatusClient {
         }
 
         let serialized: Vec<u8> = message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = WhatsappMessage::decode(serialized.as_slice()).map_err(|e| {
+        let message_value = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 format!("Failed to decode WhatsAppMessage proto: {}", e),
             )

@@ -1,5 +1,5 @@
 use pyo3::{Bound, PyAny, PyResult, Python, pyclass, pymethods};
-use prost::Message;
+use buffa::Message;
 
 use crate::events::proto_cache::parse_message_proto;
 
