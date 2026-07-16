@@ -8,10 +8,14 @@ use waproto::whatsapp::message::{self as wa};
 use wacore::proto_helpers::build_quote_context;
 use buffa::Message;
 use whatsapp_rust::{Client, UploadOptions};
+use crate::clients::advanced::AdvancedClient;
 use crate::clients::chat_actions::ChatActionsClient;
 use crate::clients::chatstate::ChatstateClient;
+use crate::clients::comments::CommentsClient;
 use crate::clients::community::CommunityClient;
 use crate::clients::contacts::ContactClient;
+use crate::clients::events::EventsClient;
+use crate::clients::labels::LabelsClient;
 use crate::clients::blocking::BlockingClient;
 use crate::clients::groups::GroupsClient;
 use crate::clients::newsletter::NewsletterClient;
@@ -68,6 +72,14 @@ pub struct TryxClient {
     pub privacy: Py<PrivacyClient>,
     #[pyo3(get)]
     pub profile: Py<ProfileClient>,
+    #[pyo3(get)]
+    pub advanced: Py<AdvancedClient>,
+    #[pyo3(get)]
+    pub labels: Py<LabelsClient>,
+    #[pyo3(get)]
+    pub comments: Py<CommentsClient>,
+    #[pyo3(get)]
+    pub events: Py<EventsClient>,
 }
 
 impl TryxClient {
@@ -625,4 +637,3 @@ impl TryxClient {
         })
     }
 }
-

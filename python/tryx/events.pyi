@@ -170,7 +170,7 @@ class EvConnectFailure:
     """Emitted when an initial connect attempt fails."""
 
     reason: str
-    message: str
+    message: str | None
 
     @property
     def node(self) -> Node | None: ...

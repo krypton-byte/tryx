@@ -13,3 +13,7 @@ pub mod polls;
 pub mod chatstate;
 pub mod presence;
 pub mod privacy;
+pub mod advanced;
+pub mod labels;
+pub mod comments;
+pub mod events;

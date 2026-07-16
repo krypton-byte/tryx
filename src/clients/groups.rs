@@ -14,6 +14,7 @@ use crate::wacore::iq::groups::{
     GroupInfo,
     JoinGroupResult,
     MemberAddMode,
+    MemberLinkMode,
     MembershipApprovalMode,
     MembershipRequest,
     ParticipantChangeResponse,
@@ -603,6 +604,239 @@ impl GroupsClient {
             client
                 .groups()
                 .set_member_add_mode(&jid_value, mode_value)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_no_frequently_forwarded<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        restrict: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .groups()
+                .set_no_frequently_forwarded(jid_value, restrict)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_allow_admin_reports<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        allow: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .groups()
+                .set_allow_admin_reports(jid_value, allow)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_group_history<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        enabled: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .groups()
+                .set_group_history(jid_value, enabled)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_member_link_mode<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        mode: MemberLinkMode,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let mode_value: whatsapp_rust::MemberLinkMode = mode.into();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .groups()
+                .set_member_link_mode(&jid_value, mode_value)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_limit_sharing<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        enabled: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .groups()
+                .set_limit_sharing(&jid_value, enabled)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn cancel_membership_requests<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        participants: Vec<Py<JID>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let participant_values = participants
+            .iter()
+            .map(|item| item.bind(py).borrow().as_whatsapp_jid())
+            .collect::<Vec<_>>();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, Vec<Py<ParticipantChangeResponse>>>(py, locals, async move {
+            let result = client
+                .groups()
+                .cancel_membership_requests(jid_value, participant_values.as_slice())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| {
+                result
+                    .into_iter()
+                    .map(|item| Py::new(py, ParticipantChangeResponse::from_inner(py, item)?))
+                    .collect::<PyResult<Vec<_>>>()
+            })
+        })
+    }
+
+    fn revoke_request_code<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        participants: Vec<Py<JID>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let participant_values = participants
+            .iter()
+            .map(|item| item.bind(py).borrow().as_whatsapp_jid())
+            .collect::<Vec<_>>();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, Vec<Py<ParticipantChangeResponse>>>(py, locals, async move {
+            let result = client
+                .groups()
+                .revoke_request_code(jid_value, participant_values.as_slice())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| {
+                result
+                    .into_iter()
+                    .map(|item| Py::new(py, ParticipantChangeResponse::from_inner(py, item)?))
+                    .collect::<PyResult<Vec<_>>>()
+            })
+        })
+    }
+
+    fn acknowledge<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .groups()
+                .acknowledge(jid_value)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_profile_picture<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        image_data: Vec<u8>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, String>(py, locals, async move {
+            client
+                .groups()
+                .set_profile_picture(jid_value, image_data)
+                .await
+                .map(|result| result.id)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+        })
+    }
+
+    fn remove_profile_picture<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, String>(py, locals, async move {
+            client
+                .groups()
+                .remove_profile_picture(jid_value)
+                .await
+                .map(|result| result.id)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+        })
+    }
+
+    fn update_member_label<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        label: String,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .groups()
+                .update_member_label(jid_value, label)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())

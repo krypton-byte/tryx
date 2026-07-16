@@ -10,14 +10,6 @@ use whatsapp_rust::Client;
 use crate::types::{JID, UploadResponse};
 use crate::wacore::iq::status::{StatusPrivacySetting, StatusSendOptions};
 
-fn as_32_bytes(field: &str, value: &[u8]) -> PyResult<[u8; 32]> {
-    value.try_into().map_err(|_| {
-        PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            format!("{field} must contain exactly 32 bytes"),
-        )
-    })
-}
-
 #[pyclass]
 pub struct StatusClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
@@ -259,4 +251,3 @@ impl StatusClient {
         StatusPrivacySetting::Contacts
     }
 }
-

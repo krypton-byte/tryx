@@ -164,13 +164,17 @@ pub struct EvConnectFailure {
     #[pyo3(get)]
     reason: String,
     #[pyo3(get)]
-    message: String,
+    message: Option<String>,
     inner: Option<wacore_binary::node::Node>,
     node: Option<Py<Node>>,
 }
 impl EvConnectFailure {
-    pub fn new(reason: ConnectFailureReason, message: String, raw_node: Option<wacore_binary::node::Node>) -> Self {
-        Self { reason: connect_failure_reason_to_string(&reason), message: message, inner: raw_node, node: None }
+    pub fn new(
+        reason: ConnectFailureReason,
+        message: Option<String>,
+        raw_node: Option<wacore_binary::node::Node>,
+    ) -> Self {
+        Self { reason: connect_failure_reason_to_string(&reason), message, inner: raw_node, node: None }
     }
 }
 #[pymethods]

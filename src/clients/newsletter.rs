@@ -217,7 +217,7 @@ impl NewsletterClient {
             )
         })?;
 
-        future_into_py_with_locals::<_, String>(py, locals, async move {
+        future_into_py_with_locals(py, locals, async move {
             client
                 .send_message(jid_value, message_value)
                 .await
@@ -241,6 +241,93 @@ impl NewsletterClient {
             client
                 .newsletter()
                 .send_reaction(&jid_value, server_id, reaction.as_str())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_follower_mute<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        muted: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .newsletter()
+                .set_follower_mute(&jid_value, muted)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_admin_mute<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        muted: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .newsletter()
+                .set_admin_mute(&jid_value, muted)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn edit_message<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        message_id: String,
+        message: Py<PyAny>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let serialized: Vec<u8> = message.call_method0(py, "SerializeToString")?.extract(py)?;
+        let message_value = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Failed to decode WhatsAppMessage proto: {}", e),
+            )
+        })?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .newsletter()
+                .edit_message(&jid_value, message_id, message_value)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn revoke_message<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        message_id: String,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .newsletter()
+                .revoke_message(&jid_value, message_id)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())

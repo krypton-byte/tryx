@@ -18,8 +18,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_http_client(UreqHttpClient::new())
         .on_event(|event, _client| async move {
             match &*event {
-                Event::PairingQrCode { code, .. } => {
-                    println!("Scan this QR code with WhatsApp:\n{}", code);
+                Event::PairingQrCode(qr) => {
+                    println!("Scan this QR code with WhatsApp:\n{}", qr.code);
                 }
                 Event::Messages(batch) => {
                     for inbound in batch.messages.iter() {

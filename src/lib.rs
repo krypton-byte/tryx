@@ -2,10 +2,14 @@ use pyo3::prelude::*;
 
 use self::clients::tryx_client::TryxClient;
 use self::clients::tryx::Tryx;
+use self::clients::advanced::AdvancedClient;
 use self::clients::chat_actions::ChatActionsClient;
 use self::clients::chatstate::ChatstateClient;
+use self::clients::comments::CommentsClient;
 use self::clients::community::CommunityClient;
 use self::clients::contacts::ContactClient;
+use self::clients::events::{EventResponse, EventsClient};
+use self::clients::labels::LabelsClient;
 use self::clients::blocking::BlockingClient;
 use self::clients::groups::GroupsClient;
 use self::clients::newsletter::NewsletterClient;
@@ -176,6 +180,11 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<PresenceClient>()?;
     client_module.add_class::<PrivacyClient>()?;
     client_module.add_class::<ProfileClient>()?;
+    client_module.add_class::<AdvancedClient>()?;
+    client_module.add_class::<LabelsClient>()?;
+    client_module.add_class::<CommentsClient>()?;
+    client_module.add_class::<EventsClient>()?;
+    client_module.add_class::<EventResponse>()?;
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;

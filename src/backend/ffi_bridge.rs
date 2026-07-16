@@ -17,15 +17,6 @@ pub struct TryxBuffer {
     pub len: usize,
 }
 
-impl TryxBuffer {
-    fn into_vec(self) -> Vec<u8> {
-        if self.data.is_null() || self.len == 0 {
-            return Vec::new();
-        }
-        unsafe { Vec::from_raw_parts(self.data, self.len, self.len) }
-    }
-}
-
 type ConnectFn = unsafe extern "C" fn(*const c_char, *mut *mut c_void) -> i32;
 type DestroyFn = unsafe extern "C" fn(*mut c_void);
 type FreeBufferFn = unsafe extern "C" fn(TryxBuffer);
@@ -126,6 +117,20 @@ pub struct FfiBridgeStore {
 }
 
 impl FfiBridgeStore {
+    fn take_buffer(&self, out: TryxBuffer) -> Vec<u8> {
+        if out.data.is_null() {
+            return Vec::new();
+        }
+
+        let bytes = if out.len == 0 {
+            Vec::new()
+        } else {
+            unsafe { std::slice::from_raw_parts(out.data, out.len).to_vec() }
+        };
+        unsafe { (self.ffi.free_buffer)(out) };
+        bytes
+    }
+
     pub async fn connect(lib_path: &str, config_json: &str) -> StoreResult<Self> {
         let lib = unsafe { Library::new(lib_path) }.map_err(|e| make_err(e.to_string()))?;
         
@@ -183,7 +188,7 @@ impl FfiBridgeStore {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.call)(self.ffi.handle, op, input.as_ptr(), input.len(), &mut out) };
         if res == 0 {
-            let vec = out.into_vec();
+            let vec = self.take_buffer(out);
             if vec.is_empty() { Ok(None) } else { Ok(Some(vec)) }
         } else {
             Err(make_err("FFI call failed"))
@@ -204,7 +209,7 @@ impl SignalStore for FfiBridgeStore {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.load_identity)(self.ffi.handle, addr.as_ptr(), &mut out) };
         if res == 0 {
-            let vec = out.into_vec();
+            let vec = self.take_buffer(out);
             if vec.len() == 32 {
                 let mut arr = [0u8; 32];
                 arr.copy_from_slice(&vec);
@@ -223,7 +228,7 @@ impl SignalStore for FfiBridgeStore {
         let addr = CString::new(address).unwrap();
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.get_session)(self.ffi.handle, addr.as_ptr(), &mut out) };
-        if res == 0 { Ok(Some(Bytes::from(out.into_vec()))) } else if res == 1 { Ok(None) } else { Err(make_err("get_session failed")) }
+        if res == 0 { Ok(Some(Bytes::from(self.take_buffer(out)))) } else if res == 1 { Ok(None) } else { Err(make_err("get_session failed")) }
     }
 
     async fn put_session(&self, address: &str, session: &[u8]) -> StoreResult<()> {
@@ -246,7 +251,7 @@ impl SignalStore for FfiBridgeStore {
     async fn load_prekey(&self, id: u32) -> StoreResult<Option<Bytes>> {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.load_prekey)(self.ffi.handle, id, &mut out) };
-        if res == 0 { Ok(Some(Bytes::from(out.into_vec()))) } else if res == 1 { Ok(None) } else { Err(make_err("load_prekey failed")) }
+        if res == 0 { Ok(Some(Bytes::from(self.take_buffer(out)))) } else if res == 1 { Ok(None) } else { Err(make_err("load_prekey failed")) }
     }
 
     async fn mark_prekeys_uploaded(&self, _ids: &[u32]) -> StoreResult<()> {
@@ -273,7 +278,7 @@ impl SignalStore for FfiBridgeStore {
     async fn load_signed_prekey(&self, id: u32) -> StoreResult<Option<Vec<u8>>> {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.load_signed_prekey)(self.ffi.handle, id, &mut out) };
-        if res == 0 { Ok(Some(out.into_vec())) } else if res == 1 { Ok(None) } else { Err(make_err("load_signed_prekey failed")) }
+        if res == 0 { Ok(Some(self.take_buffer(out))) } else if res == 1 { Ok(None) } else { Err(make_err("load_signed_prekey failed")) }
     }
 
     async fn load_all_signed_prekeys(&self) -> StoreResult<Vec<(u32, Vec<u8>)>> {
@@ -295,7 +300,7 @@ impl SignalStore for FfiBridgeStore {
         let addr = CString::new(address).unwrap();
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.get_sender_key)(self.ffi.handle, addr.as_ptr(), &mut out) };
-        if res == 0 { Ok(Some(out.into_vec())) } else if res == 1 { Ok(None) } else { Err(make_err("get_sender_key failed")) }
+        if res == 0 { Ok(Some(self.take_buffer(out))) } else if res == 1 { Ok(None) } else { Err(make_err("get_sender_key failed")) }
     }
 
     async fn delete_sender_key(&self, address: &str) -> StoreResult<()> {
@@ -311,7 +316,7 @@ impl AppSyncStore for FfiBridgeStore {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.get_sync_key)(self.ffi.handle, key_id.as_ptr(), key_id.len(), &mut out) };
         if res == 0 {
-            Ok(Some(bincode::deserialize(&out.into_vec()).map_err(|e| make_err(e.to_string()))?))
+            Ok(Some(bincode::deserialize(&self.take_buffer(out)).map_err(|e| make_err(e.to_string()))?))
         } else if res == 1 { Ok(None) } else { Err(make_err("get_sync_key failed")) }
     }
 
@@ -326,7 +331,7 @@ impl AppSyncStore for FfiBridgeStore {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.get_version)(self.ffi.handle, cname.as_ptr(), &mut out) };
         if res == 0 {
-            Ok(bincode::deserialize(&out.into_vec()).unwrap_or_default())
+            Ok(bincode::deserialize(&self.take_buffer(out)).unwrap_or_default())
         } else { Ok(HashState::default()) }
     }
 
@@ -372,7 +377,7 @@ impl AppSyncStore for FfiBridgeStore {
     async fn get_latest_sync_key_id(&self) -> StoreResult<Option<Vec<u8>>> {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.get_latest_sync_key_id)(self.ffi.handle, &mut out) };
-        if res == 0 { Ok(Some(out.into_vec())) } else if res == 1 { Ok(None) } else { Err(make_err("get_latest_sync_key_id failed")) }
+        if res == 0 { Ok(Some(self.take_buffer(out))) } else if res == 1 { Ok(None) } else { Err(make_err("get_latest_sync_key_id failed")) }
     }
 }
 
@@ -388,7 +393,7 @@ impl DeviceStore for FfiBridgeStore {
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.load_device)(self.ffi.handle, &mut out) };
         if res == 0 {
-            Ok(Some(bincode::deserialize(&out.into_vec()).map_err(|e| make_err(e.to_string()))?))
+            Ok(Some(bincode::deserialize(&self.take_buffer(out)).map_err(|e| make_err(e.to_string()))?))
         } else if res == 1 { Ok(None) } else { Err(make_err("load_device failed")) }
     }
 
@@ -552,4 +557,3 @@ impl MsgSecretStore for FfiBridgeStore {
         }
     }
 }
-

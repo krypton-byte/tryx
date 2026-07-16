@@ -363,7 +363,7 @@ impl MessageInfo {
     }
 }
 
-#[pyclass]
+#[pyclass(skip_from_py_object)]
 #[derive(Clone)]
 pub struct UploadResponse {
     pub inner: whatsapp_rust::upload::UploadResponse,

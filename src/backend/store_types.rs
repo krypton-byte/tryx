@@ -7,7 +7,7 @@ use wacore::appstate::hash::HashState;
 
 macro_rules! define_py_wrapper {
     ($py_name:ident, $rs_name:ty, $name_str:expr) => {
-        #[pyclass(name = $name_str, module="tryx.backend")]
+        #[pyclass(name = $name_str, module="tryx.backend", skip_from_py_object)]
         #[derive(Clone)]
         pub struct $py_name(pub $rs_name);
 

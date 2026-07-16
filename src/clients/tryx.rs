@@ -17,8 +17,12 @@ use whatsapp_rust_ureq_http_client::UreqHttpClient;
 use tokio::signal;
 use tracing::{debug, error, info, warn};
 use super::community::CommunityClient;
+use super::advanced::AdvancedClient;
+use super::comments::CommentsClient;
 use super::contacts::ContactClient;
 use super::chatstate::ChatstateClient;
+use super::events::EventsClient;
+use super::labels::LabelsClient;
 use super::blocking::BlockingClient;
 use super::groups::GroupsClient;
 use super::newsletter::NewsletterClient;
@@ -89,6 +93,10 @@ impl Tryx {
                     presence: new_namespace_client!(py, client_rx, PresenceClient),
                     privacy: new_namespace_client!(py, client_rx, PrivacyClient),
                     profile: new_namespace_client!(py, client_rx, ProfileClient),
+                    advanced: new_namespace_client!(py, client_rx, AdvancedClient),
+                    labels: new_namespace_client!(py, client_rx, LabelsClient),
+                    comments: new_namespace_client!(py, client_rx, CommentsClient),
+                    events: new_namespace_client!(py, client_rx, EventsClient),
                 }
             )?;
             
@@ -130,6 +138,10 @@ impl Tryx {
                     presence: new_namespace_client!(py, client_rx, PresenceClient),
                     privacy: new_namespace_client!(py, client_rx, PrivacyClient),
                     profile: new_namespace_client!(py, client_rx, ProfileClient),
+                    advanced: new_namespace_client!(py, client_rx, AdvancedClient),
+                    labels: new_namespace_client!(py, client_rx, LabelsClient),
+                    comments: new_namespace_client!(py, client_rx, CommentsClient),
+                    events: new_namespace_client!(py, client_rx, EventsClient),
                 }
             )?;
 
@@ -162,6 +174,10 @@ impl Tryx {
                     presence: new_namespace_client!(py, client_rx, PresenceClient),
                     privacy: new_namespace_client!(py, client_rx, PrivacyClient),
                     profile: new_namespace_client!(py, client_rx, ProfileClient),
+                    advanced: new_namespace_client!(py, client_rx, AdvancedClient),
+                    labels: new_namespace_client!(py, client_rx, LabelsClient),
+                    comments: new_namespace_client!(py, client_rx, CommentsClient),
+                    events: new_namespace_client!(py, client_rx, EventsClient),
                 }
             )?;
 
@@ -444,16 +460,16 @@ impl Tryx {
                             )
                             .await;
                         }
-                        Event::PairingQrCode { code, timeout } => {
-                            let code = code.clone();
-                            let timeout_secs = timeout.as_secs();
+                        Event::PairingQrCode(qr) => {
+                            let code = qr.code.clone();
+                            let timeout_secs = qr.timeout.as_secs();
                             Self::emit_built_event(&tryx_client, &callbacks.pairing_qr, locals.clone(), "PairingQrCode", |py| {
                                 Py::new(py, EvPairingQrCode::new(code, timeout_secs)).map(|event| event.into_any())
                             }).await;
                         }
-                        Event::PairingCode { code, timeout } => {
-                            let code = code.clone();
-                            let timeout_secs = timeout.as_secs();
+                        Event::PairingCode(pairing_code) => {
+                            let code = pairing_code.code.clone();
+                            let timeout_secs = pairing_code.timeout.as_secs();
                             Self::emit_built_event(&tryx_client, &callbacks.pairing_code, locals.clone(), "PairingCode", |py| {
                                 Py::new(py, EvPairingCode::new(code, timeout_secs)).map(|event| event.into_any())
                             }).await;

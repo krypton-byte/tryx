@@ -369,6 +369,53 @@ impl ChatActionsClient {
         })
     }
 
+    #[pyo3(signature = (jid, delete_starred, delete_media, message_range=None))]
+    fn clear_chat<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        delete_starred: bool,
+        delete_media: bool,
+        message_range: Option<Py<PyAny>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let parsed_range = Self::decode_sync_action_message_range(py, message_range)?;
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .chat_actions()
+                .clear_chat(&jid_value, delete_starred, delete_media, parsed_range)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    #[pyo3(signature = (jid, full_name=None, first_name=None, save_on_primary_addressbook=false))]
+    fn save_contact<'py>(
+        &self,
+        py: Python<'py>,
+        jid: Py<JID>,
+        full_name: Option<String>,
+        first_name: Option<String>,
+        save_on_primary_addressbook: bool,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals(py, locals, async move {
+            client
+                .chat_actions()
+                .save_contact(&jid_value, full_name, first_name, save_on_primary_addressbook)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(())
+        })
+    }
+
     fn edit_message<'py>(
         &self,
         py: Python<'py>,
