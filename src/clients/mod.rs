@@ -17,3 +17,4 @@ pub mod advanced;
 pub mod labels;
 pub mod comments;
 pub mod events;
+pub mod voip;

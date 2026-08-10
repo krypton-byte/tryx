@@ -212,4 +212,5 @@ define_dispatcher! {
     newsletter_live_update,          NewsletterLiveUpdate,          "newsletter_live_update",          EvNewsletterLiveUpdate,          "newsletter live update",         newsletter_live_update_handlers;
     delete_chat_update,              DeleteChatUpdate,              "delete_chat_update",              EvDeleteChatUpdate,              "delete chat update",             delete_chat_update_handlers;
     delete_message_for_me_update,    DeleteMessageForMeUpdate,      "delete_message_for_me_update",    EvDeleteMessageForMeUpdate,      "delete message for me update",   delete_message_for_me_update_handlers;
+    incoming_call,                   IncomingCall,                  "incoming_call",                  crate::clients::voip::IncomingCallEvent, "incoming call",                 incoming_call_handlers;
 }

@@ -1,6 +1,10 @@
 use pyo3::prelude::*;
 
+pub mod voip;
+use self::voip::{AudioPlayer, VideoPlayer};
+
 use self::clients::tryx_client::TryxClient;
+use self::clients::voip::{CallHandle, IncomingCallEvent, VoipClient};
 use self::clients::tryx::Tryx;
 use self::clients::advanced::AdvancedClient;
 use self::clients::chat_actions::ChatActionsClient;
@@ -171,6 +175,11 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     // m.
     let client_module = PyModule::new(_py.py(), "client")?;
     client_module.add_class::<TryxClient>()?;
+    client_module.add_class::<AudioPlayer>()?;
+    client_module.add_class::<VideoPlayer>()?;
+    client_module.add_class::<VoipClient>()?;
+    client_module.add_class::<CallHandle>()?;
+    client_module.add_class::<IncomingCallEvent>()?;
     client_module.add_class::<ContactClient>()?;
     client_module.add_class::<ChatActionsClient>()?;
     client_module.add_class::<CommunityClient>()?;

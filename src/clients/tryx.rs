@@ -41,6 +41,7 @@ use crate::events::types::{
 use crate::exceptions::{EventDispatchError, FailedBuildClient, UnsupportedBackend};
 use crate::events::dispatcher::Dispatcher;
 use super::event_callbacks::EventCallbacks;
+use super::voip::VoipClient;
 
 /// Creates a `Py<T>` namespace client that shares the `client_rx` watch channel.
 macro_rules! new_namespace_client {
@@ -97,6 +98,7 @@ impl Tryx {
                     labels: new_namespace_client!(py, client_rx, LabelsClient),
                     comments: new_namespace_client!(py, client_rx, CommentsClient),
                     events: new_namespace_client!(py, client_rx, EventsClient),
+                    voip: new_namespace_client!(py, client_rx, VoipClient),
                 }
             )?;
             
@@ -142,6 +144,7 @@ impl Tryx {
                     labels: new_namespace_client!(py, client_rx, LabelsClient),
                     comments: new_namespace_client!(py, client_rx, CommentsClient),
                     events: new_namespace_client!(py, client_rx, EventsClient),
+                    voip: new_namespace_client!(py, client_rx, VoipClient),
                 }
             )?;
 
@@ -178,6 +181,7 @@ impl Tryx {
                     labels: new_namespace_client!(py, client_rx, LabelsClient),
                     comments: new_namespace_client!(py, client_rx, CommentsClient),
                     events: new_namespace_client!(py, client_rx, EventsClient),
+                    voip: new_namespace_client!(py, client_rx, VoipClient),
                 }
             )?;
 
@@ -408,13 +412,23 @@ impl Tryx {
             .with_backend_arc(backend)
             .with_transport_factory(TokioWebSocketTransportFactory::new())
             .with_http_client(UreqHttpClient::new())
-            .on_event(move |event, _client| {
+            .on_event(move |event, client| {
                 let locals = locals.clone();
                 let callbacks = Arc::clone(&callbacks);
                 let tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
 
                 async move {
                     match event.as_ref() {
+                        Event::IncomingCall(incoming) => {
+                            let incoming = incoming.clone();
+                            let client = client.clone();
+                            Self::emit_built_event(&tryx_client, &callbacks.incoming_call, locals.clone(), "IncomingCall", |py| {
+                                Py::new(py, crate::clients::voip::IncomingCallEvent {
+                                    client,
+                                    incoming: std::sync::Mutex::new(Some(incoming)),
+                                }).map(|event| event.into_any())
+                            }).await;
+                        }
                         Event::Connected(_) => {
                             Self::emit_built_event(&tryx_client, &callbacks.connected, locals.clone(), "Connected", |py| {
                                 Py::new(py, EvConnected {}).map(|event| event.into_any())

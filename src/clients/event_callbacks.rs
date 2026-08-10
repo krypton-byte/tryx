@@ -49,6 +49,7 @@ pub struct EventCallbacks {
     pub newsletter_live_update: CallbackList,
     pub delete_chat_update: CallbackList,
     pub delete_message_for_me_update: CallbackList,
+    pub incoming_call: CallbackList,
 }
 
 impl EventCallbacks {
@@ -95,6 +96,7 @@ impl EventCallbacks {
             contact_updated: dispatcher.contact_updated_handlers(py),
             star_update: dispatcher.star_update_handlers(py),
             delete_message_for_me_update: dispatcher.delete_message_for_me_update_handlers(py),
+            incoming_call: dispatcher.incoming_call_handlers(py),
             newsletter_live_update: dispatcher.newsletter_live_update_handlers(py),
             delete_chat_update: dispatcher.delete_chat_update_handlers(py),
         }

@@ -15,6 +15,7 @@ use crate::clients::comments::CommentsClient;
 use crate::clients::community::CommunityClient;
 use crate::clients::contacts::ContactClient;
 use crate::clients::events::EventsClient;
+use crate::clients::voip::VoipClient;
 use crate::clients::labels::LabelsClient;
 use crate::clients::blocking::BlockingClient;
 use crate::clients::groups::GroupsClient;
@@ -80,6 +81,8 @@ pub struct TryxClient {
     pub comments: Py<CommentsClient>,
     #[pyo3(get)]
     pub events: Py<EventsClient>,
+    #[pyo3(get)]
+    pub voip: Py<VoipClient>,
 }
 
 impl TryxClient {
