@@ -118,152 +118,146 @@ Tryx supports three storage tiers:
 
 SQLite is usually enough for local development. Native FFI or a custom Python backend is better when several workers or deployment environments need shared session state.
 
-### VoIP: Panggilan Audio dan Video
+### VoIP: Audio and Video Calls
 
-Tryx menyediakan bridge VoIP berbasis Rust untuk panggilan audio dan video WhatsApp. API tersedia melalui namespace client.voip setelah client tersambung. Protokol, RTP/WebRTC, enkripsi, codec, dan orkestrasi berjalan di whatsapp-rust; Python menyediakan sumber dan tujuan media melalui adapter async.
+Tryx provides a Rust-backed bridge for WhatsApp audio and video calls. After the client is connected, use client.voip. Protocol handling, RTP/WebRTC, encryption, codecs, and call orchestration run in whatsapp-rust; Python supplies media through asynchronous source and sink adapters.
 
-#### Fitur
+#### Features
 
-- Panggilan audio 1:1 melalui voip.call.
-- Panggilan video 1:1 melalui voip.video_call.
-- Panggilan grup dengan video opsional melalui voip.group_call.
-- Bergabung melalui call link dengan voip.join_call_link (media audio atau video).
-- Kontrol call: hangup, wait_ended, mute/unmute, start_video, stop_video.
-- Fitur grup: invite, ring, approval peserta, admit/deny waiting user.
-- Screen sharing melalui start_screen_share dan stop_screen_share.
-- Audio file native Rust untuk WAV, MP3, OGG, Vorbis, dan PCM.
-- Video file native Rust berbasis FFmpeg yang menghasilkan H.264 Annex-B.
-- Adapter Python untuk microphone, speaker, camera, encoder, decoder, TTS, DSP, atau pipeline custom.
+- One-to-one audio calls through voip.call().
+- One-to-one video calls through voip.video_call().
+- Group calls with optional video through voip.group_call().
+- Call-link joining through voip.join_call_link() with audio or video media.
+- Hangup, wait, mute/unmute, video, participant, approval, and screen-sharing controls.
+- Native Rust playback for WAV, MP3, OGG, Vorbis, and PCM audio files.
+- Native FFmpeg playback producing H.264 Annex-B video access units.
+- Python adapters for microphones, speakers, cameras, codecs, TTS, DSP, and custom pipelines.
 
-#### Kontrak Media
+#### Media Contract
 
 | Media | Kontrak |
 | --- | --- |
-| Audio | Mono PCM16 signed little-endian, 16.000 Hz, 960 sample atau 1.920 byte per frame, 60 ms |
-| Video | H.264 Annex-B access unit melalui VideoFrame |
+| Audio | Mono signed PCM16 little-endian, 16,000 Hz, 960 samples / 1,920 bytes per frame, 60 ms |
+| Video | H.264 Annex-B access unit represented by VideoFrame |
 
-AudioSource.frames() harus menghasilkan async iterator dengan frame tepat 1.920 byte. AudioSink.write(frame) menerima format yang sama. VideoFrame berisi data, timestamp_us, duration_us, keyframe, width, height, dan orientation.
+AudioSource.frames() must yield exactly 1,920 bytes per frame. AudioSink.write() receives the same format. VideoFrame carries data, timestamp_us, duration_us, keyframe, optional dimensions, and orientation.
 
-#### Adapter Audio Minimal
+#### Minimal Audio Adapters
 
-    from collections.abc import AsyncIterator
-    from tryx.media import AudioSink, AudioSource, validate_audio_frame
+```python
+from collections.abc import AsyncIterator
+from tryx.media import AudioSink, AudioSource, validate_audio_frame
+class Microphone(AudioSource):
+    async def frames(self) -> AsyncIterator[bytes]:
+        while True:
+            frame = await read_microphone_frame()
+            yield validate_audio_frame(frame)
+class Speaker(AudioSink):
+    async def write(self, frame: bytes) -> None:
+        validate_audio_frame(frame)
+        await play_speaker_frame(frame)
+```
 
-    class Microphone(AudioSource):
-        async def frames(self) -> AsyncIterator[bytes]:
-            while True:
-                frame = await read_microphone_frame()
-                yield validate_audio_frame(frame)
+Replace the two backend functions with PyAudio, sounddevice, ALSA, CoreAudio, or another device library.
 
-    class Speaker(AudioSink):
-        async def write(self, frame: bytes) -> None:
-            validate_audio_frame(frame)
-            await play_speaker_frame(frame)
+#### One-to-One Audio Call
 
-read_microphone_frame dan play_speaker_frame adalah fungsi aplikasi yang dapat dihubungkan ke PyAudio, sounddevice, ALSA, CoreAudio, atau backend lain.
+```python
+from tryx.types import JID
+async def start_audio_call(client, phone_number: str):
+    peer = JID(phone_number + "@s.whatsapp.net")
+    call = await client.voip.call(peer, Microphone(), Speaker())
+    print("call started:", call.call_id)
+    call.set_muted(True)
+    call.set_muted(False)
+    await call.wait_ended()
+```
+Use await call.hangup() to end a call explicitly. Keep the CallHandle alive and await wait_ended() for deterministic cleanup.
 
-#### Panggilan Audio 1:1
-
-    from tryx.types import JID
-
-    async def start_audio_call(client, phone_number: str):
-        peer = JID(phone_number + "@s.whatsapp.net")
-        call = await client.voip.call(peer, Microphone(), Speaker())
-        print("call started:", call.call_id)
-        call.set_muted(True)
-        call.set_muted(False)
-        await call.wait_ended()
-
-Gunakan await call.hangup() untuk mengakhiri call secara eksplisit. Simpan CallHandle selama call aktif dan tunggu wait_ended agar cleanup media berjalan teratur.
-
-#### Panggilan Video
-
-    from tryx.media import VideoPlayer
-
-    async def start_video_call(client, peer, video_sink):
-        video_source = VideoPlayer(fps=15)
-        video_source.play("sample.mp4")
-        call = await client.voip.video_call(
-            peer, Microphone(), Speaker(), video_source, video_sink
-        )
-        await call.wait_ended()
-        video_source.stop()
-
-VideoPlayer menerima FPS 1 sampai 60 dan default 15. FFmpeg harus tersedia di PATH. play akan mengembalikan error eksplisit jika file tidak ditemukan atau FFmpeg tidak tersedia.
-
-#### Group Call dan Call Link
-
-    call = await client.voip.group_call(
-        peers=[peer_a, peer_b],
-        audio_source=Microphone(),
-        audio_sink=Speaker(),
+#### Video Call
+```python
+from tryx.media import VideoPlayer
+async def start_video_call(client, peer, video_sink):
+    video_source = VideoPlayer(fps=15)
+    video_source.play("sample.mp4")
+    call = await client.voip.video_call(
+        peer, Microphone(), Speaker(), video_source, video_sink
     )
-    await call.invite_participant(peer_c)
-    await call.ring_participant(peer_c)
-    await call.set_approval_required(True)
+    await call.wait_ended()
+    video_source.stop()
+```
+VideoPlayer accepts 1–60 FPS and defaults to 15. FFmpeg must be in PATH; missing files and missing FFmpeg produce explicit errors.
 
-    linked = await client.voip.join_call_link(
-        "https://call.whatsapp.com/your-token",
-        "audio",
-        Microphone(),
-        Speaker(),
-    )
+#### Group Calls and Call Links
+```python
+call = await client.voip.group_call(
+    peers=[peer_a, peer_b],
+    audio_source=Microphone(),
+    audio_sink=Speaker(),
+)
+await call.invite_participant(peer_c)
+await call.ring_participant(peer_c)
+await call.set_approval_required(True)
+linked = await client.voip.join_call_link(
+    "https://call.whatsapp.com/your-token",
+    "audio",
+    Microphone(),
+    Speaker(),
+)
+```
+group_call() accepts optional video source/sink pairs. join_call_link() accepts a token or URL and media audio or video.
 
-group_call menerima pasangan video_source dan video_sink opsional. join_call_link menerima token atau URL dan media audio atau video.
+#### Incoming Calls
 
-#### Incoming Call
+IncomingCallEvent exposes call_id, peer, is_video, accept(audio_source, audio_sink), and reject(). Accept or reject it only once because the invitation is consumed.
+```python
+@app.on(EvIncomingCall)
+async def on_incoming_call(_client, event):
+    if event.is_video:
+        await event.reject()
+        return
+    call = await event.accept(Microphone(), Speaker())
+    await call.wait_ended()
+```
+Use the incoming-call event exported by the installed package version.
 
-IncomingCallEvent memiliki call_id, peer, is_video, accept(audio_source, audio_sink), dan reject(). Event hanya boleh di-accept atau reject satu kali karena object call dikonsumsi setelah operasi tersebut.
+#### Native AudioPlayer
 
-    @app.on(EvIncomingCall)
-    async def on_incoming_call(_client, event):
-        if event.is_video:
-            await event.reject()
-            return
-        call = await event.accept(Microphone(), Speaker())
-        await call.wait_ended()
+AudioPlayer decodes files in Rust and normalizes them to mono PCM16 at 16 kHz.
+```python
+from tryx.media import AudioPlayer
+player = AudioPlayer(buffer_frames=3)
+player.play("intro.mp3", mode="replace")
+call = await client.voip.call(peer, player, Speaker())
+player.pause()
+player.resume()
+player.enqueue("next.wav")
+player.skip()
+player.clear_queue()
+player.stop()
+```
+Modes are replace, queue, and interrupt. buffer_frames defaults to 3 and is capped at 30. States are idle, playing, and paused; non-16 kHz audio uses linear interpolation.
 
-Gunakan nama event yang diexport oleh versi package yang dipakai.
-
-#### AudioPlayer Native
-
-AudioPlayer mendecode file di Rust dan menormalisasikannya menjadi mono PCM16 16 kHz.
-
-    from tryx.media import AudioPlayer
-
-    player = AudioPlayer(buffer_frames=3)
-    player.play("intro.mp3", mode="replace")
-    call = await client.voip.call(peer, player, Speaker())
-    player.pause()
-    player.resume()
-    player.enqueue("next.wav")
-    player.skip()
-    player.clear_queue()
-    player.stop()
-
-Mode playback adalah replace, queue, dan interrupt. buffer_frames default 3 dan dibatasi maksimal 30 frame. State player adalah idle, playing, atau paused. Input non-16 kHz diproses dengan interpolasi linear.
-
-#### Cara Kerja Internal
+#### Internal Data Flow and Backpressure
 
     Python source/sink -> PyO3 bridge + bounded async channel
                         -> whatsapp-rust VoIP facade
                         -> WaCore call engine -> RTP/SRTP/WebRTC
                         -> WhatsApp call network
 
-Media masuk berjalan terbalik: transport mendekripsi dan mendecode, bridge mengubahnya menjadi PCM16 atau VideoFrame, lalu memanggil sink Python. Bounded channel mencegah queue tumbuh tanpa batas. Kapasitas audio default 3 frame, sekitar 180 ms buffering sebelum overhead jaringan dan codec. Producer menunggu asynchronous saat sink lambat, tanpa spin CPU.
+Inbound media follows the reverse path: transport decrypts and decodes, the bridge creates PCM16 or VideoFrame, and the Python sink receives it. Bounded channels prevent unbounded queues; audio defaults to three frames, about 180 ms before network and codec overhead. Slow sinks cause asynchronous backpressure instead of CPU spin-waiting.
 
-Saat AudioPlayer menerima command, caller menunggu hasil manager dan error diteruskan ke Python. Saat VideoPlayer.stop dipanggil, cancellation dikirim ke task pemilik FFmpeg; task tersebut menghentikan dan menunggu child process agar tidak meninggalkan proses yatim.
+Audio commands wait for the manager result and propagate errors to Python. VideoPlayer.stop() cancels its FFmpeg task, which kills and reaps the child process instead of leaving an orphan.
 
-#### Lifecycle dan Troubleshooting
+#### Lifecycle and Troubleshooting
 
-- Jalankan call setelah Tryx tersambung.
-- Gunakan satu native player untuk satu call aktif dan lepaskan setelah call selesai.
-- Hentikan AudioPlayer atau VideoPlayer ketika call dibatalkan.
-- Jangan mengirim audio selain PCM16 mono 16 kHz berukuran 1.920 byte.
-- Video source harus menghasilkan H.264 Annex-B, bukan MP4 container.
-- Jika frame audio salah ukuran, lakukan chunk/resample menjadi 960 sample.
-- Jika latency tinggi, turunkan buffer_frames menjadi 2 atau 3.
-- Jika FFmpeg tidak ditemukan, instal FFmpeg dan verifikasi dengan ffmpeg -version.
+- Start calls only after Tryx is connected; use one native player per active call.
+- Stop players when cancelling a call and release them after wait_ended().
+- Send only mono PCM16 16 kHz frames of exactly 1,920 bytes.
+- Video sources must emit H.264 Annex-B, not an MP4 container.
+- For invalid audio sizes, chunk or resample into 960 samples.
+- For high latency, use buffer_frames=2 or 3.
+- Install FFmpeg and verify it with ffmpeg -version when video playback fails.
 
 ### Development
 
@@ -403,6 +397,147 @@ Tryx 支持三种会话存储方式：
 
 本地开发通常使用 SQLite 即可。如果多个 worker 或部署环境需要共享会话状态，建议使用 Native FFI 或自定义 Python 后端。
 
+### VoIP：音频和视频通话
+
+Tryx 提供基于 Rust 的 WhatsApp 音频和视频通话桥接层。客户端连接后，可以通过 client.voip 使用 API。协议处理、RTP/WebRTC、加密、编解码器和通话编排由 whatsapp-rust 执行；Python 通过异步 source 和 sink adapter 提供媒体数据。
+
+#### 功能
+
+- 使用 voip.call() 发起一对一音频通话。
+- 使用 voip.video_call() 发起一对一视频通话。
+- 使用 voip.group_call() 发起带可选视频的群组通话。
+- 使用 voip.join_call_link() 加入音频或视频 call link。
+- 支持挂断、等待结束、静音/取消静音、开始/停止视频。
+- 支持邀请、响铃、参与者审批，以及允许或拒绝等待中的用户。
+- 支持 start_screen_share() 和 stop_screen_share() 屏幕共享。
+- Rust 原生播放 WAV、MP3、OGG、Vorbis 和 PCM 音频文件。
+- 通过 FFmpeg 原生播放视频并输出 H.264 Annex-B access unit。
+- 支持用于麦克风、扬声器、摄像头、编解码器、TTS、DSP 和自定义媒体管线的 Python adapter。
+
+#### 媒体契约
+
+| 媒体 | 契约 |
+| --- | --- |
+| 音频 | 单声道 signed PCM16 little-endian，16,000 Hz，每帧 960 个 sample / 1,920 字节，60 ms |
+| 视频 | 通过 VideoFrame 表示的 H.264 Annex-B access unit |
+
+AudioSource.frames() 必须每次产生恰好 1,920 字节。AudioSink.write() 接收相同的 PCM 格式。VideoFrame 包含 data、timestamp_us、duration_us、keyframe、可选的 width 和 height，以及 orientation。
+
+#### 最小音频 Adapter
+```python
+from collections.abc import AsyncIterator
+from tryx.media import AudioSink, AudioSource, validate_audio_frame
+class Microphone(AudioSource):
+    async def frames(self) -> AsyncIterator[bytes]:
+        while True:
+            frame = await read_microphone_frame()
+            yield validate_audio_frame(frame)
+class Speaker(AudioSink):
+    async def write(self, frame: bytes) -> None:
+        validate_audio_frame(frame)
+        await play_speaker_frame(frame)
+```
+请将两个设备函数替换为 PyAudio、sounddevice、ALSA、CoreAudio 或其他音频设备库的实现。
+
+#### 一对一音频通话
+
+```python
+from tryx.types import JID
+async def start_audio_call(client, phone_number: str):
+    peer = JID(phone_number + "@s.whatsapp.net")
+    call = await client.voip.call(peer, Microphone(), Speaker())
+    print("call started:", call.call_id)
+    call.set_muted(True)
+    call.set_muted(False)
+    await call.wait_ended()
+```
+使用 await call.hangup() 主动结束通话。通话期间请保持 CallHandle，并等待 wait_ended()，以便媒体资源能够稳定清理。
+
+#### 视频通话
+```python
+from tryx.media import VideoPlayer
+async def start_video_call(client, peer, video_sink):
+    video_source = VideoPlayer(fps=15)
+    video_source.play("sample.mp4")
+    call = await client.voip.video_call(
+        peer, Microphone(), Speaker(), video_source, video_sink
+    )
+    await call.wait_ended()
+    video_source.stop()
+```
+VideoPlayer 支持 1–60 FPS，默认值为 15。系统必须在 PATH 中提供 FFmpeg；文件不存在或 FFmpeg 不可用时，play() 会返回明确错误。
+
+#### 群组通话和 Call Link
+```python
+call = await client.voip.group_call(
+    peers=[peer_a, peer_b],
+    audio_source=Microphone(),
+    audio_sink=Speaker(),
+)
+await call.invite_participant(peer_c)
+await call.ring_participant(peer_c)
+await call.set_approval_required(True)
+linked = await client.voip.join_call_link(
+    "https://call.whatsapp.com/your-token",
+    "audio",
+    Microphone(),
+    Speaker(),
+)
+```
+group_call() 可以接收可选的 video source/sink。join_call_link() 可以接收 token 或 URL，并使用 media="audio" 或 media="video"。
+
+#### 来电
+
+IncomingCallEvent 提供 call_id、peer、is_video、accept(audio_source, audio_sink) 和 reject()。一个 event 只能 accept 或 reject 一次，因为底层来电邀请在操作后会被消费。
+```python
+@app.on(EvIncomingCall)
+async def on_incoming_call(_client, event):
+    if event.is_video:
+        await event.reject()
+        return
+    call = await event.accept(Microphone(), Speaker())
+    await call.wait_ended()
+```
+请使用当前安装版本导出的来电 event 名称。
+
+#### Rust 原生 AudioPlayer
+
+AudioPlayer 在 Rust 中解码文件，并将其标准化为 16 kHz 单声道 PCM16。
+```python
+from tryx.media import AudioPlayer
+player = AudioPlayer(buffer_frames=3)
+player.play("intro.mp3", mode="replace")
+call = await client.voip.call(peer, player, Speaker())
+player.pause()
+player.resume()
+player.enqueue("next.wav")
+player.skip()
+player.clear_queue()
+player.stop()
+```
+播放模式为 replace、queue 和 interrupt。buffer_frames 默认 3，最大限制为 30。播放器状态为 idle、playing 和 paused。非 16 kHz 音频使用线性插值转换。
+
+#### 内部数据流和背压
+
+    Python source/sink -> PyO3 bridge + bounded async channel
+                        -> whatsapp-rust VoIP facade
+                        -> WaCore call engine -> RTP/SRTP/WebRTC
+                        -> WhatsApp call network
+
+接收媒体沿反方向流动：transport 解密并解码，bridge 将数据转换为 PCM16 或 VideoFrame，再交给 Python sink。bounded channel 防止队列无限增长；音频默认缓存 3 帧，即在网络和 codec 开销之前约 180 ms。sink 较慢时 producer 会异步等待，而不是消耗 CPU 自旋等待。
+
+AudioPlayer command 会等待 manager 的结果，并将错误传递给 Python。VideoPlayer.stop() 会取消 FFmpeg task，由该 task kill 并回收 child process，避免留下孤儿进程。
+
+#### 生命周期和故障排查
+
+- 只有在 Tryx 连接成功后才开始通话；每个活动通话使用一个 native player。
+- 取消通话时停止 player，并在 wait_ended() 后释放资源。
+- 只能发送恰好 1,920 字节的单声道 PCM16 16 kHz 音频帧。
+- 视频 source 必须输出 H.264 Annex-B，不能直接输出 MP4 container。
+- 音频尺寸错误时，将音频切分或重采样为 960 samples。
+- 延迟过高时使用 buffer_frames=2 或 3。
+- 视频播放失败时安装 FFmpeg，并使用 ffmpeg -version 验证 PATH。
+
 ### 开发命令
 
 ```bash
@@ -526,6 +661,150 @@ Tryx mendukung tiga tipe storage untuk menyimpan sesi WhatsApp:
 | Pure Python | subclass `StoreBase` | Store async custom seperti Redis, MongoDB, atau DynamoDB. |
 
 SQLite cukup untuk development lokal. Native FFI atau backend Python custom lebih cocok jika sesi perlu dipakai bersama oleh beberapa worker atau environment deployment.
+
+### VoIP: Panggilan Audio dan Video
+
+Tryx menyediakan bridge VoIP berbasis Rust untuk panggilan audio dan video WhatsApp. Setelah client tersambung, API tersedia melalui client.voip. Protocol, RTP/WebRTC, enkripsi, codec, dan orkestrasi call berjalan di whatsapp-rust; Python menyediakan media melalui adapter source dan sink asynchronous.
+
+#### Fitur
+
+- Panggilan audio 1:1 melalui voip.call().
+- Panggilan video 1:1 melalui voip.video_call().
+- Group call dengan video opsional melalui voip.group_call().
+- Bergabung ke call link melalui voip.join_call_link() dengan media audio atau video.
+- Kontrol hangup, wait, mute/unmute, video, peserta, approval, dan screen sharing.
+- Playback file audio native Rust untuk WAV, MP3, OGG, Vorbis, dan PCM.
+- Playback video native melalui FFmpeg dengan output H.264 Annex-B access unit.
+- Adapter Python untuk microphone, speaker, camera, codec, TTS, DSP, dan pipeline media custom.
+
+#### Kontrak Media
+
+| Media | Kontrak |
+| --- | --- |
+| Audio | Mono signed PCM16 little-endian, 16.000 Hz, 960 sample / 1.920 byte per frame, 60 ms |
+| Video | H.264 Annex-B access unit melalui VideoFrame |
+
+AudioSource.frames() harus menghasilkan async iterator dengan tepat 1.920 byte untuk setiap frame. AudioSink.write() menerima format PCM yang sama. VideoFrame berisi data, timestamp_us, duration_us, keyframe, dimensi opsional, dan orientation.
+
+#### Adapter Audio Minimal
+```python
+    from collections.abc import AsyncIterator
+    from tryx.media import AudioSink, AudioSource, validate_audio_frame
+
+    class Microphone(AudioSource):
+        async def frames(self) -> AsyncIterator[bytes]:
+            while True:
+                frame = await read_microphone_frame()
+                yield validate_audio_frame(frame)
+
+    class Speaker(AudioSink):
+        async def write(self, frame: bytes) -> None:
+            validate_audio_frame(frame)
+            await play_speaker_frame(frame)
+```
+Ganti fungsi perangkat tersebut dengan implementasi PyAudio, sounddevice, ALSA, CoreAudio, atau library perangkat lain.
+
+#### Panggilan Audio 1:1
+```python
+    from tryx.types import JID
+
+    async def start_audio_call(client, phone_number: str):
+        peer = JID(phone_number + "@s.whatsapp.net")
+        call = await client.voip.call(peer, Microphone(), Speaker())
+        print("call started:", call.call_id)
+        call.set_muted(True)
+        call.set_muted(False)
+        await call.wait_ended()
+```
+Gunakan await call.hangup() untuk mengakhiri call secara eksplisit. Pertahankan CallHandle selama call aktif dan tunggu wait_ended() agar cleanup media berjalan deterministik.
+
+#### Panggilan Video
+```python
+    from tryx.media import VideoPlayer
+
+    async def start_video_call(client, peer, video_sink):
+        video_source = VideoPlayer(fps=15)
+        video_source.play("sample.mp4")
+        call = await client.voip.video_call(
+            peer, Microphone(), Speaker(), video_source, video_sink
+        )
+        await call.wait_ended()
+        video_source.stop()
+```
+VideoPlayer mendukung 1–60 FPS dengan default 15. FFmpeg harus tersedia di PATH. File yang tidak ditemukan atau FFmpeg yang tidak tersedia akan menghasilkan error yang jelas.
+
+#### Group Call dan Call Link
+```python
+    call = await client.voip.group_call(
+        peers=[peer_a, peer_b],
+        audio_source=Microphone(),
+        audio_sink=Speaker(),
+    )
+    await call.invite_participant(peer_c)
+    await call.ring_participant(peer_c)
+    await call.set_approval_required(True)
+
+    linked = await client.voip.join_call_link(
+        "https://call.whatsapp.com/your-token",
+        "audio",
+        Microphone(),
+        Speaker(),
+    )
+```
+group_call() menerima video source dan sink secara opsional. join_call_link() menerima token atau URL dengan media audio atau video.
+
+#### Panggilan Masuk
+
+IncomingCallEvent menyediakan call_id, peer, is_video, accept(audio_source, audio_sink), dan reject(). Event hanya boleh di-accept atau reject satu kali karena invitation akan dikonsumsi.
+```python
+    @app.on(EvIncomingCall)
+    async def on_incoming_call(_client, event):
+        if event.is_video:
+            await event.reject()
+            return
+        call = await event.accept(Microphone(), Speaker())
+        await call.wait_ended()
+```
+Gunakan nama event incoming-call yang diexport oleh versi package yang terpasang.
+
+#### AudioPlayer Native
+
+AudioPlayer mendecode file di Rust dan menormalisasikannya menjadi mono PCM16 16 kHz.
+```python
+    from tryx.media import AudioPlayer
+
+    player = AudioPlayer(buffer_frames=3)
+    player.play("intro.mp3", mode="replace")
+    call = await client.voip.call(peer, player, Speaker())
+    player.pause()
+    player.resume()
+    player.enqueue("next.wav")
+    player.skip()
+    player.clear_queue()
+    player.stop()
+```
+Mode playback adalah replace, queue, dan interrupt. buffer_frames default 3 dan dibatasi maksimal 30 frame. State player adalah idle, playing, atau paused. Audio non-16 kHz diproses dengan interpolasi linear.
+
+#### Alur Internal dan Backpressure
+
+    Python source/sink -> PyO3 bridge + bounded async channel
+                        -> whatsapp-rust VoIP facade
+                        -> WaCore call engine -> RTP/SRTP/WebRTC
+                        -> WhatsApp call network
+
+Media masuk berjalan terbalik: transport mendekripsi dan mendecode, bridge mengubahnya menjadi PCM16 atau VideoFrame, kemudian sink Python menerimanya. Bounded channel mencegah queue tumbuh tanpa batas. Buffer audio default 3 frame, sekitar 180 ms sebelum overhead jaringan dan codec. Jika sink lambat, producer menunggu secara asynchronous tanpa spin-wait CPU.
+
+Command AudioPlayer menunggu hasil manager dan meneruskan error ke Python. VideoPlayer.stop() membatalkan task FFmpeg; task tersebut membunuh dan mereap child process agar tidak meninggalkan proses yatim.
+
+#### Lifecycle dan Troubleshooting
+
+- Mulai call setelah Tryx tersambung dan gunakan satu native player untuk setiap call aktif.
+- Hentikan player saat call dibatalkan dan lepaskan setelah wait_ended().
+- Kirim hanya frame mono PCM16 16 kHz dengan ukuran tepat 1.920 byte.
+- Video source harus menghasilkan H.264 Annex-B, bukan MP4 container.
+- Jika ukuran audio salah, lakukan chunk atau resample menjadi 960 sample.
+- Jika latency tinggi, gunakan buffer_frames=2 atau 3.
+- Jika video gagal, instal FFmpeg dan verifikasi dengan ffmpeg -version.
 
 ### Development
 
