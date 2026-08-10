@@ -10,6 +10,9 @@ use whatsapp_rust::{
     NewsletterRole as WaNewsletterRole,
     NewsletterState as WaNewsletterState,
     NewsletterVerification as WaNewsletterVerification,
+    NewsletterAdminInfo as WaNewsletterAdminInfo,
+    NewsletterAdminProfile as WaNewsletterAdminProfile,
+    NewsletterFollower as WaNewsletterFollower,
 };
 
 use crate::events::proto_cache::parse_message_proto;
@@ -113,6 +116,60 @@ pub struct NewsletterMetadata {
     pub role: Option<NewsletterRole>,
     #[pyo3(get)]
     pub creation_time: Option<u64>,
+}
+
+#[pyclass]
+pub struct NewsletterAdminProfile {
+    #[pyo3(get)] pub id: Option<String>,
+    #[pyo3(get)] pub name: String,
+    #[pyo3(get)] pub picture_id: Option<String>,
+    #[pyo3(get)] pub picture_direct_path: Option<String>,
+}
+
+impl From<WaNewsletterAdminProfile> for NewsletterAdminProfile {
+    fn from(value: WaNewsletterAdminProfile) -> Self {
+        Self { id: value.id, name: value.name, picture_id: value.picture_id, picture_direct_path: value.picture_direct_path }
+    }
+}
+
+#[pyclass]
+pub struct NewsletterAdminInfo {
+    #[pyo3(get)] pub admin_count: Option<u32>,
+    #[pyo3(get)] pub admin_profile: Option<Py<NewsletterAdminProfile>>,
+    #[pyo3(get)] pub admin_profiles_enabled: Option<bool>,
+}
+
+impl NewsletterAdminInfo {
+    pub fn from_inner(py: Python<'_>, value: WaNewsletterAdminInfo) -> PyResult<Self> {
+        Ok(Self {
+            admin_count: value.admin_count,
+            admin_profile: value.admin_profile.map(|p| Py::new(py, NewsletterAdminProfile::from(p))).transpose()?,
+            admin_profiles_enabled: value.admin_profiles_enabled,
+        })
+    }
+}
+
+#[pyclass]
+pub struct NewsletterFollower {
+    #[pyo3(get)] pub jid: Py<JID>,
+    #[pyo3(get)] pub phone_jid: Option<Py<JID>>,
+    #[pyo3(get)] pub display_name: Option<String>,
+    #[pyo3(get)] pub username: Option<String>,
+    #[pyo3(get)] pub role: Option<NewsletterRole>,
+    #[pyo3(get)] pub follow_time: Option<u64>,
+    #[pyo3(get)] pub admin_profile: Option<Py<NewsletterAdminProfile>>,
+}
+
+impl NewsletterFollower {
+    pub fn from_inner(py: Python<'_>, value: WaNewsletterFollower) -> PyResult<Self> {
+        Ok(Self {
+            jid: Py::new(py, JID::from(value.jid))?,
+            phone_jid: value.phone_jid.map(|j| Py::new(py, JID::from(j))).transpose()?,
+            display_name: value.display_name, username: value.username,
+            role: value.role.map(Into::into), follow_time: value.follow_time,
+            admin_profile: value.admin_profile.map(|p| Py::new(py, NewsletterAdminProfile::from(p))).transpose()?,
+        })
+    }
 }
 
 impl NewsletterMetadata {

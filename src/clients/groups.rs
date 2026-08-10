@@ -160,7 +160,7 @@ impl GroupsClient {
         future_into_py_with_locals(py, locals, async move {
             client
                 .groups()
-                .set_description(&jid_value, description_value, prev.as_deref())
+                .set_description(&jid_value, description_value, prev.as_deref().into())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())

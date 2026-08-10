@@ -289,7 +289,7 @@ impl GroupMetadata {
             description_id: value.description_id,
             is_locked: value.is_locked,
             is_announcement: value.is_announcement,
-            ephemeral_expiration: value.ephemeral_expiration,
+            ephemeral_expiration: value.ephemeral.and_then(|settings| settings.expiration).unwrap_or_default(),
             membership_approval: value.membership_approval,
             member_add_mode: value.member_add_mode.map(|mode| format!("{mode:?}")),
             member_link_mode: value.member_link_mode.map(|mode| format!("{mode:?}")),

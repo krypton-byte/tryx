@@ -497,9 +497,31 @@ class NewsletterMessage:
     reactions: list[NewsletterReactionCount]
     message: MessageProto | None
 
+class NewsletterAdminProfile:
+    id: str | None
+    name: str
+    picture_id: str | None
+    picture_direct_path: str | None
+
+class NewsletterAdminInfo:
+    admin_count: int | None
+    admin_profile: NewsletterAdminProfile | None
+    admin_profiles_enabled: bool | None
+
+class NewsletterFollower:
+    jid: JID
+    phone_jid: JID | None
+    display_name: str | None
+    username: str | None
+    role: NewsletterRole | None
+    follow_time: int | None
+    admin_profile: NewsletterAdminProfile | None
+
 class NewsletterClient:
     """Type stub for NewsletterClient."""
     async def list_subscribed(self) -> list[NewsletterMetadata]: ...
+    async def get_admin_info(self, jid: JID) -> NewsletterAdminInfo: ...
+    async def get_followers(self, jid: JID, count: int) -> list[NewsletterFollower]: ...
     async def get_metadata(self, jid: JID) -> NewsletterMetadata: ...
     async def get_metadata_by_invite(self, invite_code: str) -> NewsletterMetadata: ...
     async def create(

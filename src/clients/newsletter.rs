@@ -8,7 +8,7 @@ use waproto::whatsapp::Message as WhatsappMessage;
 use whatsapp_rust::Client;
 
 use crate::types::JID;
-use crate::wacore::iq::newsletter::{NewsletterMessage, NewsletterMetadata};
+use crate::wacore::iq::newsletter::{NewsletterAdminInfo, NewsletterFollower, NewsletterMessage, NewsletterMetadata};
 
 #[pyclass]
 pub struct NewsletterClient {
@@ -30,6 +30,27 @@ impl NewsletterClient {
 
 #[pymethods]
 impl NewsletterClient {
+    fn get_admin_info<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        future_into_py_with_locals::<_, Py<NewsletterAdminInfo>>(py, locals, async move {
+            let value = client.newsletter().get_admin_info(&jid_value).await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| Py::new(py, NewsletterAdminInfo::from_inner(py, value)?))
+        })
+    }
+
+    fn get_followers<'py>(&self, py: Python<'py>, jid: Py<JID>, count: u32) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
+        future_into_py_with_locals::<_, Vec<Py<NewsletterFollower>>>(py, locals, async move {
+            let values = client.newsletter().get_followers(&jid_value, count).await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| values.into_iter().map(|v| Py::new(py, NewsletterFollower::from_inner(py, v)?)).collect())
+        })
+    }
     fn list_subscribed<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;

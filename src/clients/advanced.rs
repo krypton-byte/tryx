@@ -35,7 +35,6 @@ impl AdvancedClient {
         dict.set_item("reconnects", stats.reconnects)?;
         dict.set_item("reconnect_errors", stats.reconnect_errors)?;
         dict.set_item("resends_throttled", stats.resends_throttled)?;
-        dict.set_item("last_data_sent_ms", stats.last_data_sent_ms)?;
         dict.set_item("last_data_received_ms", stats.last_data_received_ms)?;
         Ok(dict.unbind())
     }
@@ -48,19 +47,19 @@ impl AdvancedClient {
     }
 
     fn get_push_name(&self) -> PyResult<String> {
-        Ok(self.get_client()?.get_push_name())
+        Ok(self.get_client()?.push_name())
     }
 
     fn get_pn<'py>(&self, py: Python<'py>) -> PyResult<Option<Py<JID>>> {
         self.get_client()?
-            .get_pn()
+            .pn()
             .map(|jid| Py::new(py, JID::from(jid)))
             .transpose()
     }
 
     fn get_lid<'py>(&self, py: Python<'py>) -> PyResult<Option<Py<JID>>> {
         self.get_client()?
-            .get_lid()
+            .lid()
             .map(|jid| Py::new(py, JID::from(jid)))
             .transpose()
     }

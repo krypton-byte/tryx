@@ -23,7 +23,7 @@ wacore-binary = { path = "libs/whatsapp-rust/wacore/binary", default-features = 
 tokio = { version = "1.48", features = ["macros", "rt-multi-thread", "signal", "sync"] }
 async-trait = "0.1.89"
 pyo3-async-runtimes = { version = "0.28.0", features = ["attributes", "tokio-runtime"] }
-buffa = { version = "0.8.1", default-features = false, features = ["json"] }
+buffa = { version = "0.9.1", default-features = false, features = ["json"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "fmt"] }
 chrono = "0.4.44"

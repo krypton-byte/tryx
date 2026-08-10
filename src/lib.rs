@@ -134,6 +134,9 @@ use self::wacore::iq::newsletter::{
     NewsletterRole,
     NewsletterState,
     NewsletterVerification,
+    NewsletterAdminInfo,
+    NewsletterAdminProfile,
+    NewsletterFollower,
 };
 use self::wacore::iq::groups::{
     CreateGroupOptions,
@@ -201,6 +204,9 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<NewsletterRole>()?;
     client_module.add_class::<NewsletterReactionCount>()?;
     client_module.add_class::<NewsletterMetadata>()?;
+    client_module.add_class::<NewsletterAdminInfo>()?;
+    client_module.add_class::<NewsletterAdminProfile>()?;
+    client_module.add_class::<NewsletterFollower>()?;
     client_module.add_class::<NewsletterMessage>()?;
     client_module.add_class::<MemberLinkMode>()?;
     client_module.add_class::<MemberAddMode>()?;
