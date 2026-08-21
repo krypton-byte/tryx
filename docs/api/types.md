@@ -1,5 +1,22 @@
 # Types API
 
+::: tryx.types.JID
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.MessageSource
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.MessageInfo
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+---
+
 Core value objects in `tryx.types` define identity, message metadata, and result contracts used across client namespaces.
 
 ## Identity and Source Types

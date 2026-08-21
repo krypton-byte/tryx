@@ -1,3 +1,32 @@
+"""Exception hierarchy for Tryx error handling.
+
+This module re-exports all exception classes raised by the Tryx runtime
+and provides backward-compatible aliases for legacy API names.
+
+Exception hierarchy::
+
+    Exception
+    ├── FailedBuildClient     — Client initialization failure
+    │   ├── BuildBotError     — (legacy alias)
+    │   └── FailedBuildBot    — (legacy alias)
+    ├── FailedToDecodeProto   — Protobuf decoding failure
+    ├── EventDispatchError    — Event callback dispatch failure
+    ├── PyPayloadBuildError   — Python-to-Rust payload conversion failure
+    ├── UnsupportedBackend    — Incompatible storage backend
+    │   └── UnsupportedBackendError — (legacy alias)
+    └── UnsupportedEventType  — Unknown event class registration
+        └── UnsupportedEventTypeError — (legacy alias)
+
+Example::
+
+    from tryx.exceptions import FailedBuildClient
+
+    try:
+        app = Tryx(backend)
+    except FailedBuildClient as e:
+        print(f"Failed to initialize: {e}")
+"""
+
 from ._tryx import exceptions as _exceptions  # type: ignore
 
 for name in dir(_exceptions):  # type: ignore

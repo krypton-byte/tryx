@@ -1,5 +1,17 @@
 # Client API Gateway
 
+::: tryx.client.Tryx
+    options:
+      show_root_heading: true
+      heading_level: 2
+      members:
+        - get_client
+        - on
+        - run
+        - run_blocking
+
+---
+
 `TryxClient` is the runtime facade passed to every handler, and it exposes a root messaging surface plus 12 namespace clients.
 
 !!! tip "How To Read This Section"
