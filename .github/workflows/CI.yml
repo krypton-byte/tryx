@@ -73,9 +73,9 @@ jobs:
           manylinux: auto
           before-script-linux: |
             if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ]; then
-              yum install -y opus-devel
+              yum install -y opus-devel pkgconfig
             elif [ -f /etc/debian_version ]; then
-              apt-get update && apt-get install -y libopus-dev
+              apt-get update && apt-get install -y libopus-dev pkg-config
             fi
       - name: Upload wheels
         uses: actions/upload-artifact@v4
