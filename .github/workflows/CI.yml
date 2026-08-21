@@ -71,12 +71,6 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') && matrix.platform.target != 'aarch64' }}
           manylinux: auto
-          before-script-linux: |
-            if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ]; then
-              yum install -y opus-devel pkgconfig
-            elif [ -f /etc/debian_version ]; then
-              apt-get update && apt-get install -y libopus-dev pkg-config
-            fi
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -111,7 +105,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}-linux-android
-          args: --release --out dist --no-default-features --features voip-mlow
+          args: --release --out dist
           container: off
       - name: Upload wheels
         uses: actions/upload-artifact@v4

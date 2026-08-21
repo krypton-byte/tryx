@@ -45,14 +45,11 @@ serde = { version = "1", features = ["derive"] }
 wacore-appstate = { path = "libs/whatsapp-rust/wacore/appstate", default-features = false }
 
 # ── Feature flags ──────────────────────────────────────────────────────
-# `voip` enables full VoIP support (MLOW + libopus). This is the default
-# for native builds (local dev + CI x86_64).
-# `voip-mlow` enables only the pure-Rust MLOW codec adapter — no C opus
-# dependency — for cross-compilation targets where audiopus_sys/libopus
-# is hard to cross-compile (e.g. Android, s390x).
-# `voip-libopus` can be added on top of voip-mlow to pull in the C opus
-# binding when the cross toolchain provides it.
+# `voip-mlow` is the default: pure-Rust MLOW codec adapter — no C opus
+# dependency needed. This is the primary codec used by WhatsApp.
+# `voip` enables full VoIP support (MLOW + libopus C binding). Only use
+# this on platforms where the opus C library is readily available.
 [features]
-default = ["voip"]
+default = ["voip-mlow"]
 voip = ["whatsapp-rust/voip"]
 voip-mlow = ["whatsapp-rust/voip-mlow"]
