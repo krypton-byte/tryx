@@ -87,8 +87,6 @@ jobs:
         target:
           - aarch64
           - x86_64
-    env:
-      ANDROID_NDK_REV: "r27b"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -100,12 +98,9 @@ jobs:
         with:
           targets: ${{ matrix.target }}-linux-android
       - name: Setup Android NDK
-        run: |
-          sudo apt-get update && sudo apt-get install -y unzip wget
-          wget -q "https://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_REV}.zip" -O /tmp/ndk.zip
-          unzip -q /tmp/ndk.zip -d /opt
-          echo "ANDROID_NDK_HOME=/opt/android-ndk-${ANDROID_NDK_REV}" >> $GITHUB_ENV
-          echo "/opt/android-ndk-${ANDROID_NDK_REV}/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27d
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
