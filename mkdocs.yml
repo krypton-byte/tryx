@@ -1,6 +1,7 @@
 site_name: Tryx Documentation
 site_description: Rust-powered Python SDK for event-driven WhatsApp automation
 site_author: krypton-byte
+site_url: https://krypton-byte.github.io/tryx/
 repo_url: https://github.com/krypton-byte/tryx
 repo_name: krypton-byte/tryx
 edit_uri: edit/main/docs/
@@ -61,6 +62,7 @@ nav:
 theme:
   name: material
   language: en
+  custom_dir: docs/overrides
   font:
     text: Inter
     code: JetBrains Mono
@@ -108,6 +110,12 @@ plugins:
   - search
   - minify:
       minify_html: true
+  - mike:
+      alias_type: symlink
+      redirect_template: null
+      deploy_prefix: ""
+      canonical_version: null
+      version_selector: true
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -164,6 +172,10 @@ extra_css:
   - assets/stylesheets/extra.css
 
 extra:
+  version:
+    provider: mike
+    default: latest
+    alias: true
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/krypton-byte/tryx
