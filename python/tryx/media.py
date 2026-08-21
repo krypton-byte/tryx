@@ -139,9 +139,9 @@ class _PythonPrototypeAudioPlayer(AudioSource):
         self._queue: asyncio.Queue[bytes | None] = asyncio.Queue(
             maxsize=max(1, queue_size)
         )
-        self._pending: asyncio.Queue[
-            tuple[AsyncIterator[bytes], bool]
-        ] = asyncio.Queue()
+        self._pending: asyncio.Queue[tuple[AsyncIterator[bytes], bool]] = (
+            asyncio.Queue()
+        )
         self._producer: asyncio.Task[None] | None = None
         self._generation = 0
         self._state = "idle"
@@ -189,11 +189,7 @@ class _PythonPrototypeAudioPlayer(AudioSource):
     async def play(self, frames: AsyncIterator[bytes], mode: str = "replace") -> None:
         if mode not in {"replace", "queue", "interrupt"}:
             raise ValueError("mode must be replace, queue, or interrupt")
-        if (
-            mode == "queue"
-            and self._producer is not None
-            and not self._producer.done()
-        ):
+        if mode == "queue" and self._producer is not None and not self._producer.done():
             await self._pending.put((frames, False))
             return
         if (

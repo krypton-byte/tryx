@@ -7,7 +7,6 @@ WA_FRAME_SAMPLES: Final[int]
 WA_FRAME_MS: Final[int]
 
 def validate_audio_frame(frame: bytes | bytearray | memoryview) -> bytes: ...
-
 @dataclass(frozen=True, slots=True)
 class VideoFrame:
     data: bytes

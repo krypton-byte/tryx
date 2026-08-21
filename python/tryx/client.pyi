@@ -184,16 +184,29 @@ class VoipClient:
         self, peer: JID, audio_source: Any, audio_sink: Any
     ) -> CallHandle: ...
     async def group_call(
-        self, peers: list[JID], audio_source: Any, audio_sink: Any,
-        video_source: Any | None = None, video_sink: Any | None = None
+        self,
+        peers: list[JID],
+        audio_source: Any,
+        audio_sink: Any,
+        video_source: Any | None = None,
+        video_sink: Any | None = None,
     ) -> CallHandle: ...
     async def join_call_link(
-        self, token_or_url: str, media: str, audio_source: Any, audio_sink: Any,
-        video_source: Any | None = None, video_sink: Any | None = None
+        self,
+        token_or_url: str,
+        media: str,
+        audio_source: Any,
+        audio_sink: Any,
+        video_source: Any | None = None,
+        video_sink: Any | None = None,
     ) -> CallHandle: ...
     async def video_call(
-        self, peer: JID, audio_source: Any, audio_sink: Any,
-        video_source: Any, video_sink: Any
+        self,
+        peer: JID,
+        audio_source: Any,
+        audio_sink: Any,
+        video_source: Any,
+        video_sink: Any,
     ) -> CallHandle: ...
 
 class AdvancedClient:
