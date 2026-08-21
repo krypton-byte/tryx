@@ -4,52 +4,95 @@ on:
   push:
     branches:
       - master
+      - main
     paths:
       - "docs/**"
       - "mkdocs.yml"
-      - ".github/workflows/docs.yml"
-  pull_request:
-    paths:
-      - "docs/**"
-      - "mkdocs.yml"
-      - ".github/workflows/docs.yml"
+      - "python/tryx/**"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy (e.g. 0.6, 0.7)"
+        required: false
+        type: string
+      delete_version:
+        description: "Version to delete"
+        required: false
+        type: string
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    name: Build docs
+    name: Build Documentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           submodules: recursive
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - uses: astral-sh/setup-uv@v5
-      - name: Build MkDocs site (strict)
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
         run: |
-          uv sync --group docs
-          uv run --no-project --with mkdocs==1.6.0 --with mkdocs-material==9.6.0 mkdocs build --strict
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
+          uv sync --group docs --no-install-project
+          uv pip install mike
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build and deploy docs (auto from tag)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//' | sed 's/\.[0-9]*$//')
+          echo "Deploying docs for version: $VERSION"
+          uv run mike deploy --push --update-aliases "$VERSION" latest
+          uv run mike set-default --push latest
+        env:
+          PYTHONPATH: python
+
+      - name: Build and deploy docs (manual version)
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+        run: |
+          echo "Deploying docs for version: ${{ inputs.version }}"
+          uv run mike deploy --push --update-aliases "${{ inputs.version }}" latest
+          uv run mike set-default --push latest
+        env:
+          PYTHONPATH: python
+
+      - name: Delete docs version
+        if: github.event_name == 'workflow_dispatch' && inputs.delete_version != ''
+        run: |
+          echo "Deleting docs version: ${{ inputs.delete_version }}"
+          uv run mike delete --push "${{ inputs.delete_version }}"
+        env:
+          PYTHONPATH: python
+
+      - name: List deployed versions
+        if: success()
+        run: uv run mike list
 
   deploy:
-    name: Deploy docs
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
