@@ -53,3 +53,17 @@ wacore-appstate = { path = "libs/whatsapp-rust/wacore/appstate", default-feature
 default = ["voip-mlow"]
 voip = ["whatsapp-rust/voip"]
 voip-mlow = ["whatsapp-rust/voip-mlow"]
+
+# ── Release profile ────────────────────────────────────────────────────
+# Aggressively optimize for binary size. Without this, debug symbols
+# alone can bloat the .so to ~1 GB.
+[profile.release]
+strip = true          # strip debug symbols (~900 MB saved)
+lto = true            # link-time optimization (20-30% smaller code)
+opt-level = "z"       # optimize for size over speed
+codegen-units = 1     # single codegen unit for better optimization
+panic = "abort"       # skip unwind tables (~5% smaller)
+
+[profile.dev]
+# Keep dev builds fast.
+opt-level = 0
