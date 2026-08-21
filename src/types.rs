@@ -163,8 +163,6 @@ pub struct MsgMetaInfo {
     #[pyo3(get)]
     target_chat: Option<pyo3::Py<JID>>,
     #[pyo3(get)]
-    deprecated_lid_session: Option<bool>,
-    #[pyo3(get)]
     thread_message_id: Option<String>,
     #[pyo3(get)]
     thread_message_sender_jid: Option<pyo3::Py<JID>>,
@@ -197,7 +195,7 @@ impl From<WhatsAppMessageInfo> for MessageInfo {
         MessageInfo {
             inner: Arc::new(info.clone()),
             id: info.id.clone(),
-            r#type: info.r#type.clone(),
+            r#type: info.r#type.as_ref().map(|t| t.to_string()).unwrap_or_default(),
             push_name: info.push_name.clone(),
         }
     }
@@ -236,8 +234,8 @@ impl MessageInfo {
         Ok(date.into())
     }
     #[getter]
-    fn media_type(&self) -> &str {
-        &self.inner.media_type
+    fn media_type(&self) -> Option<String> {
+        self.inner.media_type.as_ref().map(|t| t.to_string())
     }
     #[getter]
     fn edit(&self) -> &str {
@@ -279,7 +277,6 @@ impl MessageInfo {
                 Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
             },
-            deprecated_lid_session: self.inner.meta_info.deprecated_lid_session,
             thread_message_id: match self.inner.meta_info.thread_message_id {
                 Some(ref s) => Some(s.clone()),
                 None => None,

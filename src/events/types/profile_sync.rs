@@ -1,9 +1,9 @@
 #[pyclass]
 pub struct EvPushNameUpdateData {
     #[pyo3(get)]
-    jid: Py<JID>,
+    jid: Option<Py<JID>>,
     #[pyo3(get)]
-    message: Py<MessageInfo>,
+    message: Option<Py<MessageInfo>>,
     #[pyo3(get)]
     old_push_name: String,
     #[pyo3(get)]
@@ -12,12 +12,12 @@ pub struct EvPushNameUpdateData {
 
 #[pyclass]
 pub struct EvPushNameUpdate {
-    inner: Box<wacore::types::events::PushNameUpdate>,
+    inner: Box<wacore::types::events::RetiredPushNameUpdate>,
     data_cache: OnceLock<Py<EvPushNameUpdateData>>,
 }
 
 impl EvPushNameUpdate {
-    pub fn new(inner: wacore::types::events::PushNameUpdate) -> Self {
+    pub fn new(inner: wacore::types::events::RetiredPushNameUpdate) -> Self {
         Self {
             inner: Box::new(inner),
             data_cache: OnceLock::new(),
@@ -25,8 +25,8 @@ impl EvPushNameUpdate {
     }
 }
 
-impl From<wacore::types::events::PushNameUpdate> for EvPushNameUpdate {
-    fn from(event: wacore::types::events::PushNameUpdate) -> Self {
+impl From<wacore::types::events::RetiredPushNameUpdate> for EvPushNameUpdate {
+    fn from(event: wacore::types::events::RetiredPushNameUpdate) -> Self {
         EvPushNameUpdate::new(event)
     }
 }
@@ -38,12 +38,11 @@ impl EvPushNameUpdate {
         if let Some(cached) = self.data_cache.get() {
             Ok(cached.clone_ref(py))
         } else {
-            let message = MessageInfo::from((*self.inner.message).clone());
             let data = EvPushNameUpdateData {
-                jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
-                message: Py::new(py, message)?,
-                old_push_name: self.inner.old_push_name.clone(),
-                new_push_name: self.inner.new_push_name.clone(),
+                jid: None,
+                message: None,
+                old_push_name: String::new(),
+                new_push_name: String::new(),
             };
             let py_data = Py::new(py, data)?;
             self.data_cache.set(py_data.clone_ref(py)).ok();
