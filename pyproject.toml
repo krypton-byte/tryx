@@ -67,12 +67,12 @@ dev = [
     "segno>=1.6.6",
 ]
 docs = [
-    "mkdocs>=1.6.0",
-    "mkdocs-material>=9.6.0",
-    "mkdocs-minify-plugin>=0.8.0",
-    "mkdocstrings>=0.27.0",
-    "mkdocstrings-python>=1.12.0",
-    "mike>=2.1.0",
+    "mkdocs>=1.6.0; python_version >= '3.10'",
+    "mkdocs-material>=9.6.0; python_version >= '3.10'",
+    "mkdocs-minify-plugin>=0.8.0; python_version >= '3.10'",
+    "mkdocstrings>=1.0.0; python_version >= '3.10'",
+    "mkdocstrings-python>=1.12.0; python_version >= '3.10'",
+    "mike>=2.1.0; python_version >= '3.10'",
 ]
 # include = [
 #     { path = "python/tryx/__init__.py", format = ["sdist", "wheel"] },
