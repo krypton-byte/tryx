@@ -1,5 +1,22 @@
 # WACore API
 
+::: tryx.wacore.MediaType
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.wacore.Node
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.wacore.NodeValue
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+---
+
 `tryx.wacore` exposes lower-level protocol-facing types.
 
 ## MediaType

@@ -1,5 +1,12 @@
 # Events API
 
+::: tryx.events.Dispatcher
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+---
+
 This page maps event classes in `tryx.events` to practical handler strategies.
 
 ## Dispatcher Contract

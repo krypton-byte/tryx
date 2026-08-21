@@ -1,5 +1,27 @@
 # Helpers API
 
+::: tryx.helpers.NewsletterHelpers
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.helpers.GroupsHelpers
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.helpers.StatusHelpers
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.helpers.ChatstateHelpers
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+---
+
 Helpers in `tryx.helpers` are stateless utility surfaces for builders, enum defaults, and payload conversion.
 
 !!! tip "Design intent"
