@@ -195,7 +195,7 @@ impl From<WhatsAppMessageInfo> for MessageInfo {
         MessageInfo {
             inner: Arc::new(info.clone()),
             id: info.id.clone(),
-            r#type: info.r#type.as_ref().map(|t| t.to_string()).unwrap_or_default(),
+            r#type: info.r#type.clone(),
             push_name: info.push_name.clone(),
         }
     }
@@ -235,7 +235,7 @@ impl MessageInfo {
     }
     #[getter]
     fn media_type(&self) -> Option<String> {
-        self.inner.media_type.as_ref().map(|t| t.to_string())
+        Some(self.inner.media_type.clone())
     }
     #[getter]
     fn edit(&self) -> &str {

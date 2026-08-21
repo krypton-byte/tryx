@@ -582,7 +582,7 @@ impl Tryx {
                                 Py::new(py, EvContactUpdate::new(contact_update)).map(|event| event.into_any())
                             }).await;
                         }
-                        Event::RetiredPushNameUpdate(pushname) => {
+                        Event::PushNameUpdate(pushname) => {
                             let pushname = pushname.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.push_name_update, locals.clone(), "RetiredPushNameUpdate", |py| {
                                 Py::new(py, EvPushNameUpdate::from(pushname)).map(|event| event.into_any())

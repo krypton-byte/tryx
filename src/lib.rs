@@ -342,12 +342,12 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     _py.add_submodule(&backend_module)?;
 
     let exceptions_module = PyModule::new(_py.py(), "exceptions")?;
-    exceptions_module.add_class::<FailedBuildClient>()?;
-    exceptions_module.add_class::<FailedToDecodeProto>()?;
-    exceptions_module.add_class::<EventDispatchError>()?;
-    exceptions_module.add_class::<PyPayloadBuildError>()?;
-    exceptions_module.add_class::<UnsupportedBackend>()?;
-    exceptions_module.add_class::<UnsupportedEventType>()?;
+    exceptions_module.add("FailedBuildClient", _py.py().get_type::<FailedBuildClient>())?;
+    exceptions_module.add("FailedToDecodeProto", _py.py().get_type::<FailedToDecodeProto>())?;
+    exceptions_module.add("EventDispatchError", _py.py().get_type::<EventDispatchError>())?;
+    exceptions_module.add("PyPayloadBuildError", _py.py().get_type::<PyPayloadBuildError>())?;
+    exceptions_module.add("UnsupportedBackend", _py.py().get_type::<UnsupportedBackend>())?;
+    exceptions_module.add("UnsupportedEventType", _py.py().get_type::<UnsupportedEventType>())?;
     _py.add_submodule(&exceptions_module)?;
 
     let types_module = PyModule::new(_py.py(), "types")?;
