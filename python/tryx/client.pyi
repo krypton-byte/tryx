@@ -6,7 +6,6 @@ from .backend import BackendBase, FfiStoreProtocol, StoreBase
 from .events import EvMessage
 from .types import JID, MediaReuploadResult, ProfilePicture, SendResult, UploadResponse
 from .wacore import MediaType, Node
-from .media import AudioPlayer
 from .waproto.whatsapp_pb2 import Message as MessageProto
 from .waproto.whatsapp_pb2 import MessageKey, SyncActionValue
 

@@ -7,10 +7,10 @@ frames without inheriting a concrete player implementation.
 
 from __future__ import annotations
 
+import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-import asyncio
 from typing import Any, Awaitable, Callable
 
 WA_SAMPLE_RATE = 16_000
@@ -136,8 +136,12 @@ class _PythonPrototypeAudioPlayer(AudioSource):
     """
 
     def __init__(self, queue_size: int = 6) -> None:
-        self._queue: asyncio.Queue[bytes | None] = asyncio.Queue(maxsize=max(1, queue_size))
-        self._pending: asyncio.Queue[tuple[AsyncIterator[bytes], bool]] = asyncio.Queue()
+        self._queue: asyncio.Queue[bytes | None] = asyncio.Queue(
+            maxsize=max(1, queue_size)
+        )
+        self._pending: asyncio.Queue[
+            tuple[AsyncIterator[bytes], bool]
+        ] = asyncio.Queue()
         self._producer: asyncio.Task[None] | None = None
         self._generation = 0
         self._state = "idle"
@@ -153,7 +157,11 @@ class _PythonPrototypeAudioPlayer(AudioSource):
     async def _notify_finish(self, reason: str, generation: int) -> None:
         if generation != self._generation:
             return
-        event = type("PlaybackFinished", (), {"reason": reason, "generation": generation})()
+        event = type(
+            "PlaybackFinished",
+            (),
+            {"reason": reason, "generation": generation},
+        )()
         for callback in tuple(self._finish_handlers):
             result = callback(event)
             if asyncio.iscoroutine(result):
@@ -181,10 +189,18 @@ class _PythonPrototypeAudioPlayer(AudioSource):
     async def play(self, frames: AsyncIterator[bytes], mode: str = "replace") -> None:
         if mode not in {"replace", "queue", "interrupt"}:
             raise ValueError("mode must be replace, queue, or interrupt")
-        if mode == "queue" and self._producer is not None and not self._producer.done():
+        if (
+            mode == "queue"
+            and self._producer is not None
+            and not self._producer.done()
+        ):
             await self._pending.put((frames, False))
             return
-        if mode == "interrupt" and self._producer is not None and not self._producer.done():
+        if (
+            mode == "interrupt"
+            and self._producer is not None
+            and not self._producer.done()
+        ):
             await self._pending.put((frames, True))
             return
         await self.stop()
