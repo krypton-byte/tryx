@@ -25,6 +25,14 @@ repos:
         language: system
         types_or: [python, pyi]
 
+      - id: pyright
+        name: pyright type check
+        entry: uv run pyright
+        language: system
+        types: [python]
+        pass_filenames: false
+        files: "^python/tryx/.*\\.(py|pyi)$"
+
       - id: stub-parity
         name: check stub parity
         entry: uv run python scripts/check_stub_parity.py
