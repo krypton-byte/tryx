@@ -66,7 +66,7 @@ pub struct Tryx {
 #[pymethods]
 impl Tryx {
     #[new]
-    fn new(py: Python, backend: Py<BackendBase>) -> PyResult<Self> {
+    fn new(py: Python, backend: Py<PyAny>) -> PyResult<Self> {
         init_logging();
         info!("initializing Tryx client");
         if let Ok(sqlite) = backend.extract::<Py<SqliteStore>>(py) {
@@ -111,7 +111,7 @@ impl Tryx {
             })
         } else if let (Ok(lib_path), Ok(config_json)) = (
             backend.getattr(py, "lib_path").and_then(|v| v.extract::<String>(py)),
-            backend.getattr(py, "config_json").and_then(|v| v.extract::<String>(py)),
+            backend.getattr(py, "connect_string").and_then(|v| v.extract::<String>(py)),
         ) {
             debug!("detected FFI backend from Python via duck-typing");
 
