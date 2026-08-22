@@ -67,3 +67,10 @@ panic = "abort"       # skip unwind tables (~5% smaller)
 [profile.dev]
 # Keep dev builds fast.
 opt-level = 0
+
+# Profile for stubs generation: fast compile, no optimization needed.
+[profile.stubs]
+inherits = "dev"
+opt-level = 0
+strip = false
+lto = false
