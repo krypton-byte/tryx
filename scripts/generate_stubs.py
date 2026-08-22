@@ -141,17 +141,19 @@ MODULE_SOURCES: dict[str, list[Path]] = {
 # Rust Source Parser
 # ══════════════════════════════════════════════════════════════════
 
+
 class RustClass:
     """Represents a parsed PyO3 class from Rust source."""
+
     def __init__(self, name: str, doc: str = ""):
         self.name = name
         self.doc = doc
         self.fields: list[tuple[str, str, bool]] = []  # (name, type, has_get_set)
         self.getters: list[tuple[str, str]] = []  # (name, return_type)
         self.setters: list[tuple[str, str]] = []  # (name, param_type)
-        self.methods: list[tuple[str, str, list[tuple[str, str, str | None]]]] = (
-            []  # (name, return_type, [(param_name, param_type, default)])
-        )
+        self.methods: list[
+            tuple[str, str, list[tuple[str, str, str | None]]]
+        ] = []  # (name, return_type, [(param_name, param_type, default)])
         self.is_enum = False
         self.enum_variants: list[str] = []
         self.static_methods: list[
@@ -230,12 +232,12 @@ def rust_type_to_python(rust_type: str) -> str:
     if t == "PyResult<()>":
         return "None"
     if t.startswith("PyResult<") and t.endswith(">"):
-        inner = t[len("PyResult<"):-1]
+        inner = t[len("PyResult<") : -1]
         return rust_type_to_python(inner)
 
     # Handle Result<T, E> → T
     if t.startswith("Result<") and t.endswith(">"):
-        inner = t[len("Result<"):-1]
+        inner = t[len("Result<") : -1]
         parts = _split_type_args(inner)
         if parts:
             return rust_type_to_python(parts[0])
@@ -299,7 +301,7 @@ def _extract_return_type(sig: str) -> str:
     arrow_idx = sig.find("->")
     if arrow_idx == -1:
         return "()"
-    rest = sig[arrow_idx + 2:].strip()
+    rest = sig[arrow_idx + 2 :].strip()
     # Collect the return type, respecting angle brackets and parens
     angle_depth = 0
     paren_depth = 0
@@ -358,11 +360,11 @@ def _extract_params(body: str, sig_line: str) -> list[tuple[str, str, str | None
         default = None
         if eq_match:
             default = eq_match.group(1).strip()
-            part = part[:eq_match.start()].strip()
+            part = part[: eq_match.start()].strip()
 
         colon_match = re.search(r":\s*(.+)$", part)
         if colon_match:
-            name = part[:colon_match.start()].strip()
+            name = part[: colon_match.start()].strip()
             typ = colon_match.group(1).strip()
             # Clean up lifetimes
             typ = re.sub(r"<'[^>]+>", "", typ)
@@ -516,12 +518,12 @@ def _parse_methods_from_body(cls: RustClass, body: str):
         sig_text = line
         # If the line already has a '{', the signature is complete
         # Otherwise, keep reading lines until we find it
-        if '{' not in sig_text:
+        if "{" not in sig_text:
             while i + 1 < len(lines):
                 i += 1
                 next_line = lines[i].strip()
-                sig_text += ' ' + next_line
-                if '{' in next_line:
+                sig_text += " " + next_line
+                if "{" in next_line:
                     break
 
         # Extract parameters and return type
@@ -609,6 +611,7 @@ def parse_rust_sources(module_name: str) -> list[RustClass]:
 # Stub Generator
 # ══════════════════════════════════════════════════════════════════
 
+
 def generate_class_stub(cls: RustClass) -> list[str]:
     """Generate .pyi stub lines for a single class."""
     lines: list[str] = []
@@ -641,8 +644,7 @@ def generate_class_stub(cls: RustClass) -> list[str]:
     for setter_name, param_type in cls.setters:
         lines.append(f"{INDENT}@{setter_name}.setter")
         lines.append(
-            f"{INDENT}def {setter_name}("
-            f"self, value: {param_type}) -> None: ..."
+            f"{INDENT}def {setter_name}(self, value: {param_type}) -> None: ..."
         )
         has_content = True
 
@@ -677,10 +679,7 @@ def generate_class_stub(cls: RustClass) -> list[str]:
                 param_parts.append(f"{pname}: {ptype}")
         lines.append(f"{INDENT}@staticmethod")
         joined = ", ".join(param_parts)
-        lines.append(
-            f"{INDENT}def {sm_name}("
-            f"{joined}) -> {sm_ret}: ..."
-        )
+        lines.append(f"{INDENT}def {sm_name}({joined}) -> {sm_ret}: ...")
         has_content = True
 
     # Regular methods (excluding __init__)
@@ -695,10 +694,7 @@ def generate_class_stub(cls: RustClass) -> list[str]:
             else:
                 param_parts.append(f"{pname}: {ptype}")
         joined = ", ".join(param_parts)
-        lines.append(
-            f"{INDENT}def {m_name}("
-            f"self, {joined}) -> {m_ret}: ..."
-        )
+        lines.append(f"{INDENT}def {m_name}(self, {joined}) -> {m_ret}: ...")
         has_content = True
 
     if not has_content:
@@ -743,6 +739,7 @@ def generate_module_stub(module_name: str, classes: list[RustClass]) -> list[str
 # Main
 # ══════════════════════════════════════════════════════════════════
 
+
 def main() -> int:
     header = '''\
 """
@@ -769,12 +766,8 @@ from typing import Any, ClassVar, overload
 
     OUTPUT.write_text("\n".join(parts))
     size_kb = OUTPUT.stat().st_size / 1024
-    n_classes = sum(
-        1 for line in parts if line.strip().startswith("class ")
-    )
-    n_methods = sum(
-        1 for line in parts if "def " in line and "(self" in line
-    )
+    n_classes = sum(1 for line in parts if line.strip().startswith("class "))
+    n_methods = sum(1 for line in parts if "def " in line and "(self" in line)
     print(
         f"\n✅ {OUTPUT.name}: {size_kb:.1f} KB, "
         f"{n_classes} classes, {n_methods} methods"

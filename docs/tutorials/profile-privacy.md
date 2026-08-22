@@ -55,13 +55,19 @@ async def privacy_commands(client, event):
 ## Step 3: Disallowed List Example
 
 ```python
-from tryx.client import DisallowedListAction, DisallowedListUpdate, DisallowedListUserEntry
+from tryx.client import (
+    DisallowedListAction,
+    DisallowedListUpdate,
+    DisallowedListUserEntry,
+)
 
 
 async def block_visibility_for(client, target_jid):
     update = DisallowedListUpdate(
         dhash="",
-        users=[DisallowedListUserEntry(action=DisallowedListAction.Add, jid=target_jid)],
+        users=[
+            DisallowedListUserEntry(action=DisallowedListAction.Add, jid=target_jid)
+        ],
     )
     await client.privacy.set_disallowed_list(PrivacyCategory.Status, update)
 ```

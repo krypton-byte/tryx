@@ -33,23 +33,23 @@ approve = [row.jid for row in pending if row.jid.user in trusted_users]
 reject = [row.jid for row in pending if row.jid.user not in trusted_users]
 
 if approve:
-	await client.groups.approve_membership_requests(group_jid, approve)
+    await client.groups.approve_membership_requests(group_jid, approve)
 if reject:
-	await client.groups.reject_membership_requests(group_jid, reject)
+    await client.groups.reject_membership_requests(group_jid, reject)
 ```
 
 ## Production: State Reconciliation Loop
 
 ```python
 async def reconcile_group(client, group_jid):
-	metadata = await client.groups.get_metadata(group_jid)
+    metadata = await client.groups.get_metadata(group_jid)
 
-	# enforce policy
-	if not metadata.is_announcement:
-		await client.groups.set_announce(group_jid, True)
+    # enforce policy
+    if not metadata.is_announcement:
+        await client.groups.set_announce(group_jid, True)
 
-	if metadata.ephemeral_expiration != 604800:
-		await client.groups.set_ephemeral(group_jid, 604800)
+    if metadata.ephemeral_expiration != 604800:
+        await client.groups.set_ephemeral(group_jid, 604800)
 ```
 
 ## Operational Safety Rules

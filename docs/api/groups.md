@@ -41,7 +41,11 @@
 ## Runnable Example: Group Setup Playbook
 
 ```python
-from tryx.client import CreateGroupOptions, GroupParticipantOptions, MembershipApprovalMode
+from tryx.client import (
+    CreateGroupOptions,
+    GroupParticipantOptions,
+    MembershipApprovalMode,
+)
 
 
 async def setup_group(client, title, member_jids):

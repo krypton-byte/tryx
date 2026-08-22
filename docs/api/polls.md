@@ -46,7 +46,9 @@ async def cast_vote(client, chat, poll_id, creator_jid, secret):
 from tryx.types import JID
 
 
-async def tally(client, poll_options, encrypted_rows, secret, poll_id, creator_jid: JID):
+async def tally(
+    client, poll_options, encrypted_rows, secret, poll_id, creator_jid: JID
+):
     # encrypted_rows: list[tuple[JID, bytes, bytes]]
     return client.polls.aggregate_votes(
         poll_options=poll_options,

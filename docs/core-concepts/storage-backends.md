@@ -74,10 +74,12 @@ Any object with `lib_path` and `connect_string` attributes is detected as an FFI
 ```python
 from tryx.client import Tryx
 
+
 # tryx-store-postgres exposes this interface
 class PostgresStore:
     lib_path = "./libtryx_pg.so"
     connect_string = "host=localhost dbname=tryx"
+
 
 app = Tryx(PostgresStore())
 ```
@@ -88,6 +90,7 @@ Use the `FfiStoreProtocol` for type checking:
 
 ```python
 from tryx.backend import FfiStoreProtocol
+
 
 def create_backend() -> FfiStoreProtocol:
     return PostgresStore()  # type checker validates attributes
@@ -141,6 +144,7 @@ import redis.asyncio as redis
 from tryx.backend import StoreBase
 from tryx.client import Tryx
 
+
 class RedisStore(StoreBase):
     def __init__(self, url: str = "redis://localhost"):
         self.r = redis.from_url(url)
@@ -156,6 +160,7 @@ class RedisStore(StoreBase):
 
     # ... implement ALL abstract methods from StoreBase ...
 
+
 app = Tryx(RedisStore())
 ```
 
@@ -170,6 +175,7 @@ app = Tryx(RedisStore())
 class IncompleteStore(StoreBase):
     async def put_identity(self, address: str, key: bytes) -> None:
         pass
+
     # Missing 50+ methods → type checker error!
 ```
 

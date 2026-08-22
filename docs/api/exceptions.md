@@ -68,6 +68,7 @@ except FailedBuildClient as e:
 ```python
 from tryx.exceptions import EventDispatchError
 
+
 @app.on(EvMessage)
 async def on_message(client, event):
     try:

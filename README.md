@@ -73,7 +73,9 @@ async def on_pairing_qr(_client: TryxClient, event: EvPairingQrCode) -> None:
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     text = (event.data.get_text() or "").strip()
     if text.lower() == "ping":
-        await client.send_text(event.data.message_info.source.chat, "pong", quoted=event)
+        await client.send_text(
+            event.data.message_info.source.chat, "pong", quoted=event
+        )
 
 
 async def main() -> None:
@@ -147,11 +149,15 @@ AudioSource.frames() must yield exactly 1,920 bytes per frame. AudioSink.write()
 ```python
 from collections.abc import AsyncIterator
 from tryx.media import AudioSink, AudioSource, validate_audio_frame
+
+
 class Microphone(AudioSource):
     async def frames(self) -> AsyncIterator[bytes]:
         while True:
             frame = await read_microphone_frame()
             yield validate_audio_frame(frame)
+
+
 class Speaker(AudioSink):
     async def write(self, frame: bytes) -> None:
         validate_audio_frame(frame)
@@ -164,6 +170,8 @@ Replace the two backend functions with PyAudio, sounddevice, ALSA, CoreAudio, or
 
 ```python
 from tryx.types import JID
+
+
 async def start_audio_call(client, phone_number: str):
     peer = JID(phone_number + "@s.whatsapp.net")
     call = await client.voip.call(peer, Microphone(), Speaker())
@@ -177,6 +185,8 @@ Use await call.hangup() to end a call explicitly. Keep the CallHandle alive and 
 #### Video Call
 ```python
 from tryx.media import VideoPlayer
+
+
 async def start_video_call(client, peer, video_sink):
     video_source = VideoPlayer(fps=15)
     video_source.play("sample.mp4")
@@ -226,6 +236,7 @@ Use the incoming-call event exported by the installed package version.
 AudioPlayer decodes files in Rust and normalizes them to mono PCM16 at 16 kHz.
 ```python
 from tryx.media import AudioPlayer
+
 player = AudioPlayer(buffer_frames=3)
 player.play("intro.mp3", mode="replace")
 call = await client.voip.call(peer, player, Speaker())
@@ -352,7 +363,9 @@ async def on_pairing_qr(_client: TryxClient, event: EvPairingQrCode) -> None:
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     text = (event.data.get_text() or "").strip()
     if text.lower() == "ping":
-        await client.send_text(event.data.message_info.source.chat, "pong", quoted=event)
+        await client.send_text(
+            event.data.message_info.source.chat, "pong", quoted=event
+        )
 
 
 async def main() -> None:
@@ -427,11 +440,15 @@ AudioSource.frames() 必须每次产生恰好 1,920 字节。AudioSink.write() �
 ```python
 from collections.abc import AsyncIterator
 from tryx.media import AudioSink, AudioSource, validate_audio_frame
+
+
 class Microphone(AudioSource):
     async def frames(self) -> AsyncIterator[bytes]:
         while True:
             frame = await read_microphone_frame()
             yield validate_audio_frame(frame)
+
+
 class Speaker(AudioSink):
     async def write(self, frame: bytes) -> None:
         validate_audio_frame(frame)
@@ -443,6 +460,8 @@ class Speaker(AudioSink):
 
 ```python
 from tryx.types import JID
+
+
 async def start_audio_call(client, phone_number: str):
     peer = JID(phone_number + "@s.whatsapp.net")
     call = await client.voip.call(peer, Microphone(), Speaker())
@@ -456,6 +475,8 @@ async def start_audio_call(client, phone_number: str):
 #### 视频通话
 ```python
 from tryx.media import VideoPlayer
+
+
 async def start_video_call(client, peer, video_sink):
     video_source = VideoPlayer(fps=15)
     video_source.play("sample.mp4")
@@ -505,6 +526,7 @@ async def on_incoming_call(_client, event):
 AudioPlayer 在 Rust 中解码文件，并将其标准化为 16 kHz 单声道 PCM16。
 ```python
 from tryx.media import AudioPlayer
+
 player = AudioPlayer(buffer_frames=3)
 player.play("intro.mp3", mode="replace")
 call = await client.voip.call(peer, player, Speaker())
@@ -617,7 +639,9 @@ async def on_pairing_qr(_client: TryxClient, event: EvPairingQrCode) -> None:
 async def on_message(client: TryxClient, event: EvMessage) -> None:
     text = (event.data.get_text() or "").strip()
     if text.lower() == "ping":
-        await client.send_text(event.data.message_info.source.chat, "pong", quoted=event)
+        await client.send_text(
+            event.data.message_info.source.chat, "pong", quoted=event
+        )
 
 
 async def main() -> None:
@@ -688,48 +712,52 @@ AudioSource.frames() harus menghasilkan async iterator dengan tepat 1.920 byte u
 
 #### Adapter Audio Minimal
 ```python
-    from collections.abc import AsyncIterator
-    from tryx.media import AudioSink, AudioSource, validate_audio_frame
+from collections.abc import AsyncIterator
+from tryx.media import AudioSink, AudioSource, validate_audio_frame
 
-    class Microphone(AudioSource):
-        async def frames(self) -> AsyncIterator[bytes]:
-            while True:
-                frame = await read_microphone_frame()
-                yield validate_audio_frame(frame)
 
-    class Speaker(AudioSink):
-        async def write(self, frame: bytes) -> None:
-            validate_audio_frame(frame)
-            await play_speaker_frame(frame)
+class Microphone(AudioSource):
+    async def frames(self) -> AsyncIterator[bytes]:
+        while True:
+            frame = await read_microphone_frame()
+            yield validate_audio_frame(frame)
+
+
+class Speaker(AudioSink):
+    async def write(self, frame: bytes) -> None:
+        validate_audio_frame(frame)
+        await play_speaker_frame(frame)
 ```
 Ganti fungsi perangkat tersebut dengan implementasi PyAudio, sounddevice, ALSA, CoreAudio, atau library perangkat lain.
 
 #### Panggilan Audio 1:1
 ```python
-    from tryx.types import JID
+from tryx.types import JID
 
-    async def start_audio_call(client, phone_number: str):
-        peer = JID(phone_number + "@s.whatsapp.net")
-        call = await client.voip.call(peer, Microphone(), Speaker())
-        print("call started:", call.call_id)
-        call.set_muted(True)
-        call.set_muted(False)
-        await call.wait_ended()
+
+async def start_audio_call(client, phone_number: str):
+    peer = JID(phone_number + "@s.whatsapp.net")
+    call = await client.voip.call(peer, Microphone(), Speaker())
+    print("call started:", call.call_id)
+    call.set_muted(True)
+    call.set_muted(False)
+    await call.wait_ended()
 ```
 Gunakan await call.hangup() untuk mengakhiri call secara eksplisit. Pertahankan CallHandle selama call aktif dan tunggu wait_ended() agar cleanup media berjalan deterministik.
 
 #### Panggilan Video
 ```python
-    from tryx.media import VideoPlayer
+from tryx.media import VideoPlayer
 
-    async def start_video_call(client, peer, video_sink):
-        video_source = VideoPlayer(fps=15)
-        video_source.play("sample.mp4")
-        call = await client.voip.video_call(
-            peer, Microphone(), Speaker(), video_source, video_sink
-        )
-        await call.wait_ended()
-        video_source.stop()
+
+async def start_video_call(client, peer, video_sink):
+    video_source = VideoPlayer(fps=15)
+    video_source.play("sample.mp4")
+    call = await client.voip.video_call(
+        peer, Microphone(), Speaker(), video_source, video_sink
+    )
+    await call.wait_ended()
+    video_source.stop()
 ```
 VideoPlayer mendukung 1–60 FPS dengan default 15. FFmpeg harus tersedia di PATH. File yang tidak ditemukan atau FFmpeg yang tidak tersedia akan menghasilkan error yang jelas.
 

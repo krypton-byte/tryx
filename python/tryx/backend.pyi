@@ -56,34 +56,42 @@ class SqliteStore(BackendBase):
 
 class Device:
     """Cached device data (JSON-serialized across FFI)."""
+
     ...
 
 class LidPnMappingEntry:
     """LID-to-phone-number mapping entry (JSON-serialized)."""
+
     ...
 
 class DeviceListRecord:
     """Device list record (JSON-serialized)."""
+
     ...
 
 class TcTokenEntry:
     """Trusted contact token entry (JSON-serialized)."""
+
     ...
 
 class AppStateSyncKey:
     """App state sync key (JSON-serialized)."""
+
     ...
 
 class HashState:
     """Hash state for app state sync (JSON-serialized)."""
+
     ...
 
 class AppStateMutationMAC:
     """App state mutation MAC (JSON-serialized)."""
+
     ...
 
 class MsgSecretEntry:
     """Message secret entry (JSON-serialized)."""
+
     ...
 
 # ── FFI Store Protocol (for tryx-store-postgres, etc.) ───────────────────────

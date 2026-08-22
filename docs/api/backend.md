@@ -46,8 +46,9 @@ exposing `lib_path` and `connect_string` attributes satisfies this protocol.
 
 ```python
 class PostgresStore:
-    lib_path: str   # path to compiled .so
+    lib_path: str  # path to compiled .so
     connect_string: str
+
 
 backend = PostgresStore(
     lib_path="./libtryx_pg.so",
@@ -63,15 +64,13 @@ abstract methods for full control over storage operations.
 ```python
 from tryx.backend import StoreBase
 
+
 class RedisStore(StoreBase):
-    async def get(self, key: str) -> bytes | None:
-        ...
+    async def get(self, key: str) -> bytes | None: ...
 
-    async def set(self, key: str, value: bytes) -> None:
-        ...
+    async def set(self, key: str, value: bytes) -> None: ...
 
-    async def delete(self, key: str) -> None:
-        ...
+    async def delete(self, key: str) -> None: ...
 ```
 
 ## When to Choose Each Backend

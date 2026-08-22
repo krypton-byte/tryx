@@ -13,8 +13,7 @@ Handlers are registered by event class and receive `(client, event)`.
 
 ```python
 @app.on(EvMessage)
-async def on_message(client: TryxClient, event: EvMessage) -> None:
-    ...
+async def on_message(client: TryxClient, event: EvMessage) -> None: ...
 ```
 
 ## Event Categories

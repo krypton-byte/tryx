@@ -45,13 +45,13 @@ Possible causes:
 
 ```python
 try:
-	await client.send_text(chat_jid, "hello")
+    await client.send_text(chat_jid, "hello")
 except PyPayloadBuildError:
-	# payload/content issue
-	...
+    # payload/content issue
+    ...
 except EventDispatchError:
-	# dispatch/runtime issue
-	...
+    # dispatch/runtime issue
+    ...
 ```
 
 ## Media Download Fails

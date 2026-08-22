@@ -36,11 +36,17 @@ async def dump_privacy(client):
 ## Runnable Example: Category + Disallowed Update
 
 ```python
-from tryx.client import DisallowedListAction, DisallowedListUpdate, DisallowedListUserEntry
+from tryx.client import (
+    DisallowedListAction,
+    DisallowedListUpdate,
+    DisallowedListUserEntry,
+)
 
 
 async def hide_status_from(client, target_jid):
-    await client.privacy.set_setting(category=PrivacyCategory.Status, value=PrivacyValue.ContactBlacklist)
+    await client.privacy.set_setting(
+        category=PrivacyCategory.Status, value=PrivacyValue.ContactBlacklist
+    )
 
     update = DisallowedListUpdate(
         dhash="",

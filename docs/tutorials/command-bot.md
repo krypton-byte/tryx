@@ -73,7 +73,9 @@ async def on_command(client: TryxClient, event: EvMessage) -> None:
     name, args = parts[0].lower(), parts[1:]
     fn = COMMANDS.get(name)
     if fn is None:
-        await client.send_text(event.data.message_info.source.chat, f"Unknown command: {name}")
+        await client.send_text(
+            event.data.message_info.source.chat, f"Unknown command: {name}"
+        )
         return
     await fn(client, event, args)
 ```

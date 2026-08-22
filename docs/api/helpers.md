@@ -55,7 +55,9 @@ restored = NewsletterHelpers.parse_message(blob)
 from tryx.helpers import GroupsHelpers
 
 participant = GroupsHelpers.build_participant(jid=target_jid)
-opts = GroupsHelpers.build_create_options(subject="Ops Room", participants=[participant])
+opts = GroupsHelpers.build_create_options(
+    subject="Ops Room", participants=[participant]
+)
 result = await client.groups.create_group(opts)
 ```
 
@@ -97,7 +99,7 @@ await client.chatstate.send(chat_jid, ChatstateHelpers.composing())
 from tryx.helpers import BlockingHelpers
 
 if BlockingHelpers.same_user(a, b):
-	print("Equivalent identity")
+    print("Equivalent identity")
 ```
 
 ## PollsHelpers
@@ -110,7 +112,9 @@ if BlockingHelpers.same_user(a, b):
 ```python
 from tryx.helpers import PollsHelpers
 
-decoded = PollsHelpers.decrypt_vote(enc_payload, enc_iv, secret, poll_id, creator_jid, voter_jid)
+decoded = PollsHelpers.decrypt_vote(
+    enc_payload, enc_iv, secret, poll_id, creator_jid, voter_jid
+)
 ```
 
 ## PresenceHelpers

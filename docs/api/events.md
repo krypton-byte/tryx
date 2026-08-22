@@ -65,8 +65,7 @@ This page maps event classes in `tryx.events` to practical handler strategies.
 
 ```python
 @app.on(EvMessage)
-async def on_message(client, event):
-	...
+async def on_message(client, event): ...
 ```
 
 !!! tip "Handler model"
@@ -161,16 +160,16 @@ from tryx.events import EvMessage, EvPresence
 
 @app.on(EvMessage)
 async def on_message(client, event):
-	chat = event.data.message_info.source.chat
-	text = event.data.get_text() or ""
-	if text == "/ping":
-		await client.send_text(chat, "pong", quoted=event)
+    chat = event.data.message_info.source.chat
+    text = event.data.get_text() or ""
+    if text == "/ping":
+        await client.send_text(chat, "pong", quoted=event)
 
 
 @app.on(EvPresence)
 async def on_presence(client, event):
-	# keep side effects minimal; enqueue heavy processing
-	pass
+    # keep side effects minimal; enqueue heavy processing
+    pass
 ```
 
 ## Enum-like Support Types
