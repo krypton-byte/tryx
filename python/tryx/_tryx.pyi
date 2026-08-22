@@ -986,21 +986,17 @@ class EvUserAboutUpdate:
     @property
     def data(self) -> UserAboutUpdateData: ...
 
-class EventGroupParticipant:
-    jid: JID
-    phone_number: JID | None
-
 class GroupNotificationAction:
     @staticmethod
-    def Add(participants: list[EventGroupParticipant], reason: str | None = None) -> GroupNotificationAction: ...
+    def Add(participants: list[GroupParticipant], reason: str | None = None) -> GroupNotificationAction: ...
     @staticmethod
-    def Remove(participants: list[EventGroupParticipant], reason: str | None = None) -> GroupNotificationAction: ...
+    def Remove(participants: list[GroupParticipant], reason: str | None = None) -> GroupNotificationAction: ...
     @staticmethod
-    def Promote(participants: list[EventGroupParticipant]) -> GroupNotificationAction: ...
+    def Promote(participants: list[GroupParticipant]) -> GroupNotificationAction: ...
     @staticmethod
-    def Demote(participants: list[EventGroupParticipant]) -> GroupNotificationAction: ...
+    def Demote(participants: list[GroupParticipant]) -> GroupNotificationAction: ...
     @staticmethod
-    def Modify(participants: list[EventGroupParticipant]) -> GroupNotificationAction: ...
+    def Modify(participants: list[GroupParticipant]) -> GroupNotificationAction: ...
     @staticmethod
     def Subject(subject: str, subject_owner: JID | None = None, subject_timestamp: datetime | None = None) -> GroupNotificationAction: ...
     @staticmethod
@@ -1020,7 +1016,7 @@ class GroupNotificationAction:
     @staticmethod
     def MembershipApprovalRequest(request_method: str, parent_group_jid: JID | None = None) -> GroupNotificationAction: ...
     @staticmethod
-    def CreatedMembershipRequests(request_method: str, parent_group_jid: JID | None = None, requests: list[EventGroupParticipant] = ...) -> GroupNotificationAction: ...
+    def CreatedMembershipRequests(request_method: str, parent_group_jid: JID | None = None, requests: list[GroupParticipant] = ...) -> GroupNotificationAction: ...
     @staticmethod
     def RevokedMembershipRequests(participants: list[JID]) -> GroupNotificationAction: ...
     @staticmethod
@@ -1046,9 +1042,9 @@ class GroupNotificationAction:
     @staticmethod
     def Unlink(unlink_type: str, unlink_reason: str | None = None, raw: Node = ...) -> GroupNotificationAction: ...
     @staticmethod
-    def LinkedGroupPromote(participants: list[EventGroupParticipant]) -> GroupNotificationAction: ...
+    def LinkedGroupPromote(participants: list[GroupParticipant]) -> GroupNotificationAction: ...
     @staticmethod
-    def LinkedGroupDemote(participants: list[EventGroupParticipant]) -> GroupNotificationAction: ...
+    def LinkedGroupDemote(participants: list[GroupParticipant]) -> GroupNotificationAction: ...
     @staticmethod
     def Suspended() -> GroupNotificationAction: ...
     @staticmethod
@@ -1094,6 +1090,14 @@ class EvGroupUpdate:
 
 class EvGroupInfoUpdate:
     pass
+
+class ChatPresence:
+    Composing: ClassVar[ChatPresence]
+    Paused: ClassVar[ChatPresence]
+
+class ChatPresenceMedia:
+    Text: ClassVar[ChatPresenceMedia]
+    Audio: ClassVar[ChatPresenceMedia]
 
 class NewsletterLiveUpdateReaction:
     code: str
@@ -1227,28 +1231,36 @@ class SqliteStore:
     path: str
     def __init__(self, path: str) -> None: ...
 
-class PyDevice:
+class Device:
+    """Cached device data (JSON-serialized across FFI)."""
     pass
 
-class PyLidPnMappingEntry:
+class LidPnMappingEntry:
+    """LID-to-phone-number mapping entry (JSON-serialized)."""
     pass
 
-class PyDeviceListRecord:
+class DeviceListRecord:
+    """Device list record (JSON-serialized)."""
     pass
 
-class PyTcTokenEntry:
+class TcTokenEntry:
+    """Trusted contact token entry (JSON-serialized)."""
     pass
 
-class PyAppStateSyncKey:
+class AppStateSyncKey:
+    """App state sync key (JSON-serialized)."""
     pass
 
-class PyHashState:
+class HashState:
+    """Hash state for app state sync (JSON-serialized)."""
     pass
 
-class PyAppStateMutationMAC:
+class AppStateMutationMAC:
+    """App state mutation MAC (JSON-serialized)."""
     pass
 
-class PyMsgSecretEntry:
+class MsgSecretEntry:
+    """Message secret entry (JSON-serialized)."""
     pass
 
 
@@ -1295,7 +1307,7 @@ class Node:
     tag: str
     attrs: list[Attrs]
     content: NodeContent | None
-    def __init__(self, tag: str, attrs: list[Attrs], content: NodeContent | None = None) -> None: ...
+    def __init__(self, tag: str, attrs: list[Attrs], content: NodeContent | None) -> None: ...
 
 class KeyIndexInfo:
     timestamp: int

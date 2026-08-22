@@ -93,7 +93,7 @@ class Node:
         self,
         tag: str,
         attrs: list[Attrs],
-        content: NodeContent | None = None,
+        content: NodeContent | None,
     ) -> None:
         """Create a protocol node object."""
         ...
