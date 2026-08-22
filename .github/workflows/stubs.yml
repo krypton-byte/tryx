@@ -1,0 +1,68 @@
+name: Generate Stubs
+
+on:
+  push:
+    branches: [dev, master]
+    paths:
+      - "src/**/*.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    name: Generate _tryx.pyi stubs
+    runs-on: ubuntu-latest
+    concurrency:
+      group: stubs-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/
+            ~/.cargo/git/
+            target/
+          key: stubs-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: stubs-cargo-
+
+      - name: Build with stubs profile (fast, no optimization)
+        run: maturin develop --profile stubs
+
+      - name: Generate stubs
+        run: PYTHONPATH=python python scripts/generate_stubs.py
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git add python/tryx/_tryx.pyi
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit updated stubs
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: regenerate _tryx.pyi stubs [skip ci]"
+          git push
