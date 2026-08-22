@@ -1,7 +1,7 @@
 """Event classes and payload types emitted by the Tryx runtime."""
 
 from datetime import datetime
-from typing import Awaitable, Callable, TypeVar
+from typing import Any, Awaitable, Callable, TypeVar
 
 from .types import JID, MessageInfo, MessageSource
 from .wacore import BusinessSubscription, KeyIndexInfo, Node
@@ -27,8 +27,8 @@ class Dispatcher:
 
     def __call__(
         self,
-        func: Callable[..., Awaitable[None]] | Callable[..., object],
-    ) -> Callable[..., Awaitable[None]] | Callable[..., object]:
+        func: Callable[..., Awaitable[None]] | Callable[..., Any],
+    ) -> Callable[..., Awaitable[None]] | Callable[..., Any]:
         """Register a callback function for the previously selected event class.
 
         The callback receives ``(client, event)`` as positional arguments.
