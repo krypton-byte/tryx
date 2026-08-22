@@ -14,7 +14,7 @@ fn make_err(msg: impl ToString) -> StoreError {
 }
 
 pub struct PythonStore {
-    pub py_obj: Py<crate::backend::BackendBase>,
+    pub py_obj: Py<pyo3::PyAny>,
 }
 
 impl Clone for PythonStore {
@@ -26,7 +26,7 @@ impl Clone for PythonStore {
 }
 
 impl PythonStore {
-    pub fn new(py_obj: Py<crate::backend::BackendBase>) -> Self {
+    pub fn new(py_obj: Py<pyo3::PyAny>) -> Self {
         Self { py_obj }
     }
 }
