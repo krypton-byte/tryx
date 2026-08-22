@@ -4,11 +4,6 @@
     options:
       show_root_heading: true
       heading_level: 2
-      members:
-        - get_client
-        - on
-        - run
-        - run_blocking
 
 ---
 

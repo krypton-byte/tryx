@@ -17,7 +17,6 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
-from typing import Any
 
 # ── Configuration ──────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -155,7 +154,9 @@ class RustClass:
         )
         self.is_enum = False
         self.enum_variants: list[str] = []
-        self.static_methods: list[tuple[str, str, list[tuple[str, str, str | None]]]] = []
+        self.static_methods: list[
+            tuple[str, str, list[tuple[str, str, str | None]]]
+        ] = []
 
 
 def rust_type_to_python(rust_type: str) -> str:
@@ -429,7 +430,7 @@ def parse_pyclass_struct(content: str) -> list[RustClass]:
 
 
 def parse_pymethods(content: str) -> dict[str, RustClass]:
-    """Parse all #[pymethods] impl blocks and return a dict of class_name → RustClass."""
+    """Parse #[pymethods] impl blocks, return class_name → RustClass."""
     result: dict[str, RustClass] = {}
 
     # Find all impl blocks
@@ -470,7 +471,6 @@ def _parse_methods_from_body(cls: RustClass, body: str):
         is_setter = False
         is_new = False
         is_static = False
-        is_repr = False
 
         while line.startswith("#["):
             if "#[getter]" in line:
@@ -510,8 +510,6 @@ def _parse_methods_from_body(cls: RustClass, body: str):
             continue
 
         # Skip internal Rust-only methods (not exposed to Python)
-        # Check if it has Python-visible parameters
-        is_special = method_name in ("__init__",)
 
         # Extract full signature (may span multiple lines)
         # Collect until we find the opening '{' of the method body
@@ -629,7 +627,7 @@ def generate_class_stub(cls: RustClass) -> list[str]:
     has_content = False
 
     # Fields (from #[pyo3(get)] / #[pyo3(get, set)])
-    for field_name, field_type, has_set in cls.fields:
+    for field_name, field_type, _has_set in cls.fields:
         lines.append(f"{INDENT}{field_name}: {field_type}")
         has_content = True
 
@@ -642,7 +640,10 @@ def generate_class_stub(cls: RustClass) -> list[str]:
     # Setters (from #[setter] methods)
     for setter_name, param_type in cls.setters:
         lines.append(f"{INDENT}@{setter_name}.setter")
-        lines.append(f"{INDENT}def {setter_name}(self, value: {param_type}) -> None: ...")
+        lines.append(
+            f"{INDENT}def {setter_name}("
+            f"self, value: {param_type}) -> None: ..."
+        )
         has_content = True
 
     # __init__ (from #[new])
@@ -657,7 +658,8 @@ def generate_class_stub(cls: RustClass) -> list[str]:
                 param_parts.append(f"{pname}: {ptype} = {py_default}")
             else:
                 param_parts.append(f"{pname}: {ptype}")
-        lines.append(f"{INDENT}def __init__(self, {', '.join(param_parts)}) -> None: ...")
+        joined = ", ".join(param_parts)
+        lines.append(f"{INDENT}def __init__(self, {joined}) -> None: ...")
         has_content = True
     else:
         # No __init__ found — PyO3 classes without #[new] can't be instantiated
@@ -674,7 +676,11 @@ def generate_class_stub(cls: RustClass) -> list[str]:
             else:
                 param_parts.append(f"{pname}: {ptype}")
         lines.append(f"{INDENT}@staticmethod")
-        lines.append(f"{INDENT}def {sm_name}({', '.join(param_parts)}) -> {sm_ret}: ...")
+        joined = ", ".join(param_parts)
+        lines.append(
+            f"{INDENT}def {sm_name}("
+            f"{joined}) -> {sm_ret}: ..."
+        )
         has_content = True
 
     # Regular methods (excluding __init__)
@@ -688,7 +694,11 @@ def generate_class_stub(cls: RustClass) -> list[str]:
                 param_parts.append(f"{pname}: {ptype} = {py_default}")
             else:
                 param_parts.append(f"{pname}: {ptype}")
-        lines.append(f"{INDENT}def {m_name}(self, {', '.join(param_parts)}) -> {m_ret}: ...")
+        joined = ", ".join(param_parts)
+        lines.append(
+            f"{INDENT}def {m_name}("
+            f"self, {joined}) -> {m_ret}: ..."
+        )
         has_content = True
 
     if not has_content:
@@ -759,9 +769,16 @@ from typing import Any, ClassVar, overload
 
     OUTPUT.write_text("\n".join(parts))
     size_kb = OUTPUT.stat().st_size / 1024
-    n_classes = sum(1 for l in parts if l.strip().startswith("class "))
-    n_methods = sum(1 for l in parts if "def " in l and "(self" in l)
-    print(f"\n✅ {OUTPUT.name}: {size_kb:.1f} KB, {n_classes} classes, {n_methods} methods")
+    n_classes = sum(
+        1 for line in parts if line.strip().startswith("class ")
+    )
+    n_methods = sum(
+        1 for line in parts if "def " in line and "(self" in line
+    )
+    print(
+        f"\n✅ {OUTPUT.name}: {size_kb:.1f} KB, "
+        f"{n_classes} classes, {n_methods} methods"
+    )
     return 0
 
 
