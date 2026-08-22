@@ -44,10 +44,10 @@ jobs:
           restore-keys: stubs-cargo-
 
       - name: Build with stubs profile (fast, no optimization)
-        run: maturin develop --profile stubs
+        run: uv run maturin develop --profile stubs
 
       - name: Generate stubs
-        run: PYTHONPATH=python python scripts/generate_stubs.py
+        run: uv run --no-project python scripts/generate_stubs.py
 
       - name: Check for changes
         id: diff
@@ -65,4 +65,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: regenerate _tryx.pyi stubs [skip ci]"
+          git pull --rebase origin ${{ github.ref_name }} || true
           git push
