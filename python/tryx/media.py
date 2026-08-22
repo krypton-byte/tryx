@@ -8,10 +8,16 @@ frames without inheriting a concrete player implementation.
 from __future__ import annotations
 
 import asyncio
+import sys
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable
+
+# Python 3.10+ supports slots=True in dataclass
+dataclass_kwargs = {"frozen": True}
+if sys.version_info >= (3, 10):
+    dataclass_kwargs["slots"] = True
 
 WA_SAMPLE_RATE = 16_000
 WA_FRAME_SAMPLES = 960
@@ -32,7 +38,7 @@ def validate_audio_frame(frame: object) -> bytes:
     return value
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(**dataclass_kwargs)
 class VideoFrame:
     """One H.264 Annex-B access unit received from or sent to a call."""
 

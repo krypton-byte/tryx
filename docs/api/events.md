@@ -5,6 +5,56 @@
       show_root_heading: true
       heading_level: 2
 
+::: tryx.events.EvMessage
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.MessageData
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.EvConnected
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.EvDisconnected
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.EvReceipt
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.ReceiptType
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.ChatPresence
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.ChatPresenceMedia
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.EvPresence
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.events.EvHistorySync
+    options:
+      show_root_heading: true
+      heading_level: 2
+
 ---
 
 This page maps event classes in `tryx.events` to practical handler strategies.

@@ -4,10 +4,33 @@ from typing import Any, Awaitable, Callable, TypeVar
 
 from .backend import BackendBase, FfiStoreProtocol, StoreBase
 from .events import EvMessage
+from .media import AudioSource, AudioSink, EncodedAudioSink, EncodedAudioSource, VideoSink, VideoSource
 from .types import JID, MediaReuploadResult, ProfilePicture, SendResult, UploadResponse
 from .wacore import MediaType, Node
 from .waproto.whatsapp_pb2 import Message as MessageProto
 from .waproto.whatsapp_pb2 import MessageKey, SyncActionValue
+
+# Re-export media types that are registered in the client module
+class AudioPlayer(AudioSource):
+    """Built-in audio player that decodes and plays audio files."""
+
+    def __init__(self, buffer_frames: int = ...) -> None: ...
+    def play(self, path: str, mode: str = ...) -> None: ...
+    def stop(self) -> None: ...
+    def pause(self) -> None: ...
+    def resume(self) -> None: ...
+    def enqueue(self, path: str) -> None: ...
+    def skip(self) -> None: ...
+    def clear_queue(self) -> None: ...
+    @property
+    def state(self) -> str: ...
+
+class VideoPlayer(VideoSource):
+    """Built-in video player that demuxes and decodes video files."""
+
+    def __init__(self, fps: int = ...) -> None: ...
+    def play(self, path: str) -> None: ...
+    def stop(self) -> None: ...
 
 EventT = TypeVar("EventT")
 
@@ -156,13 +179,15 @@ class TryxClient:
     ) -> MediaReuploadResult: ...
 
 class CallHandle:
+    """Handle for an active voice/video call."""
+
     call_id: str
     peer: JID
     def is_muted(self) -> bool: ...
     def set_muted(self, muted: bool) -> None: ...
     async def hangup(self) -> None: ...
     async def wait_ended(self) -> None: ...
-    async def start_video(self, video_source: Any, video_sink: Any) -> None: ...
+    async def start_video(self, video_source: VideoSource, video_sink: VideoSink) -> None: ...
     async def stop_video(self) -> None: ...
     async def invite_participant(self, target: JID) -> None: ...
     async def ring_participant(self, target: JID) -> None: ...
@@ -173,40 +198,44 @@ class CallHandle:
     async def deny_waiting_user(self, target: JID) -> None: ...
 
 class IncomingCallEvent:
+    """Event emitted when an incoming call is received."""
+
     call_id: str
     peer: JID
     is_video: bool
-    async def accept(self, audio_source: Any, audio_sink: Any) -> CallHandle: ...
+    async def accept(self, audio_source: AudioSource, audio_sink: AudioSink) -> CallHandle: ...
     async def reject(self) -> None: ...
 
 class VoipClient:
+    """VoIP client for making and receiving voice/video calls."""
+
     async def call(
-        self, peer: JID, audio_source: Any, audio_sink: Any
+        self, peer: JID, audio_source: AudioSource, audio_sink: AudioSink
     ) -> CallHandle: ...
     async def group_call(
         self,
         peers: list[JID],
-        audio_source: Any,
-        audio_sink: Any,
-        video_source: Any | None = None,
-        video_sink: Any | None = None,
+        audio_source: AudioSource,
+        audio_sink: AudioSink,
+        video_source: VideoSource | None = None,
+        video_sink: VideoSink | None = None,
     ) -> CallHandle: ...
     async def join_call_link(
         self,
         token_or_url: str,
         media: str,
-        audio_source: Any,
-        audio_sink: Any,
-        video_source: Any | None = None,
-        video_sink: Any | None = None,
+        audio_source: AudioSource,
+        audio_sink: AudioSink,
+        video_source: VideoSource | None = None,
+        video_sink: VideoSink | None = None,
     ) -> CallHandle: ...
     async def video_call(
         self,
         peer: JID,
-        audio_source: Any,
-        audio_sink: Any,
-        video_source: Any,
-        video_sink: Any,
+        audio_source: AudioSource,
+        audio_sink: AudioSink,
+        video_source: VideoSource,
+        video_sink: VideoSink,
     ) -> CallHandle: ...
 
 class AdvancedClient:
@@ -239,6 +268,8 @@ class CommentsClient:
     async def send_message(self, parent: EvMessage, message: MessageProto) -> str: ...
 
 class EventResponse:
+    """RSVP response for WhatsApp events."""
+
     Going: EventResponse
     NotGoing: EventResponse
     Maybe: EventResponse
@@ -553,17 +584,23 @@ class NewsletterMessage:
     message: MessageProto | None
 
 class NewsletterAdminProfile:
+    """Admin profile information for a newsletter."""
+
     id: str | None
     name: str
     picture_id: str | None
     picture_direct_path: str | None
 
 class NewsletterAdminInfo:
+    """Administrative information for a newsletter."""
+
     admin_count: int | None
     admin_profile: NewsletterAdminProfile | None
     admin_profiles_enabled: bool | None
 
 class NewsletterFollower:
+    """Follower entry for a newsletter."""
+
     jid: JID
     phone_jid: JID | None
     display_name: str | None

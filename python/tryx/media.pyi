@@ -1,3 +1,10 @@
+"""Media source/sink contracts for the PyO3 VoIP bridge.
+
+These contracts are intentionally independent from AudioPlayer/VideoPlayer.  A
+microphone, camera, TTS stream, DSP pipeline, or custom file player can provide
+frames without inheriting a concrete player implementation.
+"""
+
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Final
@@ -7,8 +14,11 @@ WA_FRAME_SAMPLES: Final[int]
 WA_FRAME_MS: Final[int]
 
 def validate_audio_frame(frame: bytes | bytearray | memoryview) -> bytes: ...
-@dataclass(frozen=True, slots=True)
+
+@dataclass(frozen=True)
 class VideoFrame:
+    """One H.264 Annex-B access unit received from or sent to a call."""
+
     data: bytes
     timestamp_us: int
     duration_us: int
@@ -18,10 +28,14 @@ class VideoFrame:
     orientation: int = ...
 
 class AudioSource:
+    """Abstract audio source that produces raw PCM frames."""
+
     def frames(self) -> AsyncIterator[bytes]: ...
     async def aclose(self) -> None: ...
 
 class AudioPlayer(AudioSource):
+    """Built-in audio player that decodes and plays audio files."""
+
     def __init__(self, buffer_frames: int = ...) -> None: ...
     def play(self, path: str, mode: str = ...) -> None: ...
     def stop(self) -> None: ...
@@ -34,27 +48,39 @@ class AudioPlayer(AudioSource):
     def state(self) -> str: ...
 
 class VideoPlayer(VideoSource):
+    """Built-in video player that demuxes and decodes video files."""
+
     def __init__(self, fps: int = ...) -> None: ...
     def play(self, path: str) -> None: ...
     def stop(self) -> None: ...
 
 class AudioSink:
+    """Abstract audio sink that consumes raw PCM frames."""
+
     async def write(self, frame: bytes) -> None: ...
     async def aclose(self) -> None: ...
 
 class VideoSource:
+    """Abstract video source that produces decoded video frames."""
+
     def frames(self) -> AsyncIterator[VideoFrame]: ...
     def rtp_timestamp_stride(self) -> int: ...
     async def aclose(self) -> None: ...
 
 class VideoSink:
+    """Abstract video sink that consumes decoded video frames."""
+
     async def write(self, frame: VideoFrame) -> None: ...
     async def aclose(self) -> None: ...
 
 class EncodedAudioSource:
+    """Abstract source that produces encoded audio packets (e.g. Opus)."""
+
     def frames(self) -> AsyncIterator[bytes]: ...
     async def aclose(self) -> None: ...
 
 class EncodedAudioSink:
+    """Abstract sink that consumes encoded audio packets."""
+
     async def write(self, packet: bytes, timestamp: int, sequence: int) -> None: ...
     async def aclose(self) -> None: ...

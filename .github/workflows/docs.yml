@@ -2,17 +2,23 @@ name: Documentation
 
 on:
   push:
-    branches:
-      - master
-      - main
+    branches: [master, main]
     paths:
       - "docs/**"
       - "mkdocs.yml"
       - "python/tryx/**"
+
+  pull_request:
+    branches: [master, main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "python/tryx/**"
+
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to deploy (e.g. 0.6, 0.7)"
+        description: "Version to deploy (e.g. 0.7, 0.8)"
         required: false
         type: string
       delete_version:
@@ -30,9 +36,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build Documentation
+  # ── Job 1: Validate (runs on PR + push) ────────────────────────────────────
+  validate:
+    name: Validate Documentation
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: |
+          uv sync --group docs --no-install-project
+          uv pip install pyright mypy --system
+
+      - name: Validate .pyi stubs with pyright
+        run: |
+          pyright python/tryx/client.pyi \
+                 python/tryx/events.pyi \
+                 python/tryx/types.pyi \
+                 python/tryx/wacore.pyi \
+                 python/tryx/helpers.pyi \
+                 python/tryx/backend.pyi \
+                 python/tryx/exceptions.pyi \
+                 python/tryx/__init__.pyi \
+                 python/tryx/tryx.pyi \
+                 python/tryx/media.pyi
+
+      - name: Validate .pyi stubs with mypy
+        run: |
+          mypy python/tryx/client.pyi \
+               python/tryx/events.pyi \
+               python/tryx/types.pyi \
+               python/tryx/wacore.pyi \
+               python/tryx/helpers.pyi \
+               python/tryx/backend.pyi \
+               python/tryx/exceptions.pyi \
+               python/tryx/__init__.pyi \
+               python/tryx/tryx.pyi \
+               python/tryx/media.pyi \
+               --ignore-missing-imports
+
+      - name: Build docs (validation only)
+        run: uv run --no-project mkdocs build --strict
+        env:
+          PYTHONPATH: python
+
+  # ── Job 2: Deploy (runs on push to master or tag) ──────────────────────────
+  deploy:
+    name: Deploy Documentation
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,16 +111,14 @@ jobs:
           uv sync --group docs --no-install-project
           uv pip install mike
 
-      # Ensure the tryx package is importable via PYTHONPATH
-      # without triggering a maturin build.
-
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Build and deploy docs (auto from tag)
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+      # Auto-deploy from tag → versioned docs (e.g. v0.8.0 → "0.8")
+      - name: Deploy versioned docs (from tag)
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//' | sed 's/\.[0-9]*$//')
           echo "Deploying docs for version: $VERSION"
@@ -68,8 +127,50 @@ jobs:
         env:
           PYTHONPATH: python
 
-      - name: Build and deploy docs (manual version)
-        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+      # Auto-deploy from master → "latest" (without version number)
+      - name: Deploy latest docs (from master)
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: |
+          echo "Deploying docs as latest"
+          uv run --no-project mike deploy --push --update-aliases dev latest
+          uv run --no-project mike set-default --push latest
+        env:
+          PYTHONPATH: python
+
+      - name: List deployed versions
+        if: success()
+        run: uv run --no-project mike list
+
+  # ── Job 3: Manual deploy (workflow_dispatch) ────────────────────────────────
+  manual_deploy:
+    name: Manual Deploy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: |
+          uv sync --group docs --no-install-project
+          uv pip install mike
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Deploy custom version
+      - name: Deploy custom version
+        if: inputs.version != ''
         run: |
           echo "Deploying docs for version: ${{ inputs.version }}"
           uv run --no-project mike deploy --push --update-aliases "${{ inputs.version }}" latest
@@ -77,8 +178,9 @@ jobs:
         env:
           PYTHONPATH: python
 
+      # Delete a version
       - name: Delete docs version
-        if: github.event_name == 'workflow_dispatch' && inputs.delete_version != ''
+        if: inputs.delete_version != ''
         run: |
           echo "Deleting docs version: ${{ inputs.delete_version }}"
           uv run --no-project mike delete --push "${{ inputs.delete_version }}"
@@ -89,9 +191,10 @@ jobs:
         if: success()
         run: uv run --no-project mike list
 
-  deploy:
+  # ── Job 4: Deploy to GitHub Pages (only for tag releases) ──────────────────
+  deploy_pages:
     name: Deploy to GitHub Pages
-    needs: build
+    needs: deploy
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     environment:
