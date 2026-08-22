@@ -425,7 +425,7 @@ impl EvChatPresence {
 #[pyclass]
 pub struct EvPresence {
     #[pyo3(get)]
-    from: Py<JID>,
+    from_: Py<JID>,
     #[pyo3(get)]
     unavailable: bool,
     #[pyo3(get)]
@@ -435,7 +435,7 @@ impl EvPresence {
     pub fn new(from: Jid, unavailable: bool, last_seen: Option<DateTime<Utc>>) -> Self {
         Python::attach(|py|{
             let py_last_seen = last_seen.map(|dt| PyDateTime::from_timestamp(py, dt.timestamp() as f64, None).unwrap().into());
-            Self { from: Py::new(py, JID::from(from)).unwrap(), unavailable, last_seen: py_last_seen }
+            Self { from_: Py::new(py, JID::from(from)).unwrap(), unavailable, last_seen: py_last_seen }
         })
     }
 }

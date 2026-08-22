@@ -411,7 +411,7 @@ impl EvArchiveUpdateData {
 #[pyclass]
 pub struct EvDisappearingModeChangedData {
     #[pyo3(get)]
-    from: Py<JID>,
+    from_: Py<JID>,
     #[pyo3(get)]
     duration: u32,
     #[pyo3(get)]
@@ -447,7 +447,7 @@ impl EvDisappearingModeChanged {
             Ok(cached.clone_ref(py))
         } else {
             let data = EvDisappearingModeChangedData {
-                from: Py::new(py, JID::from(self.inner.from.clone())).unwrap(),
+                from_: Py::new(py, JID::from(self.inner.from.clone())).unwrap(),
                 duration: self.inner.duration,
                 setting_timestamp: self.inner.setting_timestamp.timestamp() as u64,
             };
