@@ -1,6 +1,8 @@
 """High-level client API surface for Tryx Python bindings."""
 
-from typing import Any, Awaitable, Callable, TypeVar
+from typing import Awaitable, Callable, TypeVar
+
+from .events import Dispatcher
 
 from .backend import BackendBase, FfiStoreProtocol, StoreBase
 from .events import EvMessage
@@ -84,13 +86,16 @@ class Tryx:
     - ``StoreBase`` subclass — pure Python custom backend
     """
 
-    handlers: Any
+    handlers: Dispatcher
 
     def __init__(self, backend: BackendBase | FfiStoreProtocol | StoreBase) -> None: ...
     def get_client(self) -> TryxClient: ...
     def on(
         self, event_type: type[EventT]
-    ) -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]: ...
+    ) -> Callable[
+        [Callable[[TryxClient, EventT], Awaitable[None]]],
+        Callable[[TryxClient, EventT], Awaitable[None]],
+    ]: ...
     def run(self) -> Awaitable[None]: ...
     def run_blocking(self) -> None: ...
 

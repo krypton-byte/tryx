@@ -21,13 +21,16 @@ class Dispatcher:
     """Callback registry used by the runtime to map event classes to handlers."""
 
     def __init__(self) -> None: ...
-    def on(self, event_type: type[EventT]) -> Dispatcher:
+    def on(
+        self, event_type: type[EventT]
+    ) -> Dispatcher:
         """Select an event class and return a decorator-like dispatcher object."""
         ...
 
     def __call__(
-        self, func: Callable[..., Awaitable[Any]] | Callable[..., Any]
-    ) -> Callable[..., Any]:
+        self,
+        func: Callable[..., Awaitable[None]] | Callable[..., Any],
+    ) -> Callable[..., Awaitable[None]] | Callable[..., Any]:
         """Register a callback function for the previously selected event class."""
         ...
 
