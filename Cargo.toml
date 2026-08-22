@@ -11,8 +11,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.28.0", features = ["extension-module", "abi3-py38"] }
-# NOTE: intentionally no `simd` feature — it turns on `#![feature(portable_simd)]`
-# in wacore-binary, which is nightly-only and breaks stable builds (CI + sdist).
 # NOTE: `voip` is excluded from the hardcoded feature set; it is controlled by
 # crate-level features below so CI can toggle voip-libopus per target.
 whatsapp-rust = { path = "libs/whatsapp-rust", default-features = false, features = ["sqlite-storage", "tokio-transport", "tokio-runtime", "ureq-client", "tokio-native", "signal"] }
@@ -40,8 +38,7 @@ async-channel = "2.5"
 # the PyO3 player and receives lifecycle results.
 symphonia = { version = "0.5.4", default-features = false, features = ["mp3", "wav", "ogg", "vorbis", "pcm"] }
 serde = { version = "1", features = ["derive"] }
-# default-features = false disables wacore-appstate's default `simd` feature,
-# which would otherwise pull in nightly-only portable_simd via wacore-binary.
+# default-features = false avoids pulling unnecessary default features.
 wacore-appstate = { path = "libs/whatsapp-rust/wacore/appstate", default-features = false }
 
 # ── Feature flags ──────────────────────────────────────────────────────

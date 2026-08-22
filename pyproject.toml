@@ -47,7 +47,7 @@ classifiers = [
 urls = { Homepage = "https://github.com/krypton-byte/tryx", Repository = "https://github.com/krypton-byte/tryx", Documentation = "https://krypton-byte.github.io/tryx/", Issues = "https://github.com/krypton-byte/tryx/issues" }
 dynamic = ["version"]
 dependencies = [
-    "protobuf>=5.29.6",
+    "protobuf>=5.28.3,<7",
 ]
 
 [tool.maturin]
@@ -56,6 +56,7 @@ python-source = "python"
 
 [dependency-groups]
 dev = [
+    "grpcio-tools>=1.70.0",
     "maturin>=1.12,<2.0",
     "mypy>=1.14.0",
     "mypy-protobuf>=5.0.0",

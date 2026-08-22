@@ -155,6 +155,7 @@ class _BotMetricsEntryPointEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_
     GROUP_MEMBER: _BotMetricsEntryPoint.ValueType  # 54
     CHATLIST_SEARCH: _BotMetricsEntryPoint.ValueType  # 55
     NEW_CHAT_LIST: _BotMetricsEntryPoint.ValueType  # 56
+    CONTACTS_TAB: _BotMetricsEntryPoint.ValueType  # 57
 
 class BotMetricsEntryPoint(_BotMetricsEntryPoint, metaclass=_BotMetricsEntryPointEnumTypeWrapper): ...
 
@@ -206,6 +207,7 @@ WEB_NAVIGATION_BAR: BotMetricsEntryPoint.ValueType  # 47
 GROUP_MEMBER: BotMetricsEntryPoint.ValueType  # 54
 CHATLIST_SEARCH: BotMetricsEntryPoint.ValueType  # 55
 NEW_CHAT_LIST: BotMetricsEntryPoint.ValueType  # 56
+CONTACTS_TAB: BotMetricsEntryPoint.ValueType  # 57
 Global___BotMetricsEntryPoint: _TypeAlias = BotMetricsEntryPoint  # noqa: Y015
 
 class _BotMetricsThreadEntryPoint:
@@ -337,6 +339,236 @@ REGULAR_HIGH: CollectionName.ValueType  # 3
 CRITICAL_BLOCK: CollectionName.ValueType  # 4
 CRITICAL_UNBLOCK_LOW: CollectionName.ValueType  # 5
 Global___CollectionName: _TypeAlias = CollectionName  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE:
+    ValueType = _typing.NewType("ValueType", _builtins.int)
+    V: _TypeAlias = ValueType  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPEEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE.ValueType], _builtins.type):
+    DESCRIPTOR: _descriptor.EnumDescriptor
+    OPEN_NATIVE: _EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE.ValueType  # 11
+
+class EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE(_EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE, metaclass=_EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPEEnumTypeWrapper): ...
+
+OPEN_NATIVE: EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE.ValueType  # 11
+Global___EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE: _TypeAlias = EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE:
+    ValueType = _typing.NewType("ValueType", _builtins.int)
+    V: _TypeAlias = ValueType  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPEEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType], _builtins.type):
+    DESCRIPTOR: _descriptor.EnumDescriptor
+    UNSUPPORTED: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # -1
+    IG_STORY_PHOTO_MENTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 4
+    IG_SINGLE_IMAGE_POST_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 9
+    IG_MULTIPOST_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 10
+    IG_SINGLE_VIDEO_POST_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 11
+    IG_STORY_PHOTO_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 12
+    IG_STORY_VIDEO_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 13
+    IG_CLIPS_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 14
+    IG_IGTV_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 15
+    IG_SHOP_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 16
+    IG_PROFILE_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 19
+    IG_STORY_PHOTO_HIGHLIGHT_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 20
+    IG_STORY_VIDEO_HIGHLIGHT_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 21
+    IG_STORY_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 22
+    IG_STORY_REACTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 23
+    IG_STORY_VIDEO_MENTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 24
+    IG_STORY_HIGHLIGHT_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 25
+    IG_STORY_HIGHLIGHT_REACTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 26
+    IG_EXTERNAL_LINK: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 27
+    IG_RECEIVER_FETCH: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 28
+    FB_FEED_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1000
+    FB_STORY_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1001
+    FB_STORY_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1002
+    FB_STORY_MENTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1003
+    FB_FEED_VIDEO_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1004
+    FB_GAMING_CUSTOM_UPDATE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1005
+    FB_PRODUCER_STORY_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1006
+    FB_EVENT: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1007
+    FB_FEED_POST_PRIVATE_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1008
+    FB_SHORT: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1009
+    FB_COMMENT_MENTION_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1010
+    FB_POST_MENTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1011
+    FB_PROFILE_DIRECTORY_ITEM: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1013
+    FB_FEED_POST_REACTION_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1014
+    FB_QUICKSNAP_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1015
+    MSG_EXTERNAL_LINK_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2000
+    MSG_P2P_PAYMENT: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2001
+    MSG_LOCATION_SHARING: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2002
+    MSG_LOCATION_SHARING_V2: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2003
+    MSG_HIGHLIGHTS_TAB_FRIEND_UPDATES_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2004
+    MSG_HIGHLIGHTS_TAB_LOCAL_EVENT_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2005
+    MSG_RECEIVER_FETCH: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2006
+    MSG_IG_MEDIA_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2007
+    MSG_GEN_AI_SEARCH_PLUGIN_RESPONSE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2008
+    MSG_REELS_LIST: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2009
+    MSG_CONTACT: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2010
+    MSG_THREADS_POST_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2011
+    MSG_FILE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2012
+    MSG_AVATAR_DETAILS: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2013
+    MSG_AI_CONTACT: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2014
+    MSG_MEMORIES_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2015
+    MSG_SHARED_ALBUM_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2016
+    MSG_SHARED_ALBUM: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2017
+    MSG_OCCAMADILLO_XMA: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2018
+    MSG_GEN_AI_SUBSCRIPTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2021
+    MSG_GEN_AI_REMINDER: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2022
+    MSG_GEN_AI_MEMU_ONBOARDING_RESPONSE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2023
+    MSG_NOTE_REPLY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2024
+    MSG_NOTE_MENTION: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2025
+    GEN_AI_ENTITY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2026
+    MSG_OPG_P2P_PAYMENT: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2027
+    GEN_AI_RICH_RESPONSE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2028
+    MSG_MUSIC_STICKER: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2029
+    MSG_PHONE_NUMBER: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2030
+    AI_ACTIVITY_SHARE: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2031
+    MSG_PRIVATE_XMA: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2032
+    MSG_SOCIAL_CUE_MEMORIES: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2033
+    MSG_MANUS_GROWTH_REFERRAL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2060
+    MSG_MOMENT_LINK: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2061
+    MSG_HORIZON_WEEL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2062
+    MSG_MOMENT_ADDED: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2063
+    RTC_AUDIO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3000
+    RTC_VIDEO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3001
+    RTC_MISSED_AUDIO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3002
+    RTC_MISSED_VIDEO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3003
+    RTC_GROUP_AUDIO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3004
+    RTC_GROUP_VIDEO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3005
+    RTC_MISSED_GROUP_AUDIO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3006
+    RTC_MISSED_GROUP_VIDEO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3007
+    RTC_ONGOING_AUDIO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3008
+    RTC_ONGOING_VIDEO_CALL: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3009
+    MSG_RECEIVER_FETCH_FALLBACK: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3025
+    DATACLASS_SENDER_COPY: _EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 4000
+
+class EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE(_EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE, metaclass=_EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPEEnumTypeWrapper): ...
+
+UNSUPPORTED: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # -1
+IG_STORY_PHOTO_MENTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 4
+IG_SINGLE_IMAGE_POST_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 9
+IG_MULTIPOST_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 10
+IG_SINGLE_VIDEO_POST_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 11
+IG_STORY_PHOTO_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 12
+IG_STORY_VIDEO_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 13
+IG_CLIPS_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 14
+IG_IGTV_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 15
+IG_SHOP_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 16
+IG_PROFILE_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 19
+IG_STORY_PHOTO_HIGHLIGHT_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 20
+IG_STORY_VIDEO_HIGHLIGHT_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 21
+IG_STORY_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 22
+IG_STORY_REACTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 23
+IG_STORY_VIDEO_MENTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 24
+IG_STORY_HIGHLIGHT_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 25
+IG_STORY_HIGHLIGHT_REACTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 26
+IG_EXTERNAL_LINK: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 27
+IG_RECEIVER_FETCH: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 28
+FB_FEED_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1000
+FB_STORY_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1001
+FB_STORY_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1002
+FB_STORY_MENTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1003
+FB_FEED_VIDEO_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1004
+FB_GAMING_CUSTOM_UPDATE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1005
+FB_PRODUCER_STORY_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1006
+FB_EVENT: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1007
+FB_FEED_POST_PRIVATE_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1008
+FB_SHORT: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1009
+FB_COMMENT_MENTION_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1010
+FB_POST_MENTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1011
+FB_PROFILE_DIRECTORY_ITEM: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1013
+FB_FEED_POST_REACTION_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1014
+FB_QUICKSNAP_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 1015
+MSG_EXTERNAL_LINK_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2000
+MSG_P2P_PAYMENT: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2001
+MSG_LOCATION_SHARING: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2002
+MSG_LOCATION_SHARING_V2: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2003
+MSG_HIGHLIGHTS_TAB_FRIEND_UPDATES_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2004
+MSG_HIGHLIGHTS_TAB_LOCAL_EVENT_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2005
+MSG_RECEIVER_FETCH: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2006
+MSG_IG_MEDIA_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2007
+MSG_GEN_AI_SEARCH_PLUGIN_RESPONSE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2008
+MSG_REELS_LIST: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2009
+MSG_CONTACT: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2010
+MSG_THREADS_POST_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2011
+MSG_FILE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2012
+MSG_AVATAR_DETAILS: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2013
+MSG_AI_CONTACT: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2014
+MSG_MEMORIES_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2015
+MSG_SHARED_ALBUM_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2016
+MSG_SHARED_ALBUM: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2017
+MSG_OCCAMADILLO_XMA: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2018
+MSG_GEN_AI_SUBSCRIPTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2021
+MSG_GEN_AI_REMINDER: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2022
+MSG_GEN_AI_MEMU_ONBOARDING_RESPONSE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2023
+MSG_NOTE_REPLY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2024
+MSG_NOTE_MENTION: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2025
+GEN_AI_ENTITY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2026
+MSG_OPG_P2P_PAYMENT: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2027
+GEN_AI_RICH_RESPONSE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2028
+MSG_MUSIC_STICKER: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2029
+MSG_PHONE_NUMBER: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2030
+AI_ACTIVITY_SHARE: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2031
+MSG_PRIVATE_XMA: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2032
+MSG_SOCIAL_CUE_MEMORIES: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2033
+MSG_MANUS_GROWTH_REFERRAL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2060
+MSG_MOMENT_LINK: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2061
+MSG_HORIZON_WEEL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2062
+MSG_MOMENT_ADDED: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 2063
+RTC_AUDIO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3000
+RTC_VIDEO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3001
+RTC_MISSED_AUDIO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3002
+RTC_MISSED_VIDEO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3003
+RTC_GROUP_AUDIO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3004
+RTC_GROUP_VIDEO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3005
+RTC_MISSED_GROUP_AUDIO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3006
+RTC_MISSED_GROUP_VIDEO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3007
+RTC_ONGOING_AUDIO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3008
+RTC_ONGOING_VIDEO_CALL: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3009
+MSG_RECEIVER_FETCH_FALLBACK: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 3025
+DATACLASS_SENDER_COPY: EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType  # 4000
+Global___EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE: _TypeAlias = EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE:
+    ValueType = _typing.NewType("ValueType", _builtins.int)
+    V: _TypeAlias = ValueType  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPEEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType], _builtins.type):
+    DESCRIPTOR: _descriptor.EnumDescriptor
+    SENDER_COPY: _EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType  # 0
+    SERVER: _EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType  # 1
+    SIGNED_CLIENT: _EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType  # 2
+
+class EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE(_EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE, metaclass=_EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPEEnumTypeWrapper): ...
+
+SENDER_COPY: EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType  # 0
+SERVER: EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType  # 1
+SIGNED_CLIENT: EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType  # 2
+Global___EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE: _TypeAlias = EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE:
+    ValueType = _typing.NewType("ValueType", _builtins.int)
+    V: _TypeAlias = ValueType  # noqa: Y015
+
+class _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPEEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType], _builtins.type):
+    DESCRIPTOR: _descriptor.EnumDescriptor
+    SINGLE: _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 0
+    HSCROLL: _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 1
+    PORTRAIT: _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 3
+    STANDARD_DXMA: _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 12
+    LIST_DXMA: _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 15
+    GRID: _EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 16
+
+class EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE(_EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE, metaclass=_EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPEEnumTypeWrapper): ...
+
+SINGLE: EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 0
+HSCROLL: EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 1
+PORTRAIT: EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 3
+STANDARD_DXMA: EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 12
+LIST_DXMA: EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 15
+GRID: EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType  # 16
+Global___EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE: _TypeAlias = EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE  # noqa: Y015
 
 class _FUTURE_PROOF_BEHAVIOR:
     ValueType = _typing.NewType("ValueType", _builtins.int)
@@ -506,6 +738,12 @@ class _MutationPropsEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_Mutatio
     THREAD_PIN_ACTION: _MutationProps.ValueType  # 85
     AUTO_ORGANIZE_BUSINESS_CHAT_SETTING: _MutationProps.ValueType  # 86
     BIZ_AI_SETTINGS_NUDGE_ACTION: _MutationProps.ValueType  # 87
+    COEX_V2_VERSION_ACTION: _MutationProps.ValueType  # 88
+    WASA_ROOT_SECRET_ACTION: _MutationProps.ValueType  # 89
+    BUBBLE_LOCK_MESSAGE_ACTION: _MutationProps.ValueType  # 90
+    LABEL_SUBLIST_ACTION: _MutationProps.ValueType  # 91
+    DEVICE_CAPABILITIES_V2: _MutationProps.ValueType  # 92
+    CTWA_MESSAGE_RECEIVED_ACTION: _MutationProps.ValueType  # 93
     SHARE_OWN_PN: _MutationProps.ValueType  # 10001
     BUSINESS_BROADCAST_ACTION: _MutationProps.ValueType  # 10002
     AI_THREAD_DELETE_ACTION: _MutationProps.ValueType  # 10003
@@ -593,6 +831,12 @@ SUBSCRIPTIONS_SYNC_V2_ACTION: MutationProps.ValueType  # 84
 THREAD_PIN_ACTION: MutationProps.ValueType  # 85
 AUTO_ORGANIZE_BUSINESS_CHAT_SETTING: MutationProps.ValueType  # 86
 BIZ_AI_SETTINGS_NUDGE_ACTION: MutationProps.ValueType  # 87
+COEX_V2_VERSION_ACTION: MutationProps.ValueType  # 88
+WASA_ROOT_SECRET_ACTION: MutationProps.ValueType  # 89
+BUBBLE_LOCK_MESSAGE_ACTION: MutationProps.ValueType  # 90
+LABEL_SUBLIST_ACTION: MutationProps.ValueType  # 91
+DEVICE_CAPABILITIES_V2: MutationProps.ValueType  # 92
+CTWA_MESSAGE_RECEIVED_ACTION: MutationProps.ValueType  # 93
 SHARE_OWN_PN: MutationProps.ValueType  # 10001
 BUSINESS_BROADCAST_ACTION: MutationProps.ValueType  # 10002
 AI_THREAD_DELETE_ACTION: MutationProps.ValueType  # 10003
@@ -647,7 +891,7 @@ Global___WebLinkRenderConfig: _TypeAlias = WebLinkRenderConfig  # noqa: Y015
 
 @_typing.final
 class ADVDeviceIdentity(_message.Message):
-    """/ WhatsApp Version: 2.3000.1040878135"""
+    """/ WhatsApp Version: 2.3000.1045368834"""
 
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -932,6 +1176,48 @@ class AIMetadataOperation(_message.Message):
 Global___AIMetadataOperation: _TypeAlias = AIMetadataOperation  # noqa: Y015
 
 @_typing.final
+class AIProvenance(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class Metadata(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        CREATEDWITHGENAI_FIELD_NUMBER: _builtins.int
+        EDITEDWITHGENAI_FIELD_NUMBER: _builtins.int
+        createdWithGenAi: _builtins.bool
+        editedWithGenAi: _builtins.bool
+        def __init__(
+            self,
+            *,
+            createdWithGenAi: _builtins.bool | None = ...,
+            editedWithGenAi: _builtins.bool | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["createdWithGenAi", b"createdWithGenAi", "editedWithGenAi", b"editedWithGenAi"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["createdWithGenAi", b"createdWithGenAi", "editedWithGenAi", b"editedWithGenAi"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    C2PAMETADATA_FIELD_NUMBER: _builtins.int
+    IPTCMETADATA_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def c2PaMetadata(self) -> Global___AIProvenance.Metadata: ...
+    @_builtins.property
+    def iptcMetadata(self) -> Global___AIProvenance.Metadata: ...
+    def __init__(
+        self,
+        *,
+        c2PaMetadata: Global___AIProvenance.Metadata | None = ...,
+        iptcMetadata: Global___AIProvenance.Metadata | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["c2PaMetadata", b"c2PaMetadata", "iptcMetadata", b"iptcMetadata"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["c2PaMetadata", b"c2PaMetadata", "iptcMetadata", b"iptcMetadata"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___AIProvenance: _TypeAlias = AIProvenance  # noqa: Y015
+
+@_typing.final
 class AIQueryFanout(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -1070,13 +1356,13 @@ class AIRichResponseContentItemsMetadata(_message.Message):
             *,
             reelItem: Global___AIRichResponseContentItemsMetadata.AIRichResponseReelItem | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["aIRichResponseContentItem", b"aIRichResponseContentItem", "reelItem", b"reelItem"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["aiRichResponseContentItem", b"aiRichResponseContentItem", "reelItem", b"reelItem"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["aIRichResponseContentItem", b"aIRichResponseContentItem", "reelItem", b"reelItem"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["aiRichResponseContentItem", b"aiRichResponseContentItem", "reelItem", b"reelItem"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-        _WhichOneofReturnType_aIRichResponseContentItem: _TypeAlias = _typing.Literal["reelItem"]  # noqa: Y015
-        _WhichOneofArgType_aIRichResponseContentItem: _TypeAlias = _typing.Literal["aIRichResponseContentItem", b"aIRichResponseContentItem"]  # noqa: Y015
-        def WhichOneof(self, oneof_group: _WhichOneofArgType_aIRichResponseContentItem) -> _WhichOneofReturnType_aIRichResponseContentItem | None: ...
+        _WhichOneofReturnType_aiRichResponseContentItem: _TypeAlias = _typing.Literal["reelItem"]  # noqa: Y015
+        _WhichOneofArgType_aiRichResponseContentItem: _TypeAlias = _typing.Literal["aiRichResponseContentItem", b"aiRichResponseContentItem"]  # noqa: Y015
+        def WhichOneof(self, oneof_group: _WhichOneofArgType_aiRichResponseContentItem) -> _WhichOneofReturnType_aiRichResponseContentItem | None: ...
 
     @_typing.final
     class AIRichResponseReelItem(_message.Message):
@@ -1737,6 +2023,30 @@ class AvatarUserSettings(_message.Message):
 Global___AvatarUserSettings: _TypeAlias = AvatarUserSettings  # noqa: Y015
 
 @_typing.final
+class BackwardEdge(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTEDPREVEPOCHANONID_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDPREVEPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    PREVEPOCHROOTKEYFINGERPRINT_FIELD_NUMBER: _builtins.int
+    encryptedPrevEpochAnonId: _builtins.bytes
+    encryptedPrevEpochRootKey: _builtins.bytes
+    prevEpochRootKeyFingerprint: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        encryptedPrevEpochAnonId: _builtins.bytes | None = ...,
+        encryptedPrevEpochRootKey: _builtins.bytes | None = ...,
+        prevEpochRootKeyFingerprint: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedPrevEpochAnonId", b"encryptedPrevEpochAnonId", "encryptedPrevEpochRootKey", b"encryptedPrevEpochRootKey", "prevEpochRootKeyFingerprint", b"prevEpochRootKeyFingerprint"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedPrevEpochAnonId", b"encryptedPrevEpochAnonId", "encryptedPrevEpochRootKey", b"encryptedPrevEpochRootKey", "prevEpochRootKeyFingerprint", b"prevEpochRootKeyFingerprint"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___BackwardEdge: _TypeAlias = BackwardEdge  # noqa: Y015
+
+@_typing.final
 class BizAccountLinkInfo(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -1935,15 +2245,18 @@ class BotAgentDeepLinkMetadata(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
     TOKEN_FIELD_NUMBER: _builtins.int
+    CLIENTPUBLICKEY_FIELD_NUMBER: _builtins.int
     token: _builtins.str
+    clientPublicKey: _builtins.bytes
     def __init__(
         self,
         *,
         token: _builtins.str | None = ...,
+        clientPublicKey: _builtins.bytes | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["token", b"token"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["clientPublicKey", b"clientPublicKey", "token", b"token"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["token", b"token"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["clientPublicKey", b"clientPublicKey", "token", b"token"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___BotAgentDeepLinkMetadata: _TypeAlias = BotAgentDeepLinkMetadata  # noqa: Y015
@@ -2043,6 +2356,10 @@ class BotCapabilityMetadata(_message.Message):
         UNIFIED_RESPONSE_MARKDOWN_LINKS_ENABLED: BotCapabilityMetadata._BotCapabilityType.ValueType  # 63
         AI_RICH_RESPONSE_MAPS_V2_ENABLED: BotCapabilityMetadata._BotCapabilityType.ValueType  # 64
         AI_SUBSCRIPTION_METERING_ENABLED: BotCapabilityMetadata._BotCapabilityType.ValueType  # 65
+        RICH_RESPONSE_SPORTS_WIDGET_ENABLED: BotCapabilityMetadata._BotCapabilityType.ValueType  # 66
+        AI_RICH_RESPONSE_ARTIFACTS_ENABLED: BotCapabilityMetadata._BotCapabilityType.ValueType  # 67
+        AI_RICH_RESPONSE_EMAIL_CALENDAR_ENABLED: BotCapabilityMetadata._BotCapabilityType.ValueType  # 68
+        AI_RICH_RESPONSE_REMINDERS_ENABLED: BotCapabilityMetadata._BotCapabilityType.ValueType  # 69
 
     class BotCapabilityType(_BotCapabilityType, metaclass=_BotCapabilityTypeEnumTypeWrapper): ...
     UNKNOWN: BotCapabilityMetadata.BotCapabilityType.ValueType  # 0
@@ -2111,6 +2428,10 @@ class BotCapabilityMetadata(_message.Message):
     UNIFIED_RESPONSE_MARKDOWN_LINKS_ENABLED: BotCapabilityMetadata.BotCapabilityType.ValueType  # 63
     AI_RICH_RESPONSE_MAPS_V2_ENABLED: BotCapabilityMetadata.BotCapabilityType.ValueType  # 64
     AI_SUBSCRIPTION_METERING_ENABLED: BotCapabilityMetadata.BotCapabilityType.ValueType  # 65
+    RICH_RESPONSE_SPORTS_WIDGET_ENABLED: BotCapabilityMetadata.BotCapabilityType.ValueType  # 66
+    AI_RICH_RESPONSE_ARTIFACTS_ENABLED: BotCapabilityMetadata.BotCapabilityType.ValueType  # 67
+    AI_RICH_RESPONSE_EMAIL_CALENDAR_ENABLED: BotCapabilityMetadata.BotCapabilityType.ValueType  # 68
+    AI_RICH_RESPONSE_REMINDERS_ENABLED: BotCapabilityMetadata.BotCapabilityType.ValueType  # 69
 
     CAPABILITIES_FIELD_NUMBER: _builtins.int
     @_builtins.property
@@ -2531,6 +2852,23 @@ class BotGroupParticipantMetadata(_message.Message):
 Global___BotGroupParticipantMetadata: _TypeAlias = BotGroupParticipantMetadata  # noqa: Y015
 
 @_typing.final
+class BotHistoryShareMetadata(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PARTICIPANTSMETADATA_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def participantsMetadata(self) -> _containers.RepeatedCompositeFieldContainer[Global___BotGroupParticipantMetadata]: ...
+    def __init__(
+        self,
+        *,
+        participantsMetadata: _abc.Iterable[Global___BotGroupParticipantMetadata] | None = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["participantsMetadata", b"participantsMetadata"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___BotHistoryShareMetadata: _TypeAlias = BotHistoryShareMetadata  # noqa: Y015
+
+@_typing.final
 class BotImagineMetadata(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -2889,6 +3227,7 @@ class BotMetadata(_message.Message):
     RESOLVEDTOOLCALLMETADATA_FIELD_NUMBER: _builtins.int
     SUBSCRIPTIONUPSELLMETADATA_FIELD_NUMBER: _builtins.int
     PTTPROMPTMETADATA_FIELD_NUMBER: _builtins.int
+    BOTHISTORYSHAREMETADATA_FIELD_NUMBER: _builtins.int
     INTERNALMETADATA_FIELD_NUMBER: _builtins.int
     personaId: _builtins.str
     invokerJid: _builtins.str
@@ -2966,6 +3305,8 @@ class BotMetadata(_message.Message):
     def subscriptionUpsellMetadata(self) -> Global___AISubscriptionUpsellMetadata: ...
     @_builtins.property
     def pttPromptMetadata(self) -> Global___BotPttPromptMetadata: ...
+    @_builtins.property
+    def botHistoryShareMetadata(self) -> Global___BotHistoryShareMetadata: ...
     def __init__(
         self,
         *,
@@ -3010,11 +3351,12 @@ class BotMetadata(_message.Message):
         resolvedToolCallMetadata: Global___BotResolvedToolCallMetadata | None = ...,
         subscriptionUpsellMetadata: Global___AISubscriptionUpsellMetadata | None = ...,
         pttPromptMetadata: Global___BotPttPromptMetadata | None = ...,
+        botHistoryShareMetadata: Global___BotHistoryShareMetadata | None = ...,
         internalMetadata: _builtins.bytes | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["aiConversationContext", b"aiConversationContext", "aiMediaCollectionMetadata", b"aiMediaCollectionMetadata", "botAgeCollectionMetadata", b"botAgeCollectionMetadata", "botDocumentMessageMetadata", b"botDocumentMessageMetadata", "botGroupMetadata", b"botGroupMetadata", "botInfrastructureDiagnostics", b"botInfrastructureDiagnostics", "botLinkedAccountsMetadata", b"botLinkedAccountsMetadata", "botMessageOriginMetadata", b"botMessageOriginMetadata", "botMetricsMetadata", b"botMetricsMetadata", "botModeSelectionMetadata", b"botModeSelectionMetadata", "botPromotionMessageMetadata", b"botPromotionMessageMetadata", "botQuotaMetadata", b"botQuotaMetadata", "botRenderingConfigMetadata", b"botRenderingConfigMetadata", "botResponseId", b"botResponseId", "botThreadInfo", b"botThreadInfo", "capabilityMetadata", b"capabilityMetadata", "commandMetadata", b"commandMetadata", "conversationStarterPromptId", b"conversationStarterPromptId", "imagineMetadata", b"imagineMetadata", "inThreadSurveyMetadata", b"inThreadSurveyMetadata", "internalMetadata", b"internalMetadata", "invokerJid", b"invokerJid", "memoryMetadata", b"memoryMetadata", "memuMetadata", b"memuMetadata", "messageDisclaimerText", b"messageDisclaimerText", "modelMetadata", b"modelMetadata", "personaId", b"personaId", "pluginMetadata", b"pluginMetadata", "progressIndicatorMetadata", b"progressIndicatorMetadata", "pttPromptMetadata", b"pttPromptMetadata", "regenerateMetadata", b"regenerateMetadata", "reminderMetadata", b"reminderMetadata", "renderingMetadata", b"renderingMetadata", "resolvedToolCallMetadata", b"resolvedToolCallMetadata", "richResponseSourcesMetadata", b"richResponseSourcesMetadata", "sessionMetadata", b"sessionMetadata", "sessionTransparencyMetadata", b"sessionTransparencyMetadata", "subscriptionUpsellMetadata", b"subscriptionUpsellMetadata", "suggestedPromptMetadata", b"suggestedPromptMetadata", "timezone", b"timezone", "unifiedResponseMutation", b"unifiedResponseMutation", "verificationMetadata", b"verificationMetadata"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["aiConversationContext", b"aiConversationContext", "aiMediaCollectionMetadata", b"aiMediaCollectionMetadata", "botAgeCollectionMetadata", b"botAgeCollectionMetadata", "botDocumentMessageMetadata", b"botDocumentMessageMetadata", "botGroupMetadata", b"botGroupMetadata", "botHistoryShareMetadata", b"botHistoryShareMetadata", "botInfrastructureDiagnostics", b"botInfrastructureDiagnostics", "botLinkedAccountsMetadata", b"botLinkedAccountsMetadata", "botMessageOriginMetadata", b"botMessageOriginMetadata", "botMetricsMetadata", b"botMetricsMetadata", "botModeSelectionMetadata", b"botModeSelectionMetadata", "botPromotionMessageMetadata", b"botPromotionMessageMetadata", "botQuotaMetadata", b"botQuotaMetadata", "botRenderingConfigMetadata", b"botRenderingConfigMetadata", "botResponseId", b"botResponseId", "botThreadInfo", b"botThreadInfo", "capabilityMetadata", b"capabilityMetadata", "commandMetadata", b"commandMetadata", "conversationStarterPromptId", b"conversationStarterPromptId", "imagineMetadata", b"imagineMetadata", "inThreadSurveyMetadata", b"inThreadSurveyMetadata", "internalMetadata", b"internalMetadata", "invokerJid", b"invokerJid", "memoryMetadata", b"memoryMetadata", "memuMetadata", b"memuMetadata", "messageDisclaimerText", b"messageDisclaimerText", "modelMetadata", b"modelMetadata", "personaId", b"personaId", "pluginMetadata", b"pluginMetadata", "progressIndicatorMetadata", b"progressIndicatorMetadata", "pttPromptMetadata", b"pttPromptMetadata", "regenerateMetadata", b"regenerateMetadata", "reminderMetadata", b"reminderMetadata", "renderingMetadata", b"renderingMetadata", "resolvedToolCallMetadata", b"resolvedToolCallMetadata", "richResponseSourcesMetadata", b"richResponseSourcesMetadata", "sessionMetadata", b"sessionMetadata", "sessionTransparencyMetadata", b"sessionTransparencyMetadata", "subscriptionUpsellMetadata", b"subscriptionUpsellMetadata", "suggestedPromptMetadata", b"suggestedPromptMetadata", "timezone", b"timezone", "unifiedResponseMutation", b"unifiedResponseMutation", "verificationMetadata", b"verificationMetadata"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["aiConversationContext", b"aiConversationContext", "aiMediaCollectionMetadata", b"aiMediaCollectionMetadata", "botAgeCollectionMetadata", b"botAgeCollectionMetadata", "botDocumentMessageMetadata", b"botDocumentMessageMetadata", "botGroupMetadata", b"botGroupMetadata", "botInfrastructureDiagnostics", b"botInfrastructureDiagnostics", "botLinkedAccountsMetadata", b"botLinkedAccountsMetadata", "botMessageOriginMetadata", b"botMessageOriginMetadata", "botMetricsMetadata", b"botMetricsMetadata", "botModeSelectionMetadata", b"botModeSelectionMetadata", "botPromotionMessageMetadata", b"botPromotionMessageMetadata", "botQuotaMetadata", b"botQuotaMetadata", "botRenderingConfigMetadata", b"botRenderingConfigMetadata", "botResponseId", b"botResponseId", "botThreadInfo", b"botThreadInfo", "capabilityMetadata", b"capabilityMetadata", "commandMetadata", b"commandMetadata", "conversationStarterPromptId", b"conversationStarterPromptId", "imagineMetadata", b"imagineMetadata", "inThreadSurveyMetadata", b"inThreadSurveyMetadata", "internalMetadata", b"internalMetadata", "invokerJid", b"invokerJid", "memoryMetadata", b"memoryMetadata", "memuMetadata", b"memuMetadata", "messageDisclaimerText", b"messageDisclaimerText", "modelMetadata", b"modelMetadata", "personaId", b"personaId", "pluginMetadata", b"pluginMetadata", "progressIndicatorMetadata", b"progressIndicatorMetadata", "pttPromptMetadata", b"pttPromptMetadata", "regenerateMetadata", b"regenerateMetadata", "reminderMetadata", b"reminderMetadata", "renderingMetadata", b"renderingMetadata", "resolvedToolCallMetadata", b"resolvedToolCallMetadata", "richResponseSourcesMetadata", b"richResponseSourcesMetadata", "sessionMetadata", b"sessionMetadata", "sessionTransparencyMetadata", b"sessionTransparencyMetadata", "subscriptionUpsellMetadata", b"subscriptionUpsellMetadata", "suggestedPromptMetadata", b"suggestedPromptMetadata", "timezone", b"timezone", "unifiedResponseMutation", b"unifiedResponseMutation", "verificationMetadata", b"verificationMetadata"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["aiConversationContext", b"aiConversationContext", "aiMediaCollectionMetadata", b"aiMediaCollectionMetadata", "botAgeCollectionMetadata", b"botAgeCollectionMetadata", "botDocumentMessageMetadata", b"botDocumentMessageMetadata", "botGroupMetadata", b"botGroupMetadata", "botHistoryShareMetadata", b"botHistoryShareMetadata", "botInfrastructureDiagnostics", b"botInfrastructureDiagnostics", "botLinkedAccountsMetadata", b"botLinkedAccountsMetadata", "botMessageOriginMetadata", b"botMessageOriginMetadata", "botMetricsMetadata", b"botMetricsMetadata", "botModeSelectionMetadata", b"botModeSelectionMetadata", "botPromotionMessageMetadata", b"botPromotionMessageMetadata", "botQuotaMetadata", b"botQuotaMetadata", "botRenderingConfigMetadata", b"botRenderingConfigMetadata", "botResponseId", b"botResponseId", "botThreadInfo", b"botThreadInfo", "capabilityMetadata", b"capabilityMetadata", "commandMetadata", b"commandMetadata", "conversationStarterPromptId", b"conversationStarterPromptId", "imagineMetadata", b"imagineMetadata", "inThreadSurveyMetadata", b"inThreadSurveyMetadata", "internalMetadata", b"internalMetadata", "invokerJid", b"invokerJid", "memoryMetadata", b"memoryMetadata", "memuMetadata", b"memuMetadata", "messageDisclaimerText", b"messageDisclaimerText", "modelMetadata", b"modelMetadata", "personaId", b"personaId", "pluginMetadata", b"pluginMetadata", "progressIndicatorMetadata", b"progressIndicatorMetadata", "pttPromptMetadata", b"pttPromptMetadata", "regenerateMetadata", b"regenerateMetadata", "reminderMetadata", b"reminderMetadata", "renderingMetadata", b"renderingMetadata", "resolvedToolCallMetadata", b"resolvedToolCallMetadata", "richResponseSourcesMetadata", b"richResponseSourcesMetadata", "sessionMetadata", b"sessionMetadata", "sessionTransparencyMetadata", b"sessionTransparencyMetadata", "subscriptionUpsellMetadata", b"subscriptionUpsellMetadata", "suggestedPromptMetadata", b"suggestedPromptMetadata", "timezone", b"timezone", "unifiedResponseMutation", b"unifiedResponseMutation", "verificationMetadata", b"verificationMetadata"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___BotMetadata: _TypeAlias = BotMetadata  # noqa: Y015
@@ -3739,22 +4081,48 @@ class BotSignatureVerificationUseCaseProof(_message.Message):
         WA_BOT_MSG: BotSignatureVerificationUseCaseProof._BotSignatureUseCase.ValueType  # 1
         WA_TEE_BOT_MSG: BotSignatureVerificationUseCaseProof._BotSignatureUseCase.ValueType  # 2
         P2P_PILLS: BotSignatureVerificationUseCaseProof._BotSignatureUseCase.ValueType  # 3
+        WA_WAFFLE: BotSignatureVerificationUseCaseProof._BotSignatureUseCase.ValueType  # 4
+        WA_FEATURE_PKI: BotSignatureVerificationUseCaseProof._BotSignatureUseCase.ValueType  # 5
 
     class BotSignatureUseCase(_BotSignatureUseCase, metaclass=_BotSignatureUseCaseEnumTypeWrapper): ...
     UNSPECIFIED: BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType  # 0
     WA_BOT_MSG: BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType  # 1
     WA_TEE_BOT_MSG: BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType  # 2
     P2P_PILLS: BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType  # 3
+    WA_WAFFLE: BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType  # 4
+    WA_FEATURE_PKI: BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType  # 5
+
+    @_typing.final
+    class CertificateSKI(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        USECASE_FIELD_NUMBER: _builtins.int
+        SKI_FIELD_NUMBER: _builtins.int
+        useCase: Global___BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType
+        ski: _builtins.bytes
+        def __init__(
+            self,
+            *,
+            useCase: Global___BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType | None = ...,
+            ski: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["ski", b"ski", "useCase", b"useCase"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["ski", b"ski", "useCase", b"useCase"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     VERSION_FIELD_NUMBER: _builtins.int
     USECASE_FIELD_NUMBER: _builtins.int
     SIGNATURE_FIELD_NUMBER: _builtins.int
     CERTIFICATECHAIN_FIELD_NUMBER: _builtins.int
+    CERTIFICATECHAINSKI_FIELD_NUMBER: _builtins.int
     version: _builtins.int
     useCase: Global___BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType
     signature: _builtins.bytes
     @_builtins.property
     def certificateChain(self) -> _containers.RepeatedScalarFieldContainer[_builtins.bytes]: ...
+    @_builtins.property
+    def certificateChainSki(self) -> _containers.RepeatedCompositeFieldContainer[Global___BotSignatureVerificationUseCaseProof.CertificateSKI]: ...
     def __init__(
         self,
         *,
@@ -3762,10 +4130,11 @@ class BotSignatureVerificationUseCaseProof(_message.Message):
         useCase: Global___BotSignatureVerificationUseCaseProof.BotSignatureUseCase.ValueType | None = ...,
         signature: _builtins.bytes | None = ...,
         certificateChain: _abc.Iterable[_builtins.bytes] | None = ...,
+        certificateChainSki: _abc.Iterable[Global___BotSignatureVerificationUseCaseProof.CertificateSKI] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["signature", b"signature", "useCase", b"useCase", "version", b"version"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["certificateChain", b"certificateChain", "signature", b"signature", "useCase", b"useCase", "version", b"version"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["certificateChain", b"certificateChain", "certificateChainSki", b"certificateChainSki", "signature", b"signature", "useCase", b"useCase", "version", b"version"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___BotSignatureVerificationUseCaseProof: _TypeAlias = BotSignatureVerificationUseCaseProof  # noqa: Y015
@@ -4678,6 +5047,7 @@ class ClientPayload(_message.Message):
             SMART_GLASSES: ClientPayload.UserAgent._Platform.ValueType  # 35
             BLUE_VR: ClientPayload.UserAgent._Platform.ValueType  # 36
             AR_WRIST: ClientPayload.UserAgent._Platform.ValueType  # 37
+            WAIL: ClientPayload.UserAgent._Platform.ValueType  # 38
 
         class Platform(_Platform, metaclass=_PlatformEnumTypeWrapper): ...
         ANDROID: ClientPayload.UserAgent.Platform.ValueType  # 0
@@ -4718,6 +5088,7 @@ class ClientPayload(_message.Message):
         SMART_GLASSES: ClientPayload.UserAgent.Platform.ValueType  # 35
         BLUE_VR: ClientPayload.UserAgent.Platform.ValueType  # 36
         AR_WRIST: ClientPayload.UserAgent.Platform.ValueType  # 37
+        WAIL: ClientPayload.UserAgent.Platform.ValueType  # 38
 
         class _ReleaseChannel:
             ValueType = _typing.NewType("ValueType", _builtins.int)
@@ -5049,6 +5420,70 @@ class ClientPayload(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___ClientPayload: _TypeAlias = ClientPayload  # noqa: Y015
+
+@_typing.final
+class CoexStateSync(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class CollectionMutations(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        COLLECTION_FIELD_NUMBER: _builtins.int
+        MUTATIONS_FIELD_NUMBER: _builtins.int
+        collection: _builtins.str
+        @_builtins.property
+        def mutations(self) -> _containers.RepeatedCompositeFieldContainer[Global___CoexStateSync.Mutation]: ...
+        def __init__(
+            self,
+            *,
+            collection: _builtins.str | None = ...,
+            mutations: _abc.Iterable[Global___CoexStateSync.Mutation] | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["collection", b"collection"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["collection", b"collection", "mutations", b"mutations"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class Mutation(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        INDEX_FIELD_NUMBER: _builtins.int
+        VALUE_FIELD_NUMBER: _builtins.int
+        DIRTYVERSION_FIELD_NUMBER: _builtins.int
+        OPERATION_FIELD_NUMBER: _builtins.int
+        dirtyVersion: _builtins.int
+        operation: Global___SyncdMutation.SyncdOperation.ValueType
+        @_builtins.property
+        def index(self) -> Global___SyncdIndex: ...
+        @_builtins.property
+        def value(self) -> Global___SyncdValue: ...
+        def __init__(
+            self,
+            *,
+            index: Global___SyncdIndex | None = ...,
+            value: Global___SyncdValue | None = ...,
+            dirtyVersion: _builtins.int | None = ...,
+            operation: Global___SyncdMutation.SyncdOperation.ValueType | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["dirtyVersion", b"dirtyVersion", "index", b"index", "operation", b"operation", "value", b"value"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["dirtyVersion", b"dirtyVersion", "index", b"index", "operation", b"operation", "value", b"value"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    COLLECTIONMUTATIONS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def collectionMutations(self) -> _containers.RepeatedCompositeFieldContainer[Global___CoexStateSync.CollectionMutations]: ...
+    def __init__(
+        self,
+        *,
+        collectionMutations: _abc.Iterable[Global___CoexStateSync.CollectionMutations] | None = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["collectionMutations", b"collectionMutations"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___CoexStateSync: _TypeAlias = CoexStateSync  # noqa: Y015
 
 @_typing.final
 class CombinedFingerprint(_message.Message):
@@ -6270,11 +6705,37 @@ class ContextInfo(_message.Message):
             _ClearFieldArgType: _TypeAlias = _typing.Literal["pills", b"pills", "verifiedName", b"verifiedName"]  # noqa: Y015
             def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
+        @_typing.final
+        class UnauthenticatedBusinessMetadata(_message.Message):
+            DESCRIPTOR: _descriptor.Descriptor
+
+            BUSINESSNAME_FIELD_NUMBER: _builtins.int
+            BUSINESSCATEGORY_FIELD_NUMBER: _builtins.int
+            BUSINESSISOPEN_FIELD_NUMBER: _builtins.int
+            BUSINESSISOPENSNAPSHOTMS_FIELD_NUMBER: _builtins.int
+            businessName: _builtins.str
+            businessCategory: _builtins.str
+            businessIsOpen: _builtins.bool
+            businessIsOpenSnapshotMs: _builtins.int
+            def __init__(
+                self,
+                *,
+                businessName: _builtins.str | None = ...,
+                businessCategory: _builtins.str | None = ...,
+                businessIsOpen: _builtins.bool | None = ...,
+                businessIsOpenSnapshotMs: _builtins.int | None = ...,
+            ) -> None: ...
+            _HasFieldArgType: _TypeAlias = _typing.Literal["businessCategory", b"businessCategory", "businessIsOpen", b"businessIsOpen", "businessIsOpenSnapshotMs", b"businessIsOpenSnapshotMs", "businessName", b"businessName"]  # noqa: Y015
+            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+            _ClearFieldArgType: _TypeAlias = _typing.Literal["businessCategory", b"businessCategory", "businessIsOpen", b"businessIsOpen", "businessIsOpenSnapshotMs", b"businessIsOpenSnapshotMs", "businessName", b"businessName"]  # noqa: Y015
+            def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
         BUSINESSJID_FIELD_NUMBER: _builtins.int
         PILLS_FIELD_NUMBER: _builtins.int
         ENTRYPOINT_FIELD_NUMBER: _builtins.int
         SIGNEDPAYLOAD_FIELD_NUMBER: _builtins.int
         SIGNATUREENVELOPE_FIELD_NUMBER: _builtins.int
+        UNAUTHENTICATEDBUSINESSMETADATA_FIELD_NUMBER: _builtins.int
         businessJid: _builtins.str
         entryPoint: Global___ContextInfo.BusinessInteractionPills.EntryPoint.ValueType
         signedPayload: _builtins.bytes
@@ -6282,6 +6743,8 @@ class ContextInfo(_message.Message):
         def pills(self) -> _containers.RepeatedCompositeFieldContainer[Global___ContextInfo.BusinessInteractionPills.Pill]: ...
         @_builtins.property
         def signatureEnvelope(self) -> Global___BotSignatureVerificationMetadata: ...
+        @_builtins.property
+        def unauthenticatedBusinessMetadata(self) -> Global___ContextInfo.BusinessInteractionPills.UnauthenticatedBusinessMetadata: ...
         def __init__(
             self,
             *,
@@ -6290,10 +6753,11 @@ class ContextInfo(_message.Message):
             entryPoint: Global___ContextInfo.BusinessInteractionPills.EntryPoint.ValueType | None = ...,
             signedPayload: _builtins.bytes | None = ...,
             signatureEnvelope: Global___BotSignatureVerificationMetadata | None = ...,
+            unauthenticatedBusinessMetadata: Global___ContextInfo.BusinessInteractionPills.UnauthenticatedBusinessMetadata | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["businessJid", b"businessJid", "entryPoint", b"entryPoint", "signatureEnvelope", b"signatureEnvelope", "signedPayload", b"signedPayload"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["businessJid", b"businessJid", "entryPoint", b"entryPoint", "signatureEnvelope", b"signatureEnvelope", "signedPayload", b"signedPayload", "unauthenticatedBusinessMetadata", b"unauthenticatedBusinessMetadata"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["businessJid", b"businessJid", "entryPoint", b"entryPoint", "pills", b"pills", "signatureEnvelope", b"signatureEnvelope", "signedPayload", b"signedPayload"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["businessJid", b"businessJid", "entryPoint", b"entryPoint", "pills", b"pills", "signatureEnvelope", b"signatureEnvelope", "signedPayload", b"signedPayload", "unauthenticatedBusinessMetadata", b"unauthenticatedBusinessMetadata"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -6592,6 +7056,22 @@ class ContextInfo(_message.Message):
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
+    class InstagramThreadLink(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        URL_FIELD_NUMBER: _builtins.int
+        url: _builtins.str
+        def __init__(
+            self,
+            *,
+            url: _builtins.str | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["url", b"url"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["url", b"url"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class PartiallySelectedContent(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -6747,6 +7227,8 @@ class ContextInfo(_message.Message):
     CROSSAPPSOURCE_FIELD_NUMBER: _builtins.int
     BUSINESSINTERACTIONPILLS_FIELD_NUMBER: _builtins.int
     POSTERSTATUSID_FIELD_NUMBER: _builtins.int
+    INSTAGRAMTHREADLINK_FIELD_NUMBER: _builtins.int
+    AIPROVENANCE_FIELD_NUMBER: _builtins.int
     stanzaId: _builtins.str
     participant: _builtins.str
     remoteJid: _builtins.str
@@ -6832,6 +7314,10 @@ class ContextInfo(_message.Message):
     def partiallySelectedContent(self) -> Global___ContextInfo.PartiallySelectedContent: ...
     @_builtins.property
     def businessInteractionPills(self) -> Global___ContextInfo.BusinessInteractionPills: ...
+    @_builtins.property
+    def instagramThreadLink(self) -> Global___ContextInfo.InstagramThreadLink: ...
+    @_builtins.property
+    def aiProvenance(self) -> Global___AIProvenance: ...
     def __init__(
         self,
         *,
@@ -6897,10 +7383,12 @@ class ContextInfo(_message.Message):
         crossAppSource: Global___ContextInfo.CrossAppSource.ValueType | None = ...,
         businessInteractionPills: Global___ContextInfo.BusinessInteractionPills | None = ...,
         posterStatusId: _builtins.str | None = ...,
+        instagramThreadLink: Global___ContextInfo.InstagramThreadLink | None = ...,
+        aiProvenance: Global___AIProvenance | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["actionLink", b"actionLink", "afterReadDuration", b"afterReadDuration", "alwaysShowAdAttribution", b"alwaysShowAdAttribution", "botMessageSharingInfo", b"botMessageSharingInfo", "businessInteractionPills", b"businessInteractionPills", "businessMessageForwardInfo", b"businessMessageForwardInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "crossAppSource", b"crossAppSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "dataSharingContext", b"dataSharingContext", "disappearingMode", b"disappearingMode", "entryPointConversionApp", b"entryPointConversionApp", "entryPointConversionDelaySeconds", b"entryPointConversionDelaySeconds", "entryPointConversionExternalMedium", b"entryPointConversionExternalMedium", "entryPointConversionExternalSource", b"entryPointConversionExternalSource", "entryPointConversionSource", b"entryPointConversionSource", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "ephemeralSharedSecret", b"ephemeralSharedSecret", "expiration", b"expiration", "externalAdReply", b"externalAdReply", "featureEligibilities", b"featureEligibilities", "forwardOrigin", b"forwardOrigin", "forwardedAiBotMessageInfo", b"forwardedAiBotMessageInfo", "forwardedNewsletterMessageInfo", b"forwardedNewsletterMessageInfo", "forwardingScore", b"forwardingScore", "groupSubject", b"groupSubject", "isForwarded", b"isForwarded", "isGroupStatus", b"isGroupStatus", "isQuestion", b"isQuestion", "isSampled", b"isSampled", "isSpoiler", b"isSpoiler", "mediaDomainInfo", b"mediaDomainInfo", "memberLabel", b"memberLabel", "nonJidMentions", b"nonJidMentions", "pairedMediaType", b"pairedMediaType", "parentGroupJid", b"parentGroupJid", "partiallySelectedContent", b"partiallySelectedContent", "participant", b"participant", "placeholderKey", b"placeholderKey", "posterStatusId", b"posterStatusId", "questionReplyQuotedMessage", b"questionReplyQuotedMessage", "quotedAd", b"quotedAd", "quotedMessage", b"quotedMessage", "quotedType", b"quotedType", "rankingVersion", b"rankingVersion", "remoteJid", b"remoteJid", "smbClientCampaignId", b"smbClientCampaignId", "smbServerCampaignId", b"smbServerCampaignId", "stanzaId", b"stanzaId", "statusAttributionType", b"statusAttributionType", "statusAudienceMetadata", b"statusAudienceMetadata", "statusSourceType", b"statusSourceType", "trustBannerAction", b"trustBannerAction", "trustBannerType", b"trustBannerType", "urlTrackingMap", b"urlTrackingMap", "utm", b"utm"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["actionLink", b"actionLink", "afterReadDuration", b"afterReadDuration", "aiProvenance", b"aiProvenance", "alwaysShowAdAttribution", b"alwaysShowAdAttribution", "botMessageSharingInfo", b"botMessageSharingInfo", "businessInteractionPills", b"businessInteractionPills", "businessMessageForwardInfo", b"businessMessageForwardInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "crossAppSource", b"crossAppSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "dataSharingContext", b"dataSharingContext", "disappearingMode", b"disappearingMode", "entryPointConversionApp", b"entryPointConversionApp", "entryPointConversionDelaySeconds", b"entryPointConversionDelaySeconds", "entryPointConversionExternalMedium", b"entryPointConversionExternalMedium", "entryPointConversionExternalSource", b"entryPointConversionExternalSource", "entryPointConversionSource", b"entryPointConversionSource", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "ephemeralSharedSecret", b"ephemeralSharedSecret", "expiration", b"expiration", "externalAdReply", b"externalAdReply", "featureEligibilities", b"featureEligibilities", "forwardOrigin", b"forwardOrigin", "forwardedAiBotMessageInfo", b"forwardedAiBotMessageInfo", "forwardedNewsletterMessageInfo", b"forwardedNewsletterMessageInfo", "forwardingScore", b"forwardingScore", "groupSubject", b"groupSubject", "instagramThreadLink", b"instagramThreadLink", "isForwarded", b"isForwarded", "isGroupStatus", b"isGroupStatus", "isQuestion", b"isQuestion", "isSampled", b"isSampled", "isSpoiler", b"isSpoiler", "mediaDomainInfo", b"mediaDomainInfo", "memberLabel", b"memberLabel", "nonJidMentions", b"nonJidMentions", "pairedMediaType", b"pairedMediaType", "parentGroupJid", b"parentGroupJid", "partiallySelectedContent", b"partiallySelectedContent", "participant", b"participant", "placeholderKey", b"placeholderKey", "posterStatusId", b"posterStatusId", "questionReplyQuotedMessage", b"questionReplyQuotedMessage", "quotedAd", b"quotedAd", "quotedMessage", b"quotedMessage", "quotedType", b"quotedType", "rankingVersion", b"rankingVersion", "remoteJid", b"remoteJid", "smbClientCampaignId", b"smbClientCampaignId", "smbServerCampaignId", b"smbServerCampaignId", "stanzaId", b"stanzaId", "statusAttributionType", b"statusAttributionType", "statusAudienceMetadata", b"statusAudienceMetadata", "statusSourceType", b"statusSourceType", "trustBannerAction", b"trustBannerAction", "trustBannerType", b"trustBannerType", "urlTrackingMap", b"urlTrackingMap", "utm", b"utm"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["actionLink", b"actionLink", "afterReadDuration", b"afterReadDuration", "alwaysShowAdAttribution", b"alwaysShowAdAttribution", "botMessageSharingInfo", b"botMessageSharingInfo", "businessInteractionPills", b"businessInteractionPills", "businessMessageForwardInfo", b"businessMessageForwardInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "crossAppSource", b"crossAppSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "dataSharingContext", b"dataSharingContext", "disappearingMode", b"disappearingMode", "entryPointConversionApp", b"entryPointConversionApp", "entryPointConversionDelaySeconds", b"entryPointConversionDelaySeconds", "entryPointConversionExternalMedium", b"entryPointConversionExternalMedium", "entryPointConversionExternalSource", b"entryPointConversionExternalSource", "entryPointConversionSource", b"entryPointConversionSource", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "ephemeralSharedSecret", b"ephemeralSharedSecret", "expiration", b"expiration", "externalAdReply", b"externalAdReply", "featureEligibilities", b"featureEligibilities", "forwardOrigin", b"forwardOrigin", "forwardedAiBotMessageInfo", b"forwardedAiBotMessageInfo", "forwardedNewsletterMessageInfo", b"forwardedNewsletterMessageInfo", "forwardingScore", b"forwardingScore", "groupMentions", b"groupMentions", "groupSubject", b"groupSubject", "isForwarded", b"isForwarded", "isGroupStatus", b"isGroupStatus", "isQuestion", b"isQuestion", "isSampled", b"isSampled", "isSpoiler", b"isSpoiler", "mediaDomainInfo", b"mediaDomainInfo", "memberLabel", b"memberLabel", "mentionedJid", b"mentionedJid", "nonJidMentions", b"nonJidMentions", "pairedMediaType", b"pairedMediaType", "parentGroupJid", b"parentGroupJid", "partiallySelectedContent", b"partiallySelectedContent", "participant", b"participant", "placeholderKey", b"placeholderKey", "posterStatusId", b"posterStatusId", "questionReplyQuotedMessage", b"questionReplyQuotedMessage", "quotedAd", b"quotedAd", "quotedMessage", b"quotedMessage", "quotedType", b"quotedType", "rankingVersion", b"rankingVersion", "remoteJid", b"remoteJid", "smbClientCampaignId", b"smbClientCampaignId", "smbServerCampaignId", b"smbServerCampaignId", "stanzaId", b"stanzaId", "statusAttributionType", b"statusAttributionType", "statusAttributions", b"statusAttributions", "statusAudienceMetadata", b"statusAudienceMetadata", "statusSourceType", b"statusSourceType", "trustBannerAction", b"trustBannerAction", "trustBannerType", b"trustBannerType", "urlTrackingMap", b"urlTrackingMap", "utm", b"utm"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["actionLink", b"actionLink", "afterReadDuration", b"afterReadDuration", "aiProvenance", b"aiProvenance", "alwaysShowAdAttribution", b"alwaysShowAdAttribution", "botMessageSharingInfo", b"botMessageSharingInfo", "businessInteractionPills", b"businessInteractionPills", "businessMessageForwardInfo", b"businessMessageForwardInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "crossAppSource", b"crossAppSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "dataSharingContext", b"dataSharingContext", "disappearingMode", b"disappearingMode", "entryPointConversionApp", b"entryPointConversionApp", "entryPointConversionDelaySeconds", b"entryPointConversionDelaySeconds", "entryPointConversionExternalMedium", b"entryPointConversionExternalMedium", "entryPointConversionExternalSource", b"entryPointConversionExternalSource", "entryPointConversionSource", b"entryPointConversionSource", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "ephemeralSharedSecret", b"ephemeralSharedSecret", "expiration", b"expiration", "externalAdReply", b"externalAdReply", "featureEligibilities", b"featureEligibilities", "forwardOrigin", b"forwardOrigin", "forwardedAiBotMessageInfo", b"forwardedAiBotMessageInfo", "forwardedNewsletterMessageInfo", b"forwardedNewsletterMessageInfo", "forwardingScore", b"forwardingScore", "groupMentions", b"groupMentions", "groupSubject", b"groupSubject", "instagramThreadLink", b"instagramThreadLink", "isForwarded", b"isForwarded", "isGroupStatus", b"isGroupStatus", "isQuestion", b"isQuestion", "isSampled", b"isSampled", "isSpoiler", b"isSpoiler", "mediaDomainInfo", b"mediaDomainInfo", "memberLabel", b"memberLabel", "mentionedJid", b"mentionedJid", "nonJidMentions", b"nonJidMentions", "pairedMediaType", b"pairedMediaType", "parentGroupJid", b"parentGroupJid", "partiallySelectedContent", b"partiallySelectedContent", "participant", b"participant", "placeholderKey", b"placeholderKey", "posterStatusId", b"posterStatusId", "questionReplyQuotedMessage", b"questionReplyQuotedMessage", "quotedAd", b"quotedAd", "quotedMessage", b"quotedMessage", "quotedType", b"quotedType", "rankingVersion", b"rankingVersion", "remoteJid", b"remoteJid", "smbClientCampaignId", b"smbClientCampaignId", "smbServerCampaignId", b"smbServerCampaignId", "stanzaId", b"stanzaId", "statusAttributionType", b"statusAttributionType", "statusAttributions", b"statusAttributions", "statusAudienceMetadata", b"statusAudienceMetadata", "statusSourceType", b"statusSourceType", "trustBannerAction", b"trustBannerAction", "trustBannerType", b"trustBannerType", "urlTrackingMap", b"urlTrackingMap", "utm", b"utm"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___ContextInfo: _TypeAlias = ContextInfo  # noqa: Y015
@@ -7005,6 +7493,7 @@ class Conversation(_message.Message):
     APPEALUPDATETIME_FIELD_NUMBER: _builtins.int
     AUTHAGENTPARENTCOMPANYNAME_FIELD_NUMBER: _builtins.int
     AUTHAGENTOBAPHONENUMBER_FIELD_NUMBER: _builtins.int
+    IDENTITYVERIFICATION_FIELD_NUMBER: _builtins.int
     id: _builtins.str
     newJid: _builtins.str
     oldJid: _builtins.str
@@ -7071,6 +7560,8 @@ class Conversation(_message.Message):
     def participant(self) -> _containers.RepeatedCompositeFieldContainer[Global___GroupParticipant]: ...
     @_builtins.property
     def wallpaper(self) -> Global___WallpaperSettings: ...
+    @_builtins.property
+    def identityVerification(self) -> Global___IdentityVerificationState: ...
     def __init__(
         self,
         *,
@@ -7136,13 +7627,749 @@ class Conversation(_message.Message):
         appealUpdateTime: _builtins.int | None = ...,
         authAgentParentCompanyName: _builtins.str | None = ...,
         authAgentObaPhoneNumber: _builtins.str | None = ...,
+        identityVerification: Global___IdentityVerificationState | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["accountLid", b"accountLid", "afterReadDuration", b"afterReadDuration", "appealStatus", b"appealStatus", "appealUpdateTime", b"appealUpdateTime", "archived", b"archived", "authAgentObaPhoneNumber", b"authAgentObaPhoneNumber", "authAgentParentCompanyName", b"authAgentParentCompanyName", "capiCreatedGroup", b"capiCreatedGroup", "commentsCount", b"commentsCount", "contactPrimaryIdentityKey", b"contactPrimaryIdentityKey", "conversationTimestamp", b"conversationTimestamp", "createdAt", b"createdAt", "createdBy", b"createdBy", "description", b"description", "disappearingMode", b"disappearingMode", "displayName", b"displayName", "endOfHistoryTransfer", b"endOfHistoryTransfer", "endOfHistoryTransferType", b"endOfHistoryTransferType", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "id", b"id", "isDefaultSubgroup", b"isDefaultSubgroup", "isMarketingMessageThread", b"isMarketingMessageThread", "isParentGroup", b"isParentGroup", "isSenderNewAccount", b"isSenderNewAccount", "isSenderSuspicious", b"isSenderSuspicious", "lastMsgTimestamp", b"lastMsgTimestamp", "lidJid", b"lidJid", "lidOriginType", b"lidOriginType", "limitSharing", b"limitSharing", "limitSharingInitiatedByMe", b"limitSharingInitiatedByMe", "limitSharingSettingTimestamp", b"limitSharingSettingTimestamp", "limitSharingTrigger", b"limitSharingTrigger", "locked", b"locked", "maibaAiThreadEnabled", b"maibaAiThreadEnabled", "markedAsUnread", b"markedAsUnread", "mediaVisibility", b"mediaVisibility", "muteEndTime", b"muteEndTime", "name", b"name", "newJid", b"newJid", "notSpam", b"notSpam", "oldJid", b"oldJid", "pHash", b"pHash", "parentGroupId", b"parentGroupId", "pinned", b"pinned", "pnJid", b"pnJid", "pnhDuplicateLidThread", b"pnhDuplicateLidThread", "readOnly", b"readOnly", "shareOwnPn", b"shareOwnPn", "support", b"support", "suspended", b"suspended", "systemMessageToInsert", b"systemMessageToInsert", "tcToken", b"tcToken", "tcTokenSenderTimestamp", b"tcTokenSenderTimestamp", "tcTokenTimestamp", b"tcTokenTimestamp", "terminated", b"terminated", "unreadCount", b"unreadCount", "unreadMentionCount", b"unreadMentionCount", "username", b"username", "wallpaper", b"wallpaper"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["accountLid", b"accountLid", "afterReadDuration", b"afterReadDuration", "appealStatus", b"appealStatus", "appealUpdateTime", b"appealUpdateTime", "archived", b"archived", "authAgentObaPhoneNumber", b"authAgentObaPhoneNumber", "authAgentParentCompanyName", b"authAgentParentCompanyName", "capiCreatedGroup", b"capiCreatedGroup", "commentsCount", b"commentsCount", "contactPrimaryIdentityKey", b"contactPrimaryIdentityKey", "conversationTimestamp", b"conversationTimestamp", "createdAt", b"createdAt", "createdBy", b"createdBy", "description", b"description", "disappearingMode", b"disappearingMode", "displayName", b"displayName", "endOfHistoryTransfer", b"endOfHistoryTransfer", "endOfHistoryTransferType", b"endOfHistoryTransferType", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "id", b"id", "identityVerification", b"identityVerification", "isDefaultSubgroup", b"isDefaultSubgroup", "isMarketingMessageThread", b"isMarketingMessageThread", "isParentGroup", b"isParentGroup", "isSenderNewAccount", b"isSenderNewAccount", "isSenderSuspicious", b"isSenderSuspicious", "lastMsgTimestamp", b"lastMsgTimestamp", "lidJid", b"lidJid", "lidOriginType", b"lidOriginType", "limitSharing", b"limitSharing", "limitSharingInitiatedByMe", b"limitSharingInitiatedByMe", "limitSharingSettingTimestamp", b"limitSharingSettingTimestamp", "limitSharingTrigger", b"limitSharingTrigger", "locked", b"locked", "maibaAiThreadEnabled", b"maibaAiThreadEnabled", "markedAsUnread", b"markedAsUnread", "mediaVisibility", b"mediaVisibility", "muteEndTime", b"muteEndTime", "name", b"name", "newJid", b"newJid", "notSpam", b"notSpam", "oldJid", b"oldJid", "pHash", b"pHash", "parentGroupId", b"parentGroupId", "pinned", b"pinned", "pnJid", b"pnJid", "pnhDuplicateLidThread", b"pnhDuplicateLidThread", "readOnly", b"readOnly", "shareOwnPn", b"shareOwnPn", "support", b"support", "suspended", b"suspended", "systemMessageToInsert", b"systemMessageToInsert", "tcToken", b"tcToken", "tcTokenSenderTimestamp", b"tcTokenSenderTimestamp", "tcTokenTimestamp", b"tcTokenTimestamp", "terminated", b"terminated", "unreadCount", b"unreadCount", "unreadMentionCount", b"unreadMentionCount", "username", b"username", "wallpaper", b"wallpaper"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["accountLid", b"accountLid", "afterReadDuration", b"afterReadDuration", "appealStatus", b"appealStatus", "appealUpdateTime", b"appealUpdateTime", "archived", b"archived", "authAgentObaPhoneNumber", b"authAgentObaPhoneNumber", "authAgentParentCompanyName", b"authAgentParentCompanyName", "capiCreatedGroup", b"capiCreatedGroup", "commentsCount", b"commentsCount", "contactPrimaryIdentityKey", b"contactPrimaryIdentityKey", "conversationTimestamp", b"conversationTimestamp", "createdAt", b"createdAt", "createdBy", b"createdBy", "description", b"description", "disappearingMode", b"disappearingMode", "displayName", b"displayName", "endOfHistoryTransfer", b"endOfHistoryTransfer", "endOfHistoryTransferType", b"endOfHistoryTransferType", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "id", b"id", "isDefaultSubgroup", b"isDefaultSubgroup", "isMarketingMessageThread", b"isMarketingMessageThread", "isParentGroup", b"isParentGroup", "isSenderNewAccount", b"isSenderNewAccount", "isSenderSuspicious", b"isSenderSuspicious", "lastMsgTimestamp", b"lastMsgTimestamp", "lidJid", b"lidJid", "lidOriginType", b"lidOriginType", "limitSharing", b"limitSharing", "limitSharingInitiatedByMe", b"limitSharingInitiatedByMe", "limitSharingSettingTimestamp", b"limitSharingSettingTimestamp", "limitSharingTrigger", b"limitSharingTrigger", "locked", b"locked", "maibaAiThreadEnabled", b"maibaAiThreadEnabled", "markedAsUnread", b"markedAsUnread", "mediaVisibility", b"mediaVisibility", "messages", b"messages", "muteEndTime", b"muteEndTime", "name", b"name", "newJid", b"newJid", "notSpam", b"notSpam", "oldJid", b"oldJid", "pHash", b"pHash", "parentGroupId", b"parentGroupId", "participant", b"participant", "pinned", b"pinned", "pnJid", b"pnJid", "pnhDuplicateLidThread", b"pnhDuplicateLidThread", "readOnly", b"readOnly", "shareOwnPn", b"shareOwnPn", "support", b"support", "suspended", b"suspended", "systemMessageToInsert", b"systemMessageToInsert", "tcToken", b"tcToken", "tcTokenSenderTimestamp", b"tcTokenSenderTimestamp", "tcTokenTimestamp", b"tcTokenTimestamp", "terminated", b"terminated", "unreadCount", b"unreadCount", "unreadMentionCount", b"unreadMentionCount", "username", b"username", "wallpaper", b"wallpaper"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["accountLid", b"accountLid", "afterReadDuration", b"afterReadDuration", "appealStatus", b"appealStatus", "appealUpdateTime", b"appealUpdateTime", "archived", b"archived", "authAgentObaPhoneNumber", b"authAgentObaPhoneNumber", "authAgentParentCompanyName", b"authAgentParentCompanyName", "capiCreatedGroup", b"capiCreatedGroup", "commentsCount", b"commentsCount", "contactPrimaryIdentityKey", b"contactPrimaryIdentityKey", "conversationTimestamp", b"conversationTimestamp", "createdAt", b"createdAt", "createdBy", b"createdBy", "description", b"description", "disappearingMode", b"disappearingMode", "displayName", b"displayName", "endOfHistoryTransfer", b"endOfHistoryTransfer", "endOfHistoryTransferType", b"endOfHistoryTransferType", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "id", b"id", "identityVerification", b"identityVerification", "isDefaultSubgroup", b"isDefaultSubgroup", "isMarketingMessageThread", b"isMarketingMessageThread", "isParentGroup", b"isParentGroup", "isSenderNewAccount", b"isSenderNewAccount", "isSenderSuspicious", b"isSenderSuspicious", "lastMsgTimestamp", b"lastMsgTimestamp", "lidJid", b"lidJid", "lidOriginType", b"lidOriginType", "limitSharing", b"limitSharing", "limitSharingInitiatedByMe", b"limitSharingInitiatedByMe", "limitSharingSettingTimestamp", b"limitSharingSettingTimestamp", "limitSharingTrigger", b"limitSharingTrigger", "locked", b"locked", "maibaAiThreadEnabled", b"maibaAiThreadEnabled", "markedAsUnread", b"markedAsUnread", "mediaVisibility", b"mediaVisibility", "messages", b"messages", "muteEndTime", b"muteEndTime", "name", b"name", "newJid", b"newJid", "notSpam", b"notSpam", "oldJid", b"oldJid", "pHash", b"pHash", "parentGroupId", b"parentGroupId", "participant", b"participant", "pinned", b"pinned", "pnJid", b"pnJid", "pnhDuplicateLidThread", b"pnhDuplicateLidThread", "readOnly", b"readOnly", "shareOwnPn", b"shareOwnPn", "support", b"support", "suspended", b"suspended", "systemMessageToInsert", b"systemMessageToInsert", "tcToken", b"tcToken", "tcTokenSenderTimestamp", b"tcTokenSenderTimestamp", "tcTokenTimestamp", b"tcTokenTimestamp", "terminated", b"terminated", "unreadCount", b"unreadCount", "unreadMentionCount", b"unreadMentionCount", "username", b"username", "wallpaper", b"wallpaper"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___Conversation: _TypeAlias = Conversation  # noqa: Y015
+
+@_typing.final
+class CreateBackupInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    RECOVERYCODE_FIELD_NUMBER: _builtins.int
+    USERID_FIELD_NUMBER: _builtins.int
+    recoveryCode: _builtins.str
+    userId: _builtins.int
+    def __init__(
+        self,
+        *,
+        recoveryCode: _builtins.str | None = ...,
+        userId: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["recoveryCode", b"recoveryCode", "userId", b"userId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["recoveryCode", b"recoveryCode", "userId", b"userId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___CreateBackupInput: _TypeAlias = CreateBackupInput  # noqa: Y015
+
+@_typing.final
+class CreateBackupOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    DEVICE_FIELD_NUMBER: _builtins.int
+    VIRTUALDEVICE_FIELD_NUMBER: _builtins.int
+    EPOCH0_FIELD_NUMBER: _builtins.int
+    MAILBOXROOTKEY_FIELD_NUMBER: _builtins.int
+    ERROR_FIELD_NUMBER: _builtins.int
+    mailboxRootKey: _builtins.bytes
+    error: _builtins.str
+    @_builtins.property
+    def device(self) -> Global___DeviceOutput: ...
+    @_builtins.property
+    def virtualDevice(self) -> Global___VirtualDeviceOutput: ...
+    @_builtins.property
+    def epoch0(self) -> Global___Epoch0Output: ...
+    def __init__(
+        self,
+        *,
+        device: Global___DeviceOutput | None = ...,
+        virtualDevice: Global___VirtualDeviceOutput | None = ...,
+        epoch0: Global___Epoch0Output | None = ...,
+        mailboxRootKey: _builtins.bytes | None = ...,
+        error: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["device", b"device", "epoch0", b"epoch0", "error", b"error", "mailboxRootKey", b"mailboxRootKey", "virtualDevice", b"virtualDevice"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["device", b"device", "epoch0", b"epoch0", "error", b"error", "mailboxRootKey", b"mailboxRootKey", "virtualDevice", b"virtualDevice"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___CreateBackupOutput: _TypeAlias = CreateBackupOutput  # noqa: Y015
+
+@_typing.final
+class DecryptMekForDistributionFromTransportSenderInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class TransportSenderMEKDistributionSingleRecipient(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        ENCRYPTEDMEK_FIELD_NUMBER: _builtins.int
+        EPHEMERALENCRYPTIONPK_FIELD_NUMBER: _builtins.int
+        SIGNINGPK_FIELD_NUMBER: _builtins.int
+        SIGNATURE_FIELD_NUMBER: _builtins.int
+        RECIPIENTEPOCHHEAD_FIELD_NUMBER: _builtins.int
+        encryptedMek: _builtins.bytes
+        ephemeralEncryptionPk: _builtins.bytes
+        signingPk: _builtins.bytes
+        signature: _builtins.bytes
+        recipientEpochHead: _builtins.bytes
+        def __init__(
+            self,
+            *,
+            encryptedMek: _builtins.bytes | None = ...,
+            ephemeralEncryptionPk: _builtins.bytes | None = ...,
+            signingPk: _builtins.bytes | None = ...,
+            signature: _builtins.bytes | None = ...,
+            recipientEpochHead: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedMek", b"encryptedMek", "ephemeralEncryptionPk", b"ephemeralEncryptionPk", "recipientEpochHead", b"recipientEpochHead", "signature", b"signature", "signingPk", b"signingPk"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedMek", b"encryptedMek", "ephemeralEncryptionPk", b"ephemeralEncryptionPk", "recipientEpochHead", b"recipientEpochHead", "signature", b"signature", "signingPk", b"signingPk"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    MEKDISTRIBUTION_FIELD_NUMBER: _builtins.int
+    MEKID_FIELD_NUMBER: _builtins.int
+    ROSTERHASH_FIELD_NUMBER: _builtins.int
+    RECIPIENTENCSK_FIELD_NUMBER: _builtins.int
+    VERSION_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    mekId: _builtins.bytes
+    rosterHash: _builtins.bytes
+    recipientEncSk: _builtins.bytes
+    version: _builtins.int
+    @_builtins.property
+    def mekDistribution(self) -> Global___DecryptMekForDistributionFromTransportSenderInput.TransportSenderMEKDistributionSingleRecipient: ...
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    def __init__(
+        self,
+        *,
+        mekDistribution: Global___DecryptMekForDistributionFromTransportSenderInput.TransportSenderMEKDistributionSingleRecipient | None = ...,
+        mekId: _builtins.bytes | None = ...,
+        rosterHash: _builtins.bytes | None = ...,
+        recipientEncSk: _builtins.bytes | None = ...,
+        version: _builtins.int | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "mekDistribution", b"mekDistribution", "mekId", b"mekId", "recipientEncSk", b"recipientEncSk", "rosterHash", b"rosterHash", "version", b"version"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "mekDistribution", b"mekDistribution", "mekId", b"mekId", "recipientEncSk", b"recipientEncSk", "rosterHash", b"rosterHash", "version", b"version"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptMekForDistributionFromTransportSenderInput: _TypeAlias = DecryptMekForDistributionFromTransportSenderInput  # noqa: Y015
+
+@_typing.final
+class DecryptMekForDistributionFromTransportSenderResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___DecryptMekForDistributionFromTransportSenderSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___DecryptMekForDistributionFromTransportSenderSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___DecryptMekForDistributionFromTransportSenderResult: _TypeAlias = DecryptMekForDistributionFromTransportSenderResult  # noqa: Y015
+
+@_typing.final
+class DecryptMekForDistributionFromTransportSenderSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MEK_FIELD_NUMBER: _builtins.int
+    mek: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mek: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptMekForDistributionFromTransportSenderSuccess: _TypeAlias = DecryptMekForDistributionFromTransportSenderSuccess  # noqa: Y015
+
+@_typing.final
+class DecryptMekForDistributionInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    TOMAILBOXSK_FIELD_NUMBER: _builtins.int
+    FROMPK_FIELD_NUMBER: _builtins.int
+    MEKID_FIELD_NUMBER: _builtins.int
+    SENDEREPOCHHEAD_FIELD_NUMBER: _builtins.int
+    ROSTERHASH_FIELD_NUMBER: _builtins.int
+    CIPHERTEXT_FIELD_NUMBER: _builtins.int
+    TOEPOCHHEAD_FIELD_NUMBER: _builtins.int
+    MEKENCRYPTIONVERSION_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    toMailboxSk: _builtins.bytes
+    fromPk: _builtins.bytes
+    mekId: _builtins.bytes
+    senderEpochHead: _builtins.bytes
+    rosterHash: _builtins.bytes
+    ciphertext: _builtins.bytes
+    toEpochHead: _builtins.bytes
+    mekEncryptionVersion: _builtins.int
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    def __init__(
+        self,
+        *,
+        toMailboxSk: _builtins.bytes | None = ...,
+        fromPk: _builtins.bytes | None = ...,
+        mekId: _builtins.bytes | None = ...,
+        senderEpochHead: _builtins.bytes | None = ...,
+        rosterHash: _builtins.bytes | None = ...,
+        ciphertext: _builtins.bytes | None = ...,
+        toEpochHead: _builtins.bytes | None = ...,
+        mekEncryptionVersion: _builtins.int | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "conf", b"conf", "fromPk", b"fromPk", "mekEncryptionVersion", b"mekEncryptionVersion", "mekId", b"mekId", "rosterHash", b"rosterHash", "senderEpochHead", b"senderEpochHead", "toEpochHead", b"toEpochHead", "toMailboxSk", b"toMailboxSk"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "conf", b"conf", "fromPk", b"fromPk", "mekEncryptionVersion", b"mekEncryptionVersion", "mekId", b"mekId", "rosterHash", b"rosterHash", "senderEpochHead", b"senderEpochHead", "toEpochHead", b"toEpochHead", "toMailboxSk", b"toMailboxSk"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptMekForDistributionInput: _TypeAlias = DecryptMekForDistributionInput  # noqa: Y015
+
+@_typing.final
+class DecryptMekForDistributionResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___DecryptMekForDistributionSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___DecryptMekForDistributionSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___DecryptMekForDistributionResult: _TypeAlias = DecryptMekForDistributionResult  # noqa: Y015
+
+@_typing.final
+class DecryptMekForDistributionSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MEK_FIELD_NUMBER: _builtins.int
+    mek: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mek: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptMekForDistributionSuccess: _TypeAlias = DecryptMekForDistributionSuccess  # noqa: Y015
+
+@_typing.final
+class DecryptMessageInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    EPOCHANONID_FIELD_NUMBER: _builtins.int
+    THREADID_FIELD_NUMBER: _builtins.int
+    ENCRYPTIONVERSION_FIELD_NUMBER: _builtins.int
+    CIPHERTEXT_FIELD_NUMBER: _builtins.int
+    epochRootKey: _builtins.bytes
+    epochAnonId: _builtins.bytes
+    threadId: _builtins.str
+    encryptionVersion: _builtins.int
+    ciphertext: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        epochRootKey: _builtins.bytes | None = ...,
+        epochAnonId: _builtins.bytes | None = ...,
+        threadId: _builtins.str | None = ...,
+        encryptionVersion: _builtins.int | None = ...,
+        ciphertext: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "encryptionVersion", b"encryptionVersion", "epochAnonId", b"epochAnonId", "epochRootKey", b"epochRootKey", "threadId", b"threadId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "encryptionVersion", b"encryptionVersion", "epochAnonId", b"epochAnonId", "epochRootKey", b"epochRootKey", "threadId", b"threadId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptMessageInput: _TypeAlias = DecryptMessageInput  # noqa: Y015
+
+@_typing.final
+class DecryptMessageOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PLAINTEXTPAYLOAD_FIELD_NUMBER: _builtins.int
+    ERROR_FIELD_NUMBER: _builtins.int
+    plaintextPayload: _builtins.bytes
+    error: _builtins.str
+    def __init__(
+        self,
+        *,
+        plaintextPayload: _builtins.bytes | None = ...,
+        error: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["error", b"error", "plaintextPayload", b"plaintextPayload"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["error", b"error", "plaintextPayload", b"plaintextPayload"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptMessageOutput: _TypeAlias = DecryptMessageOutput  # noqa: Y015
+
+@_typing.final
+class DecryptSelfMmkDistributionInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTEDMMK_FIELD_NUMBER: _builtins.int
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    MAILBOXHEADHASH_FIELD_NUMBER: _builtins.int
+    encryptedMmk: _builtins.bytes
+    exportRootKey: _builtins.bytes
+    mailboxHeadHash: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        encryptedMmk: _builtins.bytes | None = ...,
+        exportRootKey: _builtins.bytes | None = ...,
+        mailboxHeadHash: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedMmk", b"encryptedMmk", "exportRootKey", b"exportRootKey", "mailboxHeadHash", b"mailboxHeadHash"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedMmk", b"encryptedMmk", "exportRootKey", b"exportRootKey", "mailboxHeadHash", b"mailboxHeadHash"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptSelfMmkDistributionInput: _TypeAlias = DecryptSelfMmkDistributionInput  # noqa: Y015
+
+@_typing.final
+class DecryptSelfMmkDistributionResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___DecryptSelfMmkDistributionSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___DecryptSelfMmkDistributionSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___DecryptSelfMmkDistributionResult: _TypeAlias = DecryptSelfMmkDistributionResult  # noqa: Y015
+
+@_typing.final
+class DecryptSelfMmkDistributionSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MMKSEED_FIELD_NUMBER: _builtins.int
+    mmkSeed: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mmkSeed: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mmkSeed", b"mmkSeed"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mmkSeed", b"mmkSeed"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DecryptSelfMmkDistributionSuccess: _TypeAlias = DecryptSelfMmkDistributionSuccess  # noqa: Y015
+
+@_typing.final
+class DeriveAttachmentAccessTokenSecretInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MEDIAKEY_FIELD_NUMBER: _builtins.int
+    mediaKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mediaKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mediaKey", b"mediaKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mediaKey", b"mediaKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveAttachmentAccessTokenSecretInput: _TypeAlias = DeriveAttachmentAccessTokenSecretInput  # noqa: Y015
+
+@_typing.final
+class DeriveAttachmentAccessTokenSecretResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ATTACHMENTACCESSTOKENSECRET_FIELD_NUMBER: _builtins.int
+    attachmentAccessTokenSecret: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        attachmentAccessTokenSecret: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["attachmentAccessTokenSecret", b"attachmentAccessTokenSecret"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attachmentAccessTokenSecret", b"attachmentAccessTokenSecret"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveAttachmentAccessTokenSecretResult: _TypeAlias = DeriveAttachmentAccessTokenSecretResult  # noqa: Y015
+
+@_typing.final
+class DeriveAttachmentPrimaryKeySecretInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MEDIAKEY_FIELD_NUMBER: _builtins.int
+    mediaKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mediaKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mediaKey", b"mediaKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mediaKey", b"mediaKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveAttachmentPrimaryKeySecretInput: _TypeAlias = DeriveAttachmentPrimaryKeySecretInput  # noqa: Y015
+
+@_typing.final
+class DeriveAttachmentPrimaryKeySecretResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ATTACHMENTPRIMARYKEYSECRET_FIELD_NUMBER: _builtins.int
+    attachmentPrimaryKeySecret: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        attachmentPrimaryKeySecret: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["attachmentPrimaryKeySecret", b"attachmentPrimaryKeySecret"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attachmentPrimaryKeySecret", b"attachmentPrimaryKeySecret"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveAttachmentPrimaryKeySecretResult: _TypeAlias = DeriveAttachmentPrimaryKeySecretResult  # noqa: Y015
+
+@_typing.final
+class DeriveMailboxAuthKeypairInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    exportRootKey: _builtins.bytes
+    epochNumber: _builtins.int
+    def __init__(
+        self,
+        *,
+        exportRootKey: _builtins.bytes | None = ...,
+        epochNumber: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMailboxAuthKeypairInput: _TypeAlias = DeriveMailboxAuthKeypairInput  # noqa: Y015
+
+@_typing.final
+class DeriveMailboxAuthKeypairResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MAILBOXAUTHPUBLICKEY_FIELD_NUMBER: _builtins.int
+    MAILBOXAUTHPRIVATEKEY_FIELD_NUMBER: _builtins.int
+    mailboxAuthPublicKey: _builtins.bytes
+    mailboxAuthPrivateKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mailboxAuthPublicKey: _builtins.bytes | None = ...,
+        mailboxAuthPrivateKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mailboxAuthPrivateKey", b"mailboxAuthPrivateKey", "mailboxAuthPublicKey", b"mailboxAuthPublicKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mailboxAuthPrivateKey", b"mailboxAuthPrivateKey", "mailboxAuthPublicKey", b"mailboxAuthPublicKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMailboxAuthKeypairResult: _TypeAlias = DeriveMailboxAuthKeypairResult  # noqa: Y015
+
+@_typing.final
+class DeriveMailboxEncryptionKeypairInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    exportRootKey: _builtins.bytes
+    epochNumber: _builtins.int
+    def __init__(
+        self,
+        *,
+        exportRootKey: _builtins.bytes | None = ...,
+        epochNumber: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMailboxEncryptionKeypairInput: _TypeAlias = DeriveMailboxEncryptionKeypairInput  # noqa: Y015
+
+@_typing.final
+class DeriveMailboxEncryptionKeypairResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MAILBOXENCRYPTIONPUBLICKEY_FIELD_NUMBER: _builtins.int
+    MAILBOXENCRYPTIONPRIVATEKEY_FIELD_NUMBER: _builtins.int
+    mailboxEncryptionPublicKey: _builtins.bytes
+    mailboxEncryptionPrivateKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mailboxEncryptionPublicKey: _builtins.bytes | None = ...,
+        mailboxEncryptionPrivateKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mailboxEncryptionPrivateKey", b"mailboxEncryptionPrivateKey", "mailboxEncryptionPublicKey", b"mailboxEncryptionPublicKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mailboxEncryptionPrivateKey", b"mailboxEncryptionPrivateKey", "mailboxEncryptionPublicKey", b"mailboxEncryptionPublicKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMailboxEncryptionKeypairResult: _TypeAlias = DeriveMailboxEncryptionKeypairResult  # noqa: Y015
+
+@_typing.final
+class DeriveMailboxSigningKeypairInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    exportRootKey: _builtins.bytes
+    epochNumber: _builtins.int
+    def __init__(
+        self,
+        *,
+        exportRootKey: _builtins.bytes | None = ...,
+        epochNumber: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMailboxSigningKeypairInput: _TypeAlias = DeriveMailboxSigningKeypairInput  # noqa: Y015
+
+@_typing.final
+class DeriveMailboxSigningKeypairResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___DeriveMailboxSigningKeypairSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___DeriveMailboxSigningKeypairSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___DeriveMailboxSigningKeypairResult: _TypeAlias = DeriveMailboxSigningKeypairResult  # noqa: Y015
+
+@_typing.final
+class DeriveMailboxSigningKeypairSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MAILBOXSIGNINGPUBLICKEY_FIELD_NUMBER: _builtins.int
+    MAILBOXSIGNINGPRIVATEKEY_FIELD_NUMBER: _builtins.int
+    mailboxSigningPublicKey: _builtins.bytes
+    mailboxSigningPrivateKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mailboxSigningPublicKey: _builtins.bytes | None = ...,
+        mailboxSigningPrivateKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mailboxSigningPrivateKey", b"mailboxSigningPrivateKey", "mailboxSigningPublicKey", b"mailboxSigningPublicKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mailboxSigningPrivateKey", b"mailboxSigningPrivateKey", "mailboxSigningPublicKey", b"mailboxSigningPublicKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMailboxSigningKeypairSuccess: _TypeAlias = DeriveMailboxSigningKeypairSuccess  # noqa: Y015
+
+@_typing.final
+class DeriveMessageKeyInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    EPOCHANONID_FIELD_NUMBER: _builtins.int
+    THREADID_FIELD_NUMBER: _builtins.int
+    epochRootKey: _builtins.bytes
+    epochAnonId: _builtins.bytes
+    threadId: _builtins.str
+    def __init__(
+        self,
+        *,
+        epochRootKey: _builtins.bytes | None = ...,
+        epochAnonId: _builtins.bytes | None = ...,
+        threadId: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochAnonId", b"epochAnonId", "epochRootKey", b"epochRootKey", "threadId", b"threadId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochAnonId", b"epochAnonId", "epochRootKey", b"epochRootKey", "threadId", b"threadId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMessageKeyInput: _TypeAlias = DeriveMessageKeyInput  # noqa: Y015
+
+@_typing.final
+class DeriveMessageKeyOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MESSAGEKEY_FIELD_NUMBER: _builtins.int
+    ERROR_FIELD_NUMBER: _builtins.int
+    messageKey: _builtins.bytes
+    error: _builtins.str
+    def __init__(
+        self,
+        *,
+        messageKey: _builtins.bytes | None = ...,
+        error: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["error", b"error", "messageKey", b"messageKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["error", b"error", "messageKey", b"messageKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMessageKeyOutput: _TypeAlias = DeriveMessageKeyOutput  # noqa: Y015
+
+@_typing.final
+class DeriveMessagingMailboxKeypairsInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MMKSEED_FIELD_NUMBER: _builtins.int
+    mmkSeed: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mmkSeed: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mmkSeed", b"mmkSeed"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mmkSeed", b"mmkSeed"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMessagingMailboxKeypairsInput: _TypeAlias = DeriveMessagingMailboxKeypairsInput  # noqa: Y015
+
+@_typing.final
+class DeriveMessagingMailboxKeypairsResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___DeriveMessagingMailboxKeypairsSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___DeriveMessagingMailboxKeypairsSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___DeriveMessagingMailboxKeypairsResult: _TypeAlias = DeriveMessagingMailboxKeypairsResult  # noqa: Y015
+
+@_typing.final
+class DeriveMessagingMailboxKeypairsSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCSK_FIELD_NUMBER: _builtins.int
+    ENCPK_FIELD_NUMBER: _builtins.int
+    AUTHSK_FIELD_NUMBER: _builtins.int
+    AUTHPK_FIELD_NUMBER: _builtins.int
+    encSk: _builtins.bytes
+    encPk: _builtins.bytes
+    authSk: _builtins.bytes
+    authPk: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        encSk: _builtins.bytes | None = ...,
+        encPk: _builtins.bytes | None = ...,
+        authSk: _builtins.bytes | None = ...,
+        authPk: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "encPk", b"encPk", "encSk", b"encSk"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "encPk", b"encPk", "encSk", b"encSk"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeriveMessagingMailboxKeypairsSuccess: _TypeAlias = DeriveMessagingMailboxKeypairsSuccess  # noqa: Y015
+
+@_typing.final
+class DetachedDevicePublicData(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    DEVICEID_FIELD_NUMBER: _builtins.int
+    NAME_FIELD_NUMBER: _builtins.int
+    SIGPK_FIELD_NUMBER: _builtins.int
+    AUTHPK_FIELD_NUMBER: _builtins.int
+    ENCPK_FIELD_NUMBER: _builtins.int
+    SIGNATURE_FIELD_NUMBER: _builtins.int
+    deviceId: _builtins.int
+    name: _builtins.bytes
+    sigPk: _builtins.bytes
+    authPk: _builtins.bytes
+    encPk: _builtins.bytes
+    signature: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        deviceId: _builtins.int | None = ...,
+        name: _builtins.bytes | None = ...,
+        sigPk: _builtins.bytes | None = ...,
+        authPk: _builtins.bytes | None = ...,
+        encPk: _builtins.bytes | None = ...,
+        signature: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "deviceId", b"deviceId", "encPk", b"encPk", "name", b"name", "sigPk", b"sigPk", "signature", b"signature"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "deviceId", b"deviceId", "encPk", b"encPk", "name", b"name", "sigPk", b"sigPk", "signature", b"signature"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DetachedDevicePublicData: _TypeAlias = DetachedDevicePublicData  # noqa: Y015
 
 @_typing.final
 class DeviceCapabilities(_message.Message):
@@ -7179,6 +8406,22 @@ class DeviceCapabilities(_message.Message):
     SENDER_ENABLED: DeviceCapabilities.MemberNameTagPrimarySupport.ValueType  # 2
 
     @_typing.final
+    class AiFbidMigration(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        CHATDBMIGRATIONTIMESTAMP_FIELD_NUMBER: _builtins.int
+        chatDbMigrationTimestamp: _builtins.int
+        def __init__(
+            self,
+            *,
+            chatDbMigrationTimestamp: _builtins.int | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["chatDbMigrationTimestamp", b"chatDbMigrationTimestamp"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["chatDbMigrationTimestamp", b"chatDbMigrationTimestamp"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class AiThread(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -7210,6 +8453,22 @@ class DeviceCapabilities(_message.Message):
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
+    class BizAiSettingsSync(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        HANDOFFREMOVALTIMINGENABLED_FIELD_NUMBER: _builtins.int
+        handoffRemovalTimingEnabled: _builtins.bool
+        def __init__(
+            self,
+            *,
+            handoffRemovalTimingEnabled: _builtins.bool | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["handoffRemovalTimingEnabled", b"handoffRemovalTimingEnabled"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["handoffRemovalTimingEnabled", b"handoffRemovalTimingEnabled"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class BusinessBroadcast(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -7235,6 +8494,22 @@ class DeviceCapabilities(_message.Message):
         _HasFieldArgType: _TypeAlias = _typing.Literal["campaignSyncEnabled", b"campaignSyncEnabled", "companionSupportEnabled", b"companionSupportEnabled", "importListEnabled", b"importListEnabled", "insightsSyncEnabled", b"insightsSyncEnabled", "recipientLimit", b"recipientLimit"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
         _ClearFieldArgType: _TypeAlias = _typing.Literal["campaignSyncEnabled", b"campaignSyncEnabled", "companionSupportEnabled", b"companionSupportEnabled", "importListEnabled", b"importListEnabled", "insightsSyncEnabled", b"insightsSyncEnabled", "recipientLimit", b"recipientLimit"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class ContactRefresh(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        REFRESHSUPPORTED_FIELD_NUMBER: _builtins.int
+        refreshSupported: _builtins.bool
+        def __init__(
+            self,
+            *,
+            refreshSupported: _builtins.bool | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["refreshSupported", b"refreshSupported"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["refreshSupported", b"refreshSupported"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -7275,6 +8550,9 @@ class DeviceCapabilities(_message.Message):
     USERHASAVATAR_FIELD_NUMBER: _builtins.int
     MEMBERNAMETAGPRIMARYSUPPORT_FIELD_NUMBER: _builtins.int
     AITHREAD_FIELD_NUMBER: _builtins.int
+    AIFBIDMIGRATION_FIELD_NUMBER: _builtins.int
+    BIZAISETTINGSSYNC_FIELD_NUMBER: _builtins.int
+    CONTACTREFRESH_FIELD_NUMBER: _builtins.int
     chatLockSupportLevel: Global___DeviceCapabilities.ChatLockSupportLevel.ValueType
     memberNameTagPrimarySupport: Global___DeviceCapabilities.MemberNameTagPrimarySupport.ValueType
     @_builtins.property
@@ -7285,6 +8563,12 @@ class DeviceCapabilities(_message.Message):
     def userHasAvatar(self) -> Global___DeviceCapabilities.UserHasAvatar: ...
     @_builtins.property
     def aiThread(self) -> Global___DeviceCapabilities.AiThread: ...
+    @_builtins.property
+    def aiFbidMigration(self) -> Global___DeviceCapabilities.AiFbidMigration: ...
+    @_builtins.property
+    def bizAiSettingsSync(self) -> Global___DeviceCapabilities.BizAiSettingsSync: ...
+    @_builtins.property
+    def contactRefresh(self) -> Global___DeviceCapabilities.ContactRefresh: ...
     def __init__(
         self,
         *,
@@ -7294,10 +8578,13 @@ class DeviceCapabilities(_message.Message):
         userHasAvatar: Global___DeviceCapabilities.UserHasAvatar | None = ...,
         memberNameTagPrimarySupport: Global___DeviceCapabilities.MemberNameTagPrimarySupport.ValueType | None = ...,
         aiThread: Global___DeviceCapabilities.AiThread | None = ...,
+        aiFbidMigration: Global___DeviceCapabilities.AiFbidMigration | None = ...,
+        bizAiSettingsSync: Global___DeviceCapabilities.BizAiSettingsSync | None = ...,
+        contactRefresh: Global___DeviceCapabilities.ContactRefresh | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["aiThread", b"aiThread", "businessBroadcast", b"businessBroadcast", "chatLockSupportLevel", b"chatLockSupportLevel", "lidMigration", b"lidMigration", "memberNameTagPrimarySupport", b"memberNameTagPrimarySupport", "userHasAvatar", b"userHasAvatar"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["aiFbidMigration", b"aiFbidMigration", "aiThread", b"aiThread", "bizAiSettingsSync", b"bizAiSettingsSync", "businessBroadcast", b"businessBroadcast", "chatLockSupportLevel", b"chatLockSupportLevel", "contactRefresh", b"contactRefresh", "lidMigration", b"lidMigration", "memberNameTagPrimarySupport", b"memberNameTagPrimarySupport", "userHasAvatar", b"userHasAvatar"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["aiThread", b"aiThread", "businessBroadcast", b"businessBroadcast", "chatLockSupportLevel", b"chatLockSupportLevel", "lidMigration", b"lidMigration", "memberNameTagPrimarySupport", b"memberNameTagPrimarySupport", "userHasAvatar", b"userHasAvatar"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["aiFbidMigration", b"aiFbidMigration", "aiThread", b"aiThread", "bizAiSettingsSync", b"bizAiSettingsSync", "businessBroadcast", b"businessBroadcast", "chatLockSupportLevel", b"chatLockSupportLevel", "contactRefresh", b"contactRefresh", "lidMigration", b"lidMigration", "memberNameTagPrimarySupport", b"memberNameTagPrimarySupport", "userHasAvatar", b"userHasAvatar"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___DeviceCapabilities: _TypeAlias = DeviceCapabilities  # noqa: Y015
@@ -7365,6 +8652,52 @@ class DeviceListMetadata(_message.Message):
 Global___DeviceListMetadata: _TypeAlias = DeviceListMetadata  # noqa: Y015
 
 @_typing.final
+class DeviceOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PUBLICKEY_FIELD_NUMBER: _builtins.int
+    EPOCHAUTHPUBLICKEY_FIELD_NUMBER: _builtins.int
+    EPOCHAUTHPUBLICKEYSIG_FIELD_NUMBER: _builtins.int
+    EPOCHSTORAGEPUBLICKEY_FIELD_NUMBER: _builtins.int
+    EPOCHSTORAGEPUBLICKEYSIG_FIELD_NUMBER: _builtins.int
+    SUPPORTEDENCRYPTIONVERSIONS_FIELD_NUMBER: _builtins.int
+    ENCRYPTIONVERSIONSIGNATURE_FIELD_NUMBER: _builtins.int
+    CLIENTVERSION_FIELD_NUMBER: _builtins.int
+    OCMFCLIENTSTATE_FIELD_NUMBER: _builtins.int
+    EPOCHSTORAGEPRIVATEKEY_FIELD_NUMBER: _builtins.int
+    publicKey: _builtins.bytes
+    epochAuthPublicKey: _builtins.bytes
+    epochAuthPublicKeySig: _builtins.bytes
+    epochStoragePublicKey: _builtins.bytes
+    epochStoragePublicKeySig: _builtins.bytes
+    encryptionVersionSignature: _builtins.bytes
+    clientVersion: _builtins.int
+    ocmfClientState: _builtins.bytes
+    epochStoragePrivateKey: _builtins.bytes
+    @_builtins.property
+    def supportedEncryptionVersions(self) -> _containers.RepeatedScalarFieldContainer[_builtins.int]: ...
+    def __init__(
+        self,
+        *,
+        publicKey: _builtins.bytes | None = ...,
+        epochAuthPublicKey: _builtins.bytes | None = ...,
+        epochAuthPublicKeySig: _builtins.bytes | None = ...,
+        epochStoragePublicKey: _builtins.bytes | None = ...,
+        epochStoragePublicKeySig: _builtins.bytes | None = ...,
+        supportedEncryptionVersions: _abc.Iterable[_builtins.int] | None = ...,
+        encryptionVersionSignature: _builtins.bytes | None = ...,
+        clientVersion: _builtins.int | None = ...,
+        ocmfClientState: _builtins.bytes | None = ...,
+        epochStoragePrivateKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["clientVersion", b"clientVersion", "encryptionVersionSignature", b"encryptionVersionSignature", "epochAuthPublicKey", b"epochAuthPublicKey", "epochAuthPublicKeySig", b"epochAuthPublicKeySig", "epochStoragePrivateKey", b"epochStoragePrivateKey", "epochStoragePublicKey", b"epochStoragePublicKey", "epochStoragePublicKeySig", b"epochStoragePublicKeySig", "ocmfClientState", b"ocmfClientState", "publicKey", b"publicKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["clientVersion", b"clientVersion", "encryptionVersionSignature", b"encryptionVersionSignature", "epochAuthPublicKey", b"epochAuthPublicKey", "epochAuthPublicKeySig", b"epochAuthPublicKeySig", "epochStoragePrivateKey", b"epochStoragePrivateKey", "epochStoragePublicKey", b"epochStoragePublicKey", "epochStoragePublicKeySig", b"epochStoragePublicKeySig", "ocmfClientState", b"ocmfClientState", "publicKey", b"publicKey", "supportedEncryptionVersions", b"supportedEncryptionVersions"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___DeviceOutput: _TypeAlias = DeviceOutput  # noqa: Y015
+
+@_typing.final
 class DeviceProps(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -7399,6 +8732,7 @@ class DeviceProps(_message.Message):
         VR: DeviceProps._PlatformType.ValueType  # 22
         CLOUD_API: DeviceProps._PlatformType.ValueType  # 23
         SMARTGLASSES: DeviceProps._PlatformType.ValueType  # 24
+        WAIL: DeviceProps._PlatformType.ValueType  # 25
 
     class PlatformType(_PlatformType, metaclass=_PlatformTypeEnumTypeWrapper): ...
     UNKNOWN: DeviceProps.PlatformType.ValueType  # 0
@@ -7426,6 +8760,7 @@ class DeviceProps(_message.Message):
     VR: DeviceProps.PlatformType.ValueType  # 22
     CLOUD_API: DeviceProps.PlatformType.ValueType  # 23
     SMARTGLASSES: DeviceProps.PlatformType.ValueType  # 24
+    WAIL: DeviceProps.PlatformType.ValueType  # 25
 
     @_typing.final
     class AppVersion(_message.Message):
@@ -7483,6 +8818,7 @@ class DeviceProps(_message.Message):
         SUPPORTHATCHHISTORY_FIELD_NUMBER: _builtins.int
         SUPPORTEDBOTCHANNELFBIDS_FIELD_NUMBER: _builtins.int
         SUPPORTINLINECONTACTS_FIELD_NUMBER: _builtins.int
+        SUPPORTNEWSLETTER_FIELD_NUMBER: _builtins.int
         fullSyncDaysLimit: _builtins.int
         fullSyncSizeMbLimit: _builtins.int
         storageQuotaMb: _builtins.int
@@ -7506,6 +8842,7 @@ class DeviceProps(_message.Message):
         supportManusHistory: _builtins.bool
         supportHatchHistory: _builtins.bool
         supportInlineContacts: _builtins.bool
+        supportNewsletter: _builtins.bool
         @_builtins.property
         def supportedBotChannelFbids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
         def __init__(
@@ -7535,10 +8872,11 @@ class DeviceProps(_message.Message):
             supportHatchHistory: _builtins.bool | None = ...,
             supportedBotChannelFbids: _abc.Iterable[_builtins.str] | None = ...,
             supportInlineContacts: _builtins.bool | None = ...,
+            supportNewsletter: _builtins.bool | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["completeOnDemandReady", b"completeOnDemandReady", "fullSyncDaysLimit", b"fullSyncDaysLimit", "fullSyncSizeMbLimit", b"fullSyncSizeMbLimit", "initialSyncMaxMessagesPerChat", b"initialSyncMaxMessagesPerChat", "inlineInitialPayloadInE2EeMsg", b"inlineInitialPayloadInE2EeMsg", "onDemandReady", b"onDemandReady", "recentSyncDaysLimit", b"recentSyncDaysLimit", "storageQuotaMb", b"storageQuotaMb", "supportAddOnHistorySyncMigration", b"supportAddOnHistorySyncMigration", "supportBizHostedMsg", b"supportBizHostedMsg", "supportBotUserAgentChatHistory", b"supportBotUserAgentChatHistory", "supportCagReactionsAndPolls", b"supportCagReactionsAndPolls", "supportCallLogHistory", b"supportCallLogHistory", "supportFbidBotChatHistory", b"supportFbidBotChatHistory", "supportGroupHistory", b"supportGroupHistory", "supportGuestChat", b"supportGuestChat", "supportHatchHistory", b"supportHatchHistory", "supportHostedGroupMsg", b"supportHostedGroupMsg", "supportInlineContacts", b"supportInlineContacts", "supportManusHistory", b"supportManusHistory", "supportMessageAssociation", b"supportMessageAssociation", "supportRecentSyncChunkMessageCountTuning", b"supportRecentSyncChunkMessageCountTuning", "thumbnailSyncDaysLimit", b"thumbnailSyncDaysLimit"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["completeOnDemandReady", b"completeOnDemandReady", "fullSyncDaysLimit", b"fullSyncDaysLimit", "fullSyncSizeMbLimit", b"fullSyncSizeMbLimit", "initialSyncMaxMessagesPerChat", b"initialSyncMaxMessagesPerChat", "inlineInitialPayloadInE2EeMsg", b"inlineInitialPayloadInE2EeMsg", "onDemandReady", b"onDemandReady", "recentSyncDaysLimit", b"recentSyncDaysLimit", "storageQuotaMb", b"storageQuotaMb", "supportAddOnHistorySyncMigration", b"supportAddOnHistorySyncMigration", "supportBizHostedMsg", b"supportBizHostedMsg", "supportBotUserAgentChatHistory", b"supportBotUserAgentChatHistory", "supportCagReactionsAndPolls", b"supportCagReactionsAndPolls", "supportCallLogHistory", b"supportCallLogHistory", "supportFbidBotChatHistory", b"supportFbidBotChatHistory", "supportGroupHistory", b"supportGroupHistory", "supportGuestChat", b"supportGuestChat", "supportHatchHistory", b"supportHatchHistory", "supportHostedGroupMsg", b"supportHostedGroupMsg", "supportInlineContacts", b"supportInlineContacts", "supportManusHistory", b"supportManusHistory", "supportMessageAssociation", b"supportMessageAssociation", "supportNewsletter", b"supportNewsletter", "supportRecentSyncChunkMessageCountTuning", b"supportRecentSyncChunkMessageCountTuning", "thumbnailSyncDaysLimit", b"thumbnailSyncDaysLimit"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["completeOnDemandReady", b"completeOnDemandReady", "fullSyncDaysLimit", b"fullSyncDaysLimit", "fullSyncSizeMbLimit", b"fullSyncSizeMbLimit", "initialSyncMaxMessagesPerChat", b"initialSyncMaxMessagesPerChat", "inlineInitialPayloadInE2EeMsg", b"inlineInitialPayloadInE2EeMsg", "onDemandReady", b"onDemandReady", "recentSyncDaysLimit", b"recentSyncDaysLimit", "storageQuotaMb", b"storageQuotaMb", "supportAddOnHistorySyncMigration", b"supportAddOnHistorySyncMigration", "supportBizHostedMsg", b"supportBizHostedMsg", "supportBotUserAgentChatHistory", b"supportBotUserAgentChatHistory", "supportCagReactionsAndPolls", b"supportCagReactionsAndPolls", "supportCallLogHistory", b"supportCallLogHistory", "supportFbidBotChatHistory", b"supportFbidBotChatHistory", "supportGroupHistory", b"supportGroupHistory", "supportGuestChat", b"supportGuestChat", "supportHatchHistory", b"supportHatchHistory", "supportHostedGroupMsg", b"supportHostedGroupMsg", "supportInlineContacts", b"supportInlineContacts", "supportManusHistory", b"supportManusHistory", "supportMessageAssociation", b"supportMessageAssociation", "supportRecentSyncChunkMessageCountTuning", b"supportRecentSyncChunkMessageCountTuning", "supportedBotChannelFbids", b"supportedBotChannelFbids", "thumbnailSyncDaysLimit", b"thumbnailSyncDaysLimit"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["completeOnDemandReady", b"completeOnDemandReady", "fullSyncDaysLimit", b"fullSyncDaysLimit", "fullSyncSizeMbLimit", b"fullSyncSizeMbLimit", "initialSyncMaxMessagesPerChat", b"initialSyncMaxMessagesPerChat", "inlineInitialPayloadInE2EeMsg", b"inlineInitialPayloadInE2EeMsg", "onDemandReady", b"onDemandReady", "recentSyncDaysLimit", b"recentSyncDaysLimit", "storageQuotaMb", b"storageQuotaMb", "supportAddOnHistorySyncMigration", b"supportAddOnHistorySyncMigration", "supportBizHostedMsg", b"supportBizHostedMsg", "supportBotUserAgentChatHistory", b"supportBotUserAgentChatHistory", "supportCagReactionsAndPolls", b"supportCagReactionsAndPolls", "supportCallLogHistory", b"supportCallLogHistory", "supportFbidBotChatHistory", b"supportFbidBotChatHistory", "supportGroupHistory", b"supportGroupHistory", "supportGuestChat", b"supportGuestChat", "supportHatchHistory", b"supportHatchHistory", "supportHostedGroupMsg", b"supportHostedGroupMsg", "supportInlineContacts", b"supportInlineContacts", "supportManusHistory", b"supportManusHistory", "supportMessageAssociation", b"supportMessageAssociation", "supportNewsletter", b"supportNewsletter", "supportRecentSyncChunkMessageCountTuning", b"supportRecentSyncChunkMessageCountTuning", "supportedBotChannelFbids", b"supportedBotChannelFbids", "thumbnailSyncDaysLimit", b"thumbnailSyncDaysLimit"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     OS_FIELD_NUMBER: _builtins.int
@@ -7740,6 +9078,248 @@ class EmbeddedMusic(_message.Message):
 Global___EmbeddedMusic: _TypeAlias = EmbeddedMusic  # noqa: Y015
 
 @_typing.final
+class EncryptMekForDistributionInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class MailboxAuthKP(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        SK_FIELD_NUMBER: _builtins.int
+        PK_FIELD_NUMBER: _builtins.int
+        sk: _builtins.bytes
+        pk: _builtins.bytes
+        def __init__(
+            self,
+            *,
+            sk: _builtins.bytes | None = ...,
+            pk: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["pk", b"pk", "sk", b"sk"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["pk", b"pk", "sk", b"sk"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    SENDEREPOCHHEAD_FIELD_NUMBER: _builtins.int
+    TOMAILBOXPK_FIELD_NUMBER: _builtins.int
+    FROMKEYPAIR_FIELD_NUMBER: _builtins.int
+    MEK_FIELD_NUMBER: _builtins.int
+    TOEPOCHHEAD_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    senderEpochHead: _builtins.bytes
+    toMailboxPk: _builtins.bytes
+    toEpochHead: _builtins.bytes
+    @_builtins.property
+    def fromKeypair(self) -> Global___EncryptMekForDistributionInput.MailboxAuthKP: ...
+    @_builtins.property
+    def mek(self) -> Global___MekBundle: ...
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    def __init__(
+        self,
+        *,
+        senderEpochHead: _builtins.bytes | None = ...,
+        toMailboxPk: _builtins.bytes | None = ...,
+        fromKeypair: Global___EncryptMekForDistributionInput.MailboxAuthKP | None = ...,
+        mek: Global___MekBundle | None = ...,
+        toEpochHead: _builtins.bytes | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "fromKeypair", b"fromKeypair", "mek", b"mek", "senderEpochHead", b"senderEpochHead", "toEpochHead", b"toEpochHead", "toMailboxPk", b"toMailboxPk"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "fromKeypair", b"fromKeypair", "mek", b"mek", "senderEpochHead", b"senderEpochHead", "toEpochHead", b"toEpochHead", "toMailboxPk", b"toMailboxPk"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EncryptMekForDistributionInput: _TypeAlias = EncryptMekForDistributionInput  # noqa: Y015
+
+@_typing.final
+class EncryptMekForDistributionResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    CIPHERTEXT_FIELD_NUMBER: _builtins.int
+    VERSION_FIELD_NUMBER: _builtins.int
+    ciphertext: _builtins.bytes
+    version: _builtins.int
+    def __init__(
+        self,
+        *,
+        ciphertext: _builtins.bytes | None = ...,
+        version: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "version", b"version"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "version", b"version"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EncryptMekForDistributionResult: _TypeAlias = EncryptMekForDistributionResult  # noqa: Y015
+
+@_typing.final
+class EncryptMeksForDistributionFromTransportSenderInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class TransportSigningKP(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        SK_FIELD_NUMBER: _builtins.int
+        PK_FIELD_NUMBER: _builtins.int
+        sk: _builtins.bytes
+        pk: _builtins.bytes
+        def __init__(
+            self,
+            *,
+            sk: _builtins.bytes | None = ...,
+            pk: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["pk", b"pk", "sk", b"sk"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["pk", b"pk", "sk", b"sk"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    MEK_FIELD_NUMBER: _builtins.int
+    TRANSPORTSIGNINGKP_FIELD_NUMBER: _builtins.int
+    RECIPIENTMAILBOXENCRYPTIONPKS_FIELD_NUMBER: _builtins.int
+    RECIPIENTEPOCHHEADS_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def mek(self) -> Global___MekBundle: ...
+    @_builtins.property
+    def transportSigningKp(self) -> Global___EncryptMeksForDistributionFromTransportSenderInput.TransportSigningKP: ...
+    @_builtins.property
+    def recipientMailboxEncryptionPks(self) -> _containers.RepeatedScalarFieldContainer[_builtins.bytes]: ...
+    @_builtins.property
+    def recipientEpochHeads(self) -> _containers.RepeatedScalarFieldContainer[_builtins.bytes]: ...
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    def __init__(
+        self,
+        *,
+        mek: Global___MekBundle | None = ...,
+        transportSigningKp: Global___EncryptMeksForDistributionFromTransportSenderInput.TransportSigningKP | None = ...,
+        recipientMailboxEncryptionPks: _abc.Iterable[_builtins.bytes] | None = ...,
+        recipientEpochHeads: _abc.Iterable[_builtins.bytes] | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "mek", b"mek", "transportSigningKp", b"transportSigningKp"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "mek", b"mek", "recipientEpochHeads", b"recipientEpochHeads", "recipientMailboxEncryptionPks", b"recipientMailboxEncryptionPks", "transportSigningKp", b"transportSigningKp"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EncryptMeksForDistributionFromTransportSenderInput: _TypeAlias = EncryptMeksForDistributionFromTransportSenderInput  # noqa: Y015
+
+@_typing.final
+class EncryptMeksForDistributionFromTransportSenderResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTEDMEKS_FIELD_NUMBER: _builtins.int
+    EPHEMERALENCRYPTIONPK_FIELD_NUMBER: _builtins.int
+    SIGNINGPK_FIELD_NUMBER: _builtins.int
+    SIGNATURE_FIELD_NUMBER: _builtins.int
+    VERSION_FIELD_NUMBER: _builtins.int
+    ephemeralEncryptionPk: _builtins.bytes
+    signingPk: _builtins.bytes
+    signature: _builtins.bytes
+    version: _builtins.int
+    @_builtins.property
+    def encryptedMeks(self) -> _containers.RepeatedScalarFieldContainer[_builtins.bytes]: ...
+    def __init__(
+        self,
+        *,
+        encryptedMeks: _abc.Iterable[_builtins.bytes] | None = ...,
+        ephemeralEncryptionPk: _builtins.bytes | None = ...,
+        signingPk: _builtins.bytes | None = ...,
+        signature: _builtins.bytes | None = ...,
+        version: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["ephemeralEncryptionPk", b"ephemeralEncryptionPk", "signature", b"signature", "signingPk", b"signingPk", "version", b"version"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedMeks", b"encryptedMeks", "ephemeralEncryptionPk", b"ephemeralEncryptionPk", "signature", b"signature", "signingPk", b"signingPk", "version", b"version"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EncryptMeksForDistributionFromTransportSenderResult: _TypeAlias = EncryptMeksForDistributionFromTransportSenderResult  # noqa: Y015
+
+@_typing.final
+class EncryptMessageInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    MAILBOXROOTKEY_FIELD_NUMBER: _builtins.int
+    ORFCLIENTSTATE_FIELD_NUMBER: _builtins.int
+    EPOCHANONID_FIELD_NUMBER: _builtins.int
+    EPOCHID_FIELD_NUMBER: _builtins.int
+    THREADID_FIELD_NUMBER: _builtins.int
+    WACANONICALUSERFBID_FIELD_NUMBER: _builtins.int
+    TIMESTAMPMS_FIELD_NUMBER: _builtins.int
+    BACKUPID_FIELD_NUMBER: _builtins.int
+    PLAINTEXTPAYLOAD_FIELD_NUMBER: _builtins.int
+    STANZAID_FIELD_NUMBER: _builtins.int
+    epochRootKey: _builtins.bytes
+    mailboxRootKey: _builtins.bytes
+    orfClientState: _builtins.bytes
+    epochAnonId: _builtins.bytes
+    epochId: _builtins.int
+    threadId: _builtins.str
+    waCanonicalUserFbid: _builtins.int
+    timestampMs: _builtins.int
+    backupId: _builtins.int
+    plaintextPayload: _builtins.bytes
+    stanzaId: _builtins.str
+    def __init__(
+        self,
+        *,
+        epochRootKey: _builtins.bytes | None = ...,
+        mailboxRootKey: _builtins.bytes | None = ...,
+        orfClientState: _builtins.bytes | None = ...,
+        epochAnonId: _builtins.bytes | None = ...,
+        epochId: _builtins.int | None = ...,
+        threadId: _builtins.str | None = ...,
+        waCanonicalUserFbid: _builtins.int | None = ...,
+        timestampMs: _builtins.int | None = ...,
+        backupId: _builtins.int | None = ...,
+        plaintextPayload: _builtins.bytes | None = ...,
+        stanzaId: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["backupId", b"backupId", "epochAnonId", b"epochAnonId", "epochId", b"epochId", "epochRootKey", b"epochRootKey", "mailboxRootKey", b"mailboxRootKey", "orfClientState", b"orfClientState", "plaintextPayload", b"plaintextPayload", "stanzaId", b"stanzaId", "threadId", b"threadId", "timestampMs", b"timestampMs", "waCanonicalUserFbid", b"waCanonicalUserFbid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["backupId", b"backupId", "epochAnonId", b"epochAnonId", "epochId", b"epochId", "epochRootKey", b"epochRootKey", "mailboxRootKey", b"mailboxRootKey", "orfClientState", b"orfClientState", "plaintextPayload", b"plaintextPayload", "stanzaId", b"stanzaId", "threadId", b"threadId", "timestampMs", b"timestampMs", "waCanonicalUserFbid", b"waCanonicalUserFbid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EncryptMessageInput: _TypeAlias = EncryptMessageInput  # noqa: Y015
+
+@_typing.final
+class EncryptMessageOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTEDPROTOBUF_FIELD_NUMBER: _builtins.int
+    ORFTHREADID_FIELD_NUMBER: _builtins.int
+    VALUESECRETREF_FIELD_NUMBER: _builtins.int
+    OFFLINETHREADINGID_FIELD_NUMBER: _builtins.int
+    TIMESTAMPMS_FIELD_NUMBER: _builtins.int
+    ERROR_FIELD_NUMBER: _builtins.int
+    encryptedProtobuf: _builtins.bytes
+    orfThreadId: _builtins.bytes
+    valueSecretRef: _builtins.str
+    offlineThreadingId: _builtins.int
+    timestampMs: _builtins.int
+    error: _builtins.str
+    def __init__(
+        self,
+        *,
+        encryptedProtobuf: _builtins.bytes | None = ...,
+        orfThreadId: _builtins.bytes | None = ...,
+        valueSecretRef: _builtins.str | None = ...,
+        offlineThreadingId: _builtins.int | None = ...,
+        timestampMs: _builtins.int | None = ...,
+        error: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedProtobuf", b"encryptedProtobuf", "error", b"error", "offlineThreadingId", b"offlineThreadingId", "orfThreadId", b"orfThreadId", "timestampMs", b"timestampMs", "valueSecretRef", b"valueSecretRef"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedProtobuf", b"encryptedProtobuf", "error", b"error", "offlineThreadingId", b"offlineThreadingId", "orfThreadId", b"orfThreadId", "timestampMs", b"timestampMs", "valueSecretRef", b"valueSecretRef"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EncryptMessageOutput: _TypeAlias = EncryptMessageOutput  # noqa: Y015
+
+@_typing.final
 class EncryptedPairingRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -7761,6 +9341,45 @@ class EncryptedPairingRequest(_message.Message):
 Global___EncryptedPairingRequest: _TypeAlias = EncryptedPairingRequest  # noqa: Y015
 
 @_typing.final
+class EncryptedSecretValuesOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTEDDEVICEPRIVATEKEY_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDOBLIVIOUSVALIDATIONTOKENBLOB_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDEPOCHSTORAGEPRIVATEKEY_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDOCMFCLIENTSTATE_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDORFCLIENTSTATEV2_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDMAILBOXROOTKEYBLOB_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDEPOCHANONID_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDEPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    encryptedDevicePrivateKey: _builtins.bytes
+    encryptedObliviousValidationTokenBlob: _builtins.bytes
+    encryptedEpochStoragePrivateKey: _builtins.bytes
+    encryptedOcmfClientState: _builtins.bytes
+    encryptedOrfClientStateV2: _builtins.bytes
+    encryptedMailboxRootKeyBlob: _builtins.bytes
+    encryptedEpochAnonId: _builtins.bytes
+    encryptedEpochRootKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        encryptedDevicePrivateKey: _builtins.bytes | None = ...,
+        encryptedObliviousValidationTokenBlob: _builtins.bytes | None = ...,
+        encryptedEpochStoragePrivateKey: _builtins.bytes | None = ...,
+        encryptedOcmfClientState: _builtins.bytes | None = ...,
+        encryptedOrfClientStateV2: _builtins.bytes | None = ...,
+        encryptedMailboxRootKeyBlob: _builtins.bytes | None = ...,
+        encryptedEpochAnonId: _builtins.bytes | None = ...,
+        encryptedEpochRootKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedDevicePrivateKey", b"encryptedDevicePrivateKey", "encryptedEpochAnonId", b"encryptedEpochAnonId", "encryptedEpochRootKey", b"encryptedEpochRootKey", "encryptedEpochStoragePrivateKey", b"encryptedEpochStoragePrivateKey", "encryptedMailboxRootKeyBlob", b"encryptedMailboxRootKeyBlob", "encryptedObliviousValidationTokenBlob", b"encryptedObliviousValidationTokenBlob", "encryptedOcmfClientState", b"encryptedOcmfClientState", "encryptedOrfClientStateV2", b"encryptedOrfClientStateV2"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedDevicePrivateKey", b"encryptedDevicePrivateKey", "encryptedEpochAnonId", b"encryptedEpochAnonId", "encryptedEpochRootKey", b"encryptedEpochRootKey", "encryptedEpochStoragePrivateKey", b"encryptedEpochStoragePrivateKey", "encryptedMailboxRootKeyBlob", b"encryptedMailboxRootKeyBlob", "encryptedObliviousValidationTokenBlob", b"encryptedObliviousValidationTokenBlob", "encryptedOcmfClientState", b"encryptedOcmfClientState", "encryptedOrfClientStateV2", b"encryptedOrfClientStateV2"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EncryptedSecretValuesOutput: _TypeAlias = EncryptedSecretValuesOutput  # noqa: Y015
+
+@_typing.final
 class EphemeralSetting(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -7780,6 +9399,96 @@ class EphemeralSetting(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___EphemeralSetting: _TypeAlias = EphemeralSetting  # noqa: Y015
+
+@_typing.final
+class Epoch0Output(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHFBID_FIELD_NUMBER: _builtins.int
+    EPOCHANONID_FIELD_NUMBER: _builtins.int
+    EPOCHDATA_FIELD_NUMBER: _builtins.int
+    WRAPPEDROOTKEYFORSELF_FIELD_NUMBER: _builtins.int
+    EPOCHSIGNATURE_FIELD_NUMBER: _builtins.int
+    EPOCHROOTKEYFINGERPRINT_FIELD_NUMBER: _builtins.int
+    EPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    epochFbid: _builtins.int
+    epochAnonId: _builtins.bytes
+    epochData: _builtins.bytes
+    wrappedRootKeyForSelf: _builtins.bytes
+    epochSignature: _builtins.bytes
+    epochRootKeyFingerprint: _builtins.bytes
+    epochRootKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        epochFbid: _builtins.int | None = ...,
+        epochAnonId: _builtins.bytes | None = ...,
+        epochData: _builtins.bytes | None = ...,
+        wrappedRootKeyForSelf: _builtins.bytes | None = ...,
+        epochSignature: _builtins.bytes | None = ...,
+        epochRootKeyFingerprint: _builtins.bytes | None = ...,
+        epochRootKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochAnonId", b"epochAnonId", "epochData", b"epochData", "epochFbid", b"epochFbid", "epochRootKey", b"epochRootKey", "epochRootKeyFingerprint", b"epochRootKeyFingerprint", "epochSignature", b"epochSignature", "wrappedRootKeyForSelf", b"wrappedRootKeyForSelf"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochAnonId", b"epochAnonId", "epochData", b"epochData", "epochFbid", b"epochFbid", "epochRootKey", b"epochRootKey", "epochRootKeyFingerprint", b"epochRootKeyFingerprint", "epochSignature", b"epochSignature", "wrappedRootKeyForSelf", b"wrappedRootKeyForSelf"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___Epoch0Output: _TypeAlias = Epoch0Output  # noqa: Y015
+
+@_typing.final
+class EpochPublicData(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    USERFBID_FIELD_NUMBER: _builtins.int
+    MAILBOXSIGNINGPK_FIELD_NUMBER: _builtins.int
+    MAILBOXENCRYPTIONPK_FIELD_NUMBER: _builtins.int
+    MAILBOXAUTHPK_FIELD_NUMBER: _builtins.int
+    PREVIOUSEPOCHHEAD_FIELD_NUMBER: _builtins.int
+    epochNumber: _builtins.int
+    userFbid: _builtins.str
+    mailboxSigningPk: _builtins.bytes
+    mailboxEncryptionPk: _builtins.bytes
+    mailboxAuthPk: _builtins.bytes
+    previousEpochHead: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        epochNumber: _builtins.int | None = ...,
+        userFbid: _builtins.str | None = ...,
+        mailboxSigningPk: _builtins.bytes | None = ...,
+        mailboxEncryptionPk: _builtins.bytes | None = ...,
+        mailboxAuthPk: _builtins.bytes | None = ...,
+        previousEpochHead: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "mailboxAuthPk", b"mailboxAuthPk", "mailboxEncryptionPk", b"mailboxEncryptionPk", "mailboxSigningPk", b"mailboxSigningPk", "previousEpochHead", b"previousEpochHead", "userFbid", b"userFbid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "mailboxAuthPk", b"mailboxAuthPk", "mailboxEncryptionPk", b"mailboxEncryptionPk", "mailboxSigningPk", b"mailboxSigningPk", "previousEpochHead", b"previousEpochHead", "userFbid", b"userFbid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EpochPublicData: _TypeAlias = EpochPublicData  # noqa: Y015
+
+@_typing.final
+class EpochSignatures(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SELFSIGNATURE_FIELD_NUMBER: _builtins.int
+    PREVSIGNATURE_FIELD_NUMBER: _builtins.int
+    selfSignature: _builtins.bytes
+    prevSignature: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        selfSignature: _builtins.bytes | None = ...,
+        prevSignature: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["prevSignature", b"prevSignature", "selfSignature", b"selfSignature"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["prevSignature", b"prevSignature", "selfSignature", b"selfSignature"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___EpochSignatures: _TypeAlias = EpochSignatures  # noqa: Y015
 
 @_typing.final
 class EventAdditionalMetadata(_message.Message):
@@ -7848,6 +9557,176 @@ class ExitCode(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___ExitCode: _TypeAlias = ExitCode  # noqa: Y015
+
+@_typing.final
+class ExtendedContentMessage(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    class _EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH:
+        ValueType = _typing.NewType("ValueType", _builtins.int)
+        V: _TypeAlias = ValueType  # noqa: Y015
+
+    class _EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPHEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType], _builtins.type):
+        DESCRIPTOR: _descriptor.EnumDescriptor
+        INFO: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 0
+        EYE_OFF: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 1
+        NEWS_OFF: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 2
+        WARNING: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 3
+        PRIVATE: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 4
+        NONE: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 5
+        MEDIA_LABEL: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 6
+        POST_COVER: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 7
+        POST_LABEL: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 8
+        WARNING_SCREENS: ExtendedContentMessage._EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 9
+
+    class EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH(_EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH, metaclass=_EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPHEnumTypeWrapper): ...
+    INFO: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 0
+    EYE_OFF: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 1
+    NEWS_OFF: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 2
+    WARNING: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 3
+    PRIVATE: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 4
+    NONE: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 5
+    MEDIA_LABEL: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 6
+    POST_COVER: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 7
+    POST_LABEL: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 8
+    WARNING_SCREENS: ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType  # 9
+
+    @_typing.final
+    class CTA(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        BUTTONTYPE_FIELD_NUMBER: _builtins.int
+        TITLE_FIELD_NUMBER: _builtins.int
+        ACTIONURL_FIELD_NUMBER: _builtins.int
+        NATIVEURL_FIELD_NUMBER: _builtins.int
+        CTATYPE_FIELD_NUMBER: _builtins.int
+        ACTIONCONTENTBLOB_FIELD_NUMBER: _builtins.int
+        buttonType: Global___EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE.ValueType
+        title: _builtins.str
+        actionUrl: _builtins.str
+        nativeUrl: _builtins.str
+        ctaType: _builtins.str
+        actionContentBlob: _builtins.str
+        def __init__(
+            self,
+            *,
+            buttonType: Global___EXTENDED_CONTENT_MESSAGE_CTA_BUTTON_TYPE.ValueType | None = ...,
+            title: _builtins.str | None = ...,
+            actionUrl: _builtins.str | None = ...,
+            nativeUrl: _builtins.str | None = ...,
+            ctaType: _builtins.str | None = ...,
+            actionContentBlob: _builtins.str | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["actionContentBlob", b"actionContentBlob", "actionUrl", b"actionUrl", "buttonType", b"buttonType", "ctaType", b"ctaType", "nativeUrl", b"nativeUrl", "title", b"title"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["actionContentBlob", b"actionContentBlob", "actionUrl", b"actionUrl", "buttonType", b"buttonType", "ctaType", b"ctaType", "nativeUrl", b"nativeUrl", "title", b"title"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    ASSOCIATEDMESSAGE_FIELD_NUMBER: _builtins.int
+    TARGETTYPE_FIELD_NUMBER: _builtins.int
+    TARGETUSERNAME_FIELD_NUMBER: _builtins.int
+    TARGETID_FIELD_NUMBER: _builtins.int
+    TARGETEXPIRINGATSEC_FIELD_NUMBER: _builtins.int
+    XMALAYOUTTYPE_FIELD_NUMBER: _builtins.int
+    CTAS_FIELD_NUMBER: _builtins.int
+    PREVIEWS_FIELD_NUMBER: _builtins.int
+    TITLETEXT_FIELD_NUMBER: _builtins.int
+    SUBTITLETEXT_FIELD_NUMBER: _builtins.int
+    MAXTITLENUMOFLINES_FIELD_NUMBER: _builtins.int
+    MAXSUBTITLENUMOFLINES_FIELD_NUMBER: _builtins.int
+    FAVICON_FIELD_NUMBER: _builtins.int
+    HEADERIMAGE_FIELD_NUMBER: _builtins.int
+    HEADERTITLE_FIELD_NUMBER: _builtins.int
+    OVERLAYICONGLYPH_FIELD_NUMBER: _builtins.int
+    OVERLAYTITLE_FIELD_NUMBER: _builtins.int
+    OVERLAYDESCRIPTION_FIELD_NUMBER: _builtins.int
+    SENTWITHMESSAGEID_FIELD_NUMBER: _builtins.int
+    MESSAGETEXT_FIELD_NUMBER: _builtins.int
+    HEADERSUBTITLE_FIELD_NUMBER: _builtins.int
+    XMADATACLASS_FIELD_NUMBER: _builtins.int
+    CONTENTREF_FIELD_NUMBER: _builtins.int
+    MENTIONEDJID_FIELD_NUMBER: _builtins.int
+    COMMANDS_FIELD_NUMBER: _builtins.int
+    MENTIONS_FIELD_NUMBER: _builtins.int
+    XMADATACLASSTYPE_FIELD_NUMBER: _builtins.int
+    SIGNEDXMADATACLASSVALIDATION_FIELD_NUMBER: _builtins.int
+    FEATURESHAREDSESSIONID_FIELD_NUMBER: _builtins.int
+    targetType: Global___EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType
+    targetUsername: _builtins.str
+    targetId: _builtins.str
+    targetExpiringAtSec: _builtins.int
+    xmaLayoutType: Global___EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType
+    titleText: _builtins.str
+    subtitleText: _builtins.str
+    maxTitleNumOfLines: _builtins.int
+    maxSubtitleNumOfLines: _builtins.int
+    headerTitle: _builtins.str
+    overlayIconGlyph: Global___ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType
+    overlayTitle: _builtins.str
+    overlayDescription: _builtins.str
+    sentWithMessageId: _builtins.str
+    messageText: _builtins.str
+    headerSubtitle: _builtins.str
+    xmaDataclass: _builtins.str
+    contentRef: _builtins.str
+    xmaDataclassType: Global___EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType
+    signedXmaDataclassValidation: _builtins.str
+    featureSharedSessionId: _builtins.str
+    @_builtins.property
+    def associatedMessage(self) -> Global___SubProtocol: ...
+    @_builtins.property
+    def ctas(self) -> _containers.RepeatedCompositeFieldContainer[Global___ExtendedContentMessage.CTA]: ...
+    @_builtins.property
+    def previews(self) -> _containers.RepeatedCompositeFieldContainer[Global___SubProtocol]: ...
+    @_builtins.property
+    def favicon(self) -> Global___SubProtocol: ...
+    @_builtins.property
+    def headerImage(self) -> Global___SubProtocol: ...
+    @_builtins.property
+    def mentionedJid(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
+    @_builtins.property
+    def commands(self) -> _containers.RepeatedCompositeFieldContainer[Global___Command]: ...
+    @_builtins.property
+    def mentions(self) -> _containers.RepeatedCompositeFieldContainer[Global___Mention]: ...
+    def __init__(
+        self,
+        *,
+        associatedMessage: Global___SubProtocol | None = ...,
+        targetType: Global___EXTENDED_CONTENT_MESSAGE_EXTENDED_CONTENT_TYPE.ValueType | None = ...,
+        targetUsername: _builtins.str | None = ...,
+        targetId: _builtins.str | None = ...,
+        targetExpiringAtSec: _builtins.int | None = ...,
+        xmaLayoutType: Global___EXTENDED_CONTENT_MESSAGE_XMA_LAYOUT_TYPE.ValueType | None = ...,
+        ctas: _abc.Iterable[Global___ExtendedContentMessage.CTA] | None = ...,
+        previews: _abc.Iterable[Global___SubProtocol] | None = ...,
+        titleText: _builtins.str | None = ...,
+        subtitleText: _builtins.str | None = ...,
+        maxTitleNumOfLines: _builtins.int | None = ...,
+        maxSubtitleNumOfLines: _builtins.int | None = ...,
+        favicon: Global___SubProtocol | None = ...,
+        headerImage: Global___SubProtocol | None = ...,
+        headerTitle: _builtins.str | None = ...,
+        overlayIconGlyph: Global___ExtendedContentMessage.EXTENDED_CONTENT_MESSAGE_OVERLAY_ICON_GLYPH.ValueType | None = ...,
+        overlayTitle: _builtins.str | None = ...,
+        overlayDescription: _builtins.str | None = ...,
+        sentWithMessageId: _builtins.str | None = ...,
+        messageText: _builtins.str | None = ...,
+        headerSubtitle: _builtins.str | None = ...,
+        xmaDataclass: _builtins.str | None = ...,
+        contentRef: _builtins.str | None = ...,
+        mentionedJid: _abc.Iterable[_builtins.str] | None = ...,
+        commands: _abc.Iterable[Global___Command] | None = ...,
+        mentions: _abc.Iterable[Global___Mention] | None = ...,
+        xmaDataclassType: Global___EXTENDED_CONTENT_MESSAGE_XMA_DATACLASS_TYPE.ValueType | None = ...,
+        signedXmaDataclassValidation: _builtins.str | None = ...,
+        featureSharedSessionId: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["associatedMessage", b"associatedMessage", "contentRef", b"contentRef", "favicon", b"favicon", "featureSharedSessionId", b"featureSharedSessionId", "headerImage", b"headerImage", "headerSubtitle", b"headerSubtitle", "headerTitle", b"headerTitle", "maxSubtitleNumOfLines", b"maxSubtitleNumOfLines", "maxTitleNumOfLines", b"maxTitleNumOfLines", "messageText", b"messageText", "overlayDescription", b"overlayDescription", "overlayIconGlyph", b"overlayIconGlyph", "overlayTitle", b"overlayTitle", "sentWithMessageId", b"sentWithMessageId", "signedXmaDataclassValidation", b"signedXmaDataclassValidation", "subtitleText", b"subtitleText", "targetExpiringAtSec", b"targetExpiringAtSec", "targetId", b"targetId", "targetType", b"targetType", "targetUsername", b"targetUsername", "titleText", b"titleText", "xmaDataclass", b"xmaDataclass", "xmaDataclassType", b"xmaDataclassType", "xmaLayoutType", b"xmaLayoutType"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["associatedMessage", b"associatedMessage", "commands", b"commands", "contentRef", b"contentRef", "ctas", b"ctas", "favicon", b"favicon", "featureSharedSessionId", b"featureSharedSessionId", "headerImage", b"headerImage", "headerSubtitle", b"headerSubtitle", "headerTitle", b"headerTitle", "maxSubtitleNumOfLines", b"maxSubtitleNumOfLines", "maxTitleNumOfLines", b"maxTitleNumOfLines", "mentionedJid", b"mentionedJid", "mentions", b"mentions", "messageText", b"messageText", "overlayDescription", b"overlayDescription", "overlayIconGlyph", b"overlayIconGlyph", "overlayTitle", b"overlayTitle", "previews", b"previews", "sentWithMessageId", b"sentWithMessageId", "signedXmaDataclassValidation", b"signedXmaDataclassValidation", "subtitleText", b"subtitleText", "targetExpiringAtSec", b"targetExpiringAtSec", "targetId", b"targetId", "targetType", b"targetType", "targetUsername", b"targetUsername", "titleText", b"titleText", "xmaDataclass", b"xmaDataclass", "xmaDataclassType", b"xmaDataclassType", "xmaLayoutType", b"xmaLayoutType"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___ExtendedContentMessage: _TypeAlias = ExtendedContentMessage  # noqa: Y015
 
 @_typing.final
 class ExternalBlobReference(_message.Message):
@@ -8002,6 +9881,77 @@ class ForwardedAIBotMessageInfo(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___ForwardedAIBotMessageInfo: _TypeAlias = ForwardedAIBotMessageInfo  # noqa: Y015
+
+@_typing.final
+class GenerateMekInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHHEADS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def epochHeads(self) -> _containers.RepeatedScalarFieldContainer[_builtins.bytes]: ...
+    def __init__(
+        self,
+        *,
+        epochHeads: _abc.Iterable[_builtins.bytes] | None = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochHeads", b"epochHeads"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___GenerateMekInput: _TypeAlias = GenerateMekInput  # noqa: Y015
+
+@_typing.final
+class GenerateMekResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MEK_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def mek(self) -> Global___MekBundle: ...
+    def __init__(
+        self,
+        *,
+        mek: Global___MekBundle | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___GenerateMekResult: _TypeAlias = GenerateMekResult  # noqa: Y015
+
+@_typing.final
+class GenerateMekRosterHashInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHHEADS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def epochHeads(self) -> _containers.RepeatedScalarFieldContainer[_builtins.bytes]: ...
+    def __init__(
+        self,
+        *,
+        epochHeads: _abc.Iterable[_builtins.bytes] | None = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochHeads", b"epochHeads"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___GenerateMekRosterHashInput: _TypeAlias = GenerateMekRosterHashInput  # noqa: Y015
+
+@_typing.final
+class GenerateMekRosterHashResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ROSTERHASH_FIELD_NUMBER: _builtins.int
+    rosterHash: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        rosterHash: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["rosterHash", b"rosterHash"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["rosterHash", b"rosterHash"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___GenerateMekRosterHashResult: _TypeAlias = GenerateMekRosterHashResult  # noqa: Y015
 
 @_typing.final
 class GlobalSettings(_message.Message):
@@ -8328,6 +10278,7 @@ class HandshakeMessage(_message.Message):
         HANDSHAKE_PQ_MODE_UNKNOWN: HandshakeMessage._HandshakePqMode.ValueType  # 0
         XXKEM: HandshakeMessage._HandshakePqMode.ValueType  # 1
         XXKEM_FS: HandshakeMessage._HandshakePqMode.ValueType  # 2
+        XXKEM_EPH: HandshakeMessage._HandshakePqMode.ValueType  # 9
         WA_CLASSICAL: HandshakeMessage._HandshakePqMode.ValueType  # 3
         WA_PQ: HandshakeMessage._HandshakePqMode.ValueType  # 4
         IKKEM: HandshakeMessage._HandshakePqMode.ValueType  # 5
@@ -8339,6 +10290,7 @@ class HandshakeMessage(_message.Message):
     HANDSHAKE_PQ_MODE_UNKNOWN: HandshakeMessage.HandshakePqMode.ValueType  # 0
     XXKEM: HandshakeMessage.HandshakePqMode.ValueType  # 1
     XXKEM_FS: HandshakeMessage.HandshakePqMode.ValueType  # 2
+    XXKEM_EPH: HandshakeMessage.HandshakePqMode.ValueType  # 9
     WA_CLASSICAL: HandshakeMessage.HandshakePqMode.ValueType  # 3
     WA_PQ: HandshakeMessage.HandshakePqMode.ValueType  # 4
     IKKEM: HandshakeMessage.HandshakePqMode.ValueType  # 5
@@ -8771,6 +10723,27 @@ class IdentityKeyPairStructure(_message.Message):
 Global___IdentityKeyPairStructure: _TypeAlias = IdentityKeyPairStructure  # noqa: Y015
 
 @_typing.final
+class IdentityVerificationState(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    VERIFIED_FIELD_NUMBER: _builtins.int
+    ACTIONSEQ_FIELD_NUMBER: _builtins.int
+    verified: _builtins.bool
+    actionSeq: _builtins.int
+    def __init__(
+        self,
+        *,
+        verified: _builtins.bool | None = ...,
+        actionSeq: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["actionSeq", b"actionSeq", "verified", b"verified"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["actionSeq", b"actionSeq", "verified", b"verified"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___IdentityVerificationState: _TypeAlias = IdentityVerificationState  # noqa: Y015
+
+@_typing.final
 class InThreadSurveyMetadata(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -9098,7 +11071,29 @@ class KeyId(_message.Message):
 Global___KeyId: _TypeAlias = KeyId  # noqa: Y015
 
 @_typing.final
+class LIDMigrationMappingSyncMessage(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCODEDMAPPINGPAYLOAD_FIELD_NUMBER: _builtins.int
+    encodedMappingPayload: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        encodedMappingPayload: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["encodedMappingPayload", b"encodedMappingPayload"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encodedMappingPayload", b"encodedMappingPayload"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___LIDMigrationMappingSyncMessage: _TypeAlias = LIDMigrationMappingSyncMessage  # noqa: Y015
+
+@_typing.final
 class LIDMigrationMapping(_message.Message):
+    """Retained locally: WA dropped these from the public JS bundle, but the wire
+    still carries them as the protobuf-encoded `encodedMappingPayload` above.
+    """
+
     DESCRIPTOR: _descriptor.Descriptor
 
     PN_FIELD_NUMBER: _builtins.int
@@ -9122,24 +11117,6 @@ class LIDMigrationMapping(_message.Message):
 Global___LIDMigrationMapping: _TypeAlias = LIDMigrationMapping  # noqa: Y015
 
 @_typing.final
-class LIDMigrationMappingSyncMessage(_message.Message):
-    DESCRIPTOR: _descriptor.Descriptor
-
-    ENCODEDMAPPINGPAYLOAD_FIELD_NUMBER: _builtins.int
-    encodedMappingPayload: _builtins.bytes
-    def __init__(
-        self,
-        *,
-        encodedMappingPayload: _builtins.bytes | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["encodedMappingPayload", b"encodedMappingPayload"]  # noqa: Y015
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["encodedMappingPayload", b"encodedMappingPayload"]  # noqa: Y015
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-
-Global___LIDMigrationMappingSyncMessage: _TypeAlias = LIDMigrationMappingSyncMessage  # noqa: Y015
-
-@_typing.final
 class LIDMigrationMappingSyncPayload(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -9160,6 +11137,48 @@ class LIDMigrationMappingSyncPayload(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___LIDMigrationMappingSyncPayload: _TypeAlias = LIDMigrationMappingSyncPayload  # noqa: Y015
+
+@_typing.final
+class LabyrinthWaCommand(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    CREATEBACKUPINPUT_FIELD_NUMBER: _builtins.int
+    ENCRYPTMESSAGEINPUT_FIELD_NUMBER: _builtins.int
+    DECRYPTMESSAGEINPUT_FIELD_NUMBER: _builtins.int
+    ORFTHREADIDINPUT_FIELD_NUMBER: _builtins.int
+    DERIVEMESSAGEKEYINPUT_FIELD_NUMBER: _builtins.int
+    ROTATEEPOCHINPUT_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def createBackupInput(self) -> Global___CreateBackupInput: ...
+    @_builtins.property
+    def encryptMessageInput(self) -> Global___EncryptMessageInput: ...
+    @_builtins.property
+    def decryptMessageInput(self) -> Global___DecryptMessageInput: ...
+    @_builtins.property
+    def orfThreadIdInput(self) -> Global___OrfThreadIdInput: ...
+    @_builtins.property
+    def deriveMessageKeyInput(self) -> Global___DeriveMessageKeyInput: ...
+    @_builtins.property
+    def rotateEpochInput(self) -> Global___RotateEpochInput: ...
+    def __init__(
+        self,
+        *,
+        createBackupInput: Global___CreateBackupInput | None = ...,
+        encryptMessageInput: Global___EncryptMessageInput | None = ...,
+        decryptMessageInput: Global___DecryptMessageInput | None = ...,
+        orfThreadIdInput: Global___OrfThreadIdInput | None = ...,
+        deriveMessageKeyInput: Global___DeriveMessageKeyInput | None = ...,
+        rotateEpochInput: Global___RotateEpochInput | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["commandInput", b"commandInput", "createBackupInput", b"createBackupInput", "decryptMessageInput", b"decryptMessageInput", "deriveMessageKeyInput", b"deriveMessageKeyInput", "encryptMessageInput", b"encryptMessageInput", "orfThreadIdInput", b"orfThreadIdInput", "rotateEpochInput", b"rotateEpochInput"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["commandInput", b"commandInput", "createBackupInput", b"createBackupInput", "decryptMessageInput", b"decryptMessageInput", "deriveMessageKeyInput", b"deriveMessageKeyInput", "encryptMessageInput", b"encryptMessageInput", "orfThreadIdInput", b"orfThreadIdInput", "rotateEpochInput", b"rotateEpochInput"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_commandInput: _TypeAlias = _typing.Literal["createBackupInput", "encryptMessageInput", "decryptMessageInput", "orfThreadIdInput", "deriveMessageKeyInput", "rotateEpochInput"]  # noqa: Y015
+    _WhichOneofArgType_commandInput: _TypeAlias = _typing.Literal["commandInput", b"commandInput"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_commandInput) -> _WhichOneofReturnType_commandInput | None: ...
+
+Global___LabyrinthWaCommand: _TypeAlias = LabyrinthWaCommand  # noqa: Y015
 
 @_typing.final
 class LegacyMessage(_message.Message):
@@ -9275,6 +11294,590 @@ class Location(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___Location: _TypeAlias = Location  # noqa: Y015
+
+@_typing.final
+class MandrakeDecryptMekInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class EpochSenderPublicData(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        EPOCHPUBLICDATA_FIELD_NUMBER: _builtins.int
+        @_builtins.property
+        def epochPublicData(self) -> Global___EpochPublicData: ...
+        def __init__(
+            self,
+            *,
+            epochPublicData: Global___EpochPublicData | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class MmkSenderPublicData(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        MMKPUBLICDATA_FIELD_NUMBER: _builtins.int
+        @_builtins.property
+        def mmkPublicData(self) -> Global___MessagingMailboxPublicData: ...
+        def __init__(
+            self,
+            *,
+            mmkPublicData: Global___MessagingMailboxPublicData | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["mmkPublicData", b"mmkPublicData"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["mmkPublicData", b"mmkPublicData"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class PrecomputedEpochSenderPublicData(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        AUTHPK_FIELD_NUMBER: _builtins.int
+        EPOCHHEAD_FIELD_NUMBER: _builtins.int
+        authPk: _builtins.bytes
+        epochHead: _builtins.bytes
+        def __init__(
+            self,
+            *,
+            authPk: _builtins.bytes | None = ...,
+            epochHead: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "epochHead", b"epochHead"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "epochHead", b"epochHead"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    ENCRYPTEDMEK_FIELD_NUMBER: _builtins.int
+    RECIPIENTSHASH_FIELD_NUMBER: _builtins.int
+    RECIPIENTENCSK_FIELD_NUMBER: _builtins.int
+    MEKENCRYPTIONVERSION_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    RECIPIENTMMK_FIELD_NUMBER: _builtins.int
+    MEKID_FIELD_NUMBER: _builtins.int
+    RECIPIENTMEMBERSHIPPROOF_FIELD_NUMBER: _builtins.int
+    MMKSENDER_FIELD_NUMBER: _builtins.int
+    EPOCHSENDER_FIELD_NUMBER: _builtins.int
+    PRECOMPUTEDEPOCHSENDER_FIELD_NUMBER: _builtins.int
+    encryptedMek: _builtins.bytes
+    recipientsHash: _builtins.bytes
+    recipientEncSk: _builtins.bytes
+    mekEncryptionVersion: _builtins.int
+    mekId: _builtins.bytes
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    @_builtins.property
+    def recipientMmk(self) -> Global___MessagingMailboxPublicData: ...
+    @_builtins.property
+    def recipientMembershipProof(self) -> Global___MerkleMembershipProof: ...
+    @_builtins.property
+    def mmkSender(self) -> Global___MandrakeDecryptMekInput.MmkSenderPublicData: ...
+    @_builtins.property
+    def epochSender(self) -> Global___MandrakeDecryptMekInput.EpochSenderPublicData: ...
+    @_builtins.property
+    def precomputedEpochSender(self) -> Global___MandrakeDecryptMekInput.PrecomputedEpochSenderPublicData: ...
+    def __init__(
+        self,
+        *,
+        encryptedMek: _builtins.bytes | None = ...,
+        recipientsHash: _builtins.bytes | None = ...,
+        recipientEncSk: _builtins.bytes | None = ...,
+        mekEncryptionVersion: _builtins.int | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+        recipientMmk: Global___MessagingMailboxPublicData | None = ...,
+        mekId: _builtins.bytes | None = ...,
+        recipientMembershipProof: Global___MerkleMembershipProof | None = ...,
+        mmkSender: Global___MandrakeDecryptMekInput.MmkSenderPublicData | None = ...,
+        epochSender: Global___MandrakeDecryptMekInput.EpochSenderPublicData | None = ...,
+        precomputedEpochSender: Global___MandrakeDecryptMekInput.PrecomputedEpochSenderPublicData | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "encryptedMek", b"encryptedMek", "epochSender", b"epochSender", "mekEncryptionVersion", b"mekEncryptionVersion", "mekId", b"mekId", "mmkSender", b"mmkSender", "precomputedEpochSender", b"precomputedEpochSender", "recipientEncSk", b"recipientEncSk", "recipientMembershipProof", b"recipientMembershipProof", "recipientMmk", b"recipientMmk", "recipientsHash", b"recipientsHash", "senderPublicData", b"senderPublicData"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "encryptedMek", b"encryptedMek", "epochSender", b"epochSender", "mekEncryptionVersion", b"mekEncryptionVersion", "mekId", b"mekId", "mmkSender", b"mmkSender", "precomputedEpochSender", b"precomputedEpochSender", "recipientEncSk", b"recipientEncSk", "recipientMembershipProof", b"recipientMembershipProof", "recipientMmk", b"recipientMmk", "recipientsHash", b"recipientsHash", "senderPublicData", b"senderPublicData"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_senderPublicData: _TypeAlias = _typing.Literal["mmkSender", "epochSender", "precomputedEpochSender"]  # noqa: Y015
+    _WhichOneofArgType_senderPublicData: _TypeAlias = _typing.Literal["senderPublicData", b"senderPublicData"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_senderPublicData) -> _WhichOneofReturnType_senderPublicData | None: ...
+
+Global___MandrakeDecryptMekInput: _TypeAlias = MandrakeDecryptMekInput  # noqa: Y015
+
+@_typing.final
+class MandrakeDecryptMekResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___MandrakeDecryptMekSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___MandrakeDecryptMekSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___MandrakeDecryptMekResult: _TypeAlias = MandrakeDecryptMekResult  # noqa: Y015
+
+@_typing.final
+class MandrakeDecryptMekSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MEK_FIELD_NUMBER: _builtins.int
+    mek: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mek: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mek", b"mek"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeDecryptMekSuccess: _TypeAlias = MandrakeDecryptMekSuccess  # noqa: Y015
+
+@_typing.final
+class MandrakeEncryptMekInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class DetachedDeviceSender(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        DETACHEDDEVICEPUBLICDATA_FIELD_NUMBER: _builtins.int
+        AUTHSK_FIELD_NUMBER: _builtins.int
+        AUTHPK_FIELD_NUMBER: _builtins.int
+        authSk: _builtins.bytes
+        authPk: _builtins.bytes
+        @_builtins.property
+        def detachedDevicePublicData(self) -> Global___DetachedDevicePublicData: ...
+        def __init__(
+            self,
+            *,
+            detachedDevicePublicData: Global___DetachedDevicePublicData | None = ...,
+            authSk: _builtins.bytes | None = ...,
+            authPk: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "detachedDevicePublicData", b"detachedDevicePublicData"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "detachedDevicePublicData", b"detachedDevicePublicData"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class EpochSender(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        EPOCHPUBLICDATA_FIELD_NUMBER: _builtins.int
+        AUTHSK_FIELD_NUMBER: _builtins.int
+        AUTHPK_FIELD_NUMBER: _builtins.int
+        authSk: _builtins.bytes
+        authPk: _builtins.bytes
+        @_builtins.property
+        def epochPublicData(self) -> Global___EpochPublicData: ...
+        def __init__(
+            self,
+            *,
+            epochPublicData: Global___EpochPublicData | None = ...,
+            authSk: _builtins.bytes | None = ...,
+            authPk: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "epochPublicData", b"epochPublicData"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "epochPublicData", b"epochPublicData"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class MmkSender(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        MMKPUBLICDATA_FIELD_NUMBER: _builtins.int
+        AUTHSK_FIELD_NUMBER: _builtins.int
+        AUTHPK_FIELD_NUMBER: _builtins.int
+        authSk: _builtins.bytes
+        authPk: _builtins.bytes
+        @_builtins.property
+        def mmkPublicData(self) -> Global___MessagingMailboxPublicData: ...
+        def __init__(
+            self,
+            *,
+            mmkPublicData: Global___MessagingMailboxPublicData | None = ...,
+            authSk: _builtins.bytes | None = ...,
+            authPk: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "mmkPublicData", b"mmkPublicData"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "authSk", b"authSk", "mmkPublicData", b"mmkPublicData"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    MEK_FIELD_NUMBER: _builtins.int
+    RECIPIENTS_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    MMKSENDER_FIELD_NUMBER: _builtins.int
+    EPOCHSENDER_FIELD_NUMBER: _builtins.int
+    DETACHEDDEVICESENDER_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def mek(self) -> Global___MandrakeMekBundle: ...
+    @_builtins.property
+    def recipients(self) -> _containers.RepeatedCompositeFieldContainer[Global___MessagingMailboxPublicData]: ...
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    @_builtins.property
+    def mmkSender(self) -> Global___MandrakeEncryptMekInput.MmkSender: ...
+    @_builtins.property
+    def epochSender(self) -> Global___MandrakeEncryptMekInput.EpochSender: ...
+    @_builtins.property
+    def detachedDeviceSender(self) -> Global___MandrakeEncryptMekInput.DetachedDeviceSender: ...
+    def __init__(
+        self,
+        *,
+        mek: Global___MandrakeMekBundle | None = ...,
+        recipients: _abc.Iterable[Global___MessagingMailboxPublicData] | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+        mmkSender: Global___MandrakeEncryptMekInput.MmkSender | None = ...,
+        epochSender: Global___MandrakeEncryptMekInput.EpochSender | None = ...,
+        detachedDeviceSender: Global___MandrakeEncryptMekInput.DetachedDeviceSender | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "detachedDeviceSender", b"detachedDeviceSender", "epochSender", b"epochSender", "mek", b"mek", "mmkSender", b"mmkSender", "sender", b"sender"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "detachedDeviceSender", b"detachedDeviceSender", "epochSender", b"epochSender", "mek", b"mek", "mmkSender", b"mmkSender", "recipients", b"recipients", "sender", b"sender"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_sender: _TypeAlias = _typing.Literal["mmkSender", "epochSender", "detachedDeviceSender"]  # noqa: Y015
+    _WhichOneofArgType_sender: _TypeAlias = _typing.Literal["sender", b"sender"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_sender) -> _WhichOneofReturnType_sender | None: ...
+
+Global___MandrakeEncryptMekInput: _TypeAlias = MandrakeEncryptMekInput  # noqa: Y015
+
+@_typing.final
+class MandrakeEncryptMekResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___MandrakeEncryptMekSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___MandrakeEncryptMekSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___MandrakeEncryptMekResult: _TypeAlias = MandrakeEncryptMekResult  # noqa: Y015
+
+@_typing.final
+class MandrakeEncryptMekSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class MekDistributionSingleRecipient(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        ENCRYPTEDMEK_FIELD_NUMBER: _builtins.int
+        TOMMK_FIELD_NUMBER: _builtins.int
+        RECIPIENTMEMBERSHIPPROOF_FIELD_NUMBER: _builtins.int
+        encryptedMek: _builtins.bytes
+        @_builtins.property
+        def toMmk(self) -> Global___MessagingMailboxPublicData: ...
+        @_builtins.property
+        def recipientMembershipProof(self) -> Global___MerkleMembershipProof: ...
+        def __init__(
+            self,
+            *,
+            encryptedMek: _builtins.bytes | None = ...,
+            toMmk: Global___MessagingMailboxPublicData | None = ...,
+            recipientMembershipProof: Global___MerkleMembershipProof | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedMek", b"encryptedMek", "recipientMembershipProof", b"recipientMembershipProof", "toMmk", b"toMmk"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedMek", b"encryptedMek", "recipientMembershipProof", b"recipientMembershipProof", "toMmk", b"toMmk"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    DISTRIBUTIONS_FIELD_NUMBER: _builtins.int
+    RECIPIENTSHASH_FIELD_NUMBER: _builtins.int
+    VERSION_FIELD_NUMBER: _builtins.int
+    recipientsHash: _builtins.bytes
+    version: _builtins.int
+    @_builtins.property
+    def distributions(self) -> _containers.RepeatedCompositeFieldContainer[Global___MandrakeEncryptMekSuccess.MekDistributionSingleRecipient]: ...
+    def __init__(
+        self,
+        *,
+        distributions: _abc.Iterable[Global___MandrakeEncryptMekSuccess.MekDistributionSingleRecipient] | None = ...,
+        recipientsHash: _builtins.bytes | None = ...,
+        version: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["recipientsHash", b"recipientsHash", "version", b"version"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["distributions", b"distributions", "recipientsHash", b"recipientsHash", "version", b"version"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeEncryptMekSuccess: _TypeAlias = MandrakeEncryptMekSuccess  # noqa: Y015
+
+@_typing.final
+class MandrakeMekBundle(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    KEY_FIELD_NUMBER: _builtins.int
+    MEKID_FIELD_NUMBER: _builtins.int
+    MAILBOXHEADHASH_FIELD_NUMBER: _builtins.int
+    key: _builtins.bytes
+    mekId: _builtins.bytes
+    mailboxHeadHash: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        key: _builtins.bytes | None = ...,
+        mekId: _builtins.bytes | None = ...,
+        mailboxHeadHash: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "mailboxHeadHash", b"mailboxHeadHash", "mekId", b"mekId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "mailboxHeadHash", b"mailboxHeadHash", "mekId", b"mekId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeMekBundle: _TypeAlias = MandrakeMekBundle  # noqa: Y015
+
+@_typing.final
+class MandrakeOpenEpochInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USERFBID_FIELD_NUMBER: _builtins.int
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    PREVIOUSEXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    PREVIOUSEPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    PREVIOUSEPOCHHEAD_FIELD_NUMBER: _builtins.int
+    PREVIOUSMMK_FIELD_NUMBER: _builtins.int
+    DETACHEDDEVICES_FIELD_NUMBER: _builtins.int
+    userFbid: _builtins.str
+    epochNumber: _builtins.int
+    exportRootKey: _builtins.bytes
+    previousExportRootKey: _builtins.bytes
+    previousEpochNumber: _builtins.int
+    previousEpochHead: _builtins.bytes
+    @_builtins.property
+    def previousMmk(self) -> Global___MessagingMailboxPublicData: ...
+    @_builtins.property
+    def detachedDevices(self) -> _containers.RepeatedCompositeFieldContainer[Global___DetachedDevicePublicData]: ...
+    def __init__(
+        self,
+        *,
+        userFbid: _builtins.str | None = ...,
+        epochNumber: _builtins.int | None = ...,
+        exportRootKey: _builtins.bytes | None = ...,
+        previousExportRootKey: _builtins.bytes | None = ...,
+        previousEpochNumber: _builtins.int | None = ...,
+        previousEpochHead: _builtins.bytes | None = ...,
+        previousMmk: Global___MessagingMailboxPublicData | None = ...,
+        detachedDevices: _abc.Iterable[Global___DetachedDevicePublicData] | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "previousEpochHead", b"previousEpochHead", "previousEpochNumber", b"previousEpochNumber", "previousExportRootKey", b"previousExportRootKey", "previousMmk", b"previousMmk", "userFbid", b"userFbid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["detachedDevices", b"detachedDevices", "epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "previousEpochHead", b"previousEpochHead", "previousEpochNumber", b"previousEpochNumber", "previousExportRootKey", b"previousExportRootKey", "previousMmk", b"previousMmk", "userFbid", b"userFbid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeOpenEpochInput: _TypeAlias = MandrakeOpenEpochInput  # noqa: Y015
+
+@_typing.final
+class MandrakeOpenEpochResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___MandrakeOpenEpochSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___MandrakeOpenEpochSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___MandrakeOpenEpochResult: _TypeAlias = MandrakeOpenEpochResult  # noqa: Y015
+
+@_typing.final
+class MandrakeOpenEpochSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MINOSSIGNEDEPOCH_FIELD_NUMBER: _builtins.int
+    SIGNEDMMKDISTRIBUTION_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def minosSignedEpoch(self) -> Global___MinosSignedEpoch: ...
+    @_builtins.property
+    def signedMmkDistribution(self) -> Global___SignedMmkDistributionFromMailbox: ...
+    def __init__(
+        self,
+        *,
+        minosSignedEpoch: Global___MinosSignedEpoch | None = ...,
+        signedMmkDistribution: Global___SignedMmkDistributionFromMailbox | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["minosSignedEpoch", b"minosSignedEpoch", "signedMmkDistribution", b"signedMmkDistribution"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["minosSignedEpoch", b"minosSignedEpoch", "signedMmkDistribution", b"signedMmkDistribution"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeOpenEpochSuccess: _TypeAlias = MandrakeOpenEpochSuccess  # noqa: Y015
+
+@_typing.final
+class MandrakeOpenInitialEpochInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USERFBID_FIELD_NUMBER: _builtins.int
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    DETACHEDDEVICES_FIELD_NUMBER: _builtins.int
+    userFbid: _builtins.str
+    epochNumber: _builtins.int
+    exportRootKey: _builtins.bytes
+    @_builtins.property
+    def detachedDevices(self) -> _containers.RepeatedCompositeFieldContainer[Global___DetachedDevicePublicData]: ...
+    def __init__(
+        self,
+        *,
+        userFbid: _builtins.str | None = ...,
+        epochNumber: _builtins.int | None = ...,
+        exportRootKey: _builtins.bytes | None = ...,
+        detachedDevices: _abc.Iterable[Global___DetachedDevicePublicData] | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "userFbid", b"userFbid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["detachedDevices", b"detachedDevices", "epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "userFbid", b"userFbid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeOpenInitialEpochInput: _TypeAlias = MandrakeOpenInitialEpochInput  # noqa: Y015
+
+@_typing.final
+class MandrakeOpenInitialEpochResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___MandrakeOpenEpochSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___MandrakeOpenEpochSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___MandrakeOpenInitialEpochResult: _TypeAlias = MandrakeOpenInitialEpochResult  # noqa: Y015
+
+@_typing.final
+class MandrakeValidateNewMmkFromDetachedDeviceInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MMKFROMDEVICE_FIELD_NUMBER: _builtins.int
+    SIGNATURE_FIELD_NUMBER: _builtins.int
+    PREVMMK_FIELD_NUMBER: _builtins.int
+    signature: _builtins.bytes
+    @_builtins.property
+    def mmkFromDevice(self) -> Global___MmkFromDetachedDevice: ...
+    @_builtins.property
+    def prevMmk(self) -> Global___MessagingMailboxPublicData: ...
+    def __init__(
+        self,
+        *,
+        mmkFromDevice: Global___MmkFromDetachedDevice | None = ...,
+        signature: _builtins.bytes | None = ...,
+        prevMmk: Global___MessagingMailboxPublicData | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mmkFromDevice", b"mmkFromDevice", "prevMmk", b"prevMmk", "signature", b"signature"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mmkFromDevice", b"mmkFromDevice", "prevMmk", b"prevMmk", "signature", b"signature"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeValidateNewMmkFromDetachedDeviceInput: _TypeAlias = MandrakeValidateNewMmkFromDetachedDeviceInput  # noqa: Y015
+
+@_typing.final
+class MandrakeValidateNewMmkFromMailboxInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    NEWMMK_FIELD_NUMBER: _builtins.int
+    SIGNATURE_FIELD_NUMBER: _builtins.int
+    PREVMMK_FIELD_NUMBER: _builtins.int
+    EPOCHPUBLICDATA_FIELD_NUMBER: _builtins.int
+    signature: _builtins.bytes
+    @_builtins.property
+    def newMmk(self) -> Global___MessagingMailboxPublicData: ...
+    @_builtins.property
+    def prevMmk(self) -> Global___MessagingMailboxPublicData: ...
+    @_builtins.property
+    def epochPublicData(self) -> Global___EpochPublicData: ...
+    def __init__(
+        self,
+        *,
+        newMmk: Global___MessagingMailboxPublicData | None = ...,
+        signature: _builtins.bytes | None = ...,
+        prevMmk: Global___MessagingMailboxPublicData | None = ...,
+        epochPublicData: Global___EpochPublicData | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData", "newMmk", b"newMmk", "prevMmk", b"prevMmk", "signature", b"signature"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData", "newMmk", b"newMmk", "prevMmk", b"prevMmk", "signature", b"signature"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MandrakeValidateNewMmkFromMailboxInput: _TypeAlias = MandrakeValidateNewMmkFromMailboxInput  # noqa: Y015
+
+@_typing.final
+class MandrakeValidateNewMmkResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    VALID_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    valid: _builtins.bool
+    errorMessage: _builtins.str
+    def __init__(
+        self,
+        *,
+        valid: _builtins.bool | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "valid", b"valid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "valid", b"valid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["valid", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___MandrakeValidateNewMmkResult: _TypeAlias = MandrakeValidateNewMmkResult  # noqa: Y015
 
 @_typing.final
 class MediaData(_message.Message):
@@ -9503,6 +12106,30 @@ class MediaRetryNotification(_message.Message):
 Global___MediaRetryNotification: _TypeAlias = MediaRetryNotification  # noqa: Y015
 
 @_typing.final
+class MekBundle(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    KEY_FIELD_NUMBER: _builtins.int
+    MEKID_FIELD_NUMBER: _builtins.int
+    ROSTERHASH_FIELD_NUMBER: _builtins.int
+    key: _builtins.bytes
+    mekId: _builtins.bytes
+    rosterHash: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        key: _builtins.bytes | None = ...,
+        mekId: _builtins.bytes | None = ...,
+        rosterHash: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "mekId", b"mekId", "rosterHash", b"rosterHash"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "mekId", b"mekId", "rosterHash", b"rosterHash"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MekBundle: _TypeAlias = MekBundle  # noqa: Y015
+
+@_typing.final
 class MemberLabel(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -9549,6 +12176,33 @@ class Mention(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___Mention: _TypeAlias = Mention  # noqa: Y015
+
+@_typing.final
+class MerkleMembershipProof(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PROOF_FIELD_NUMBER: _builtins.int
+    ROOT_FIELD_NUMBER: _builtins.int
+    LEAFINDEX_FIELD_NUMBER: _builtins.int
+    TOTALLEAVES_FIELD_NUMBER: _builtins.int
+    proof: _builtins.bytes
+    root: _builtins.bytes
+    leafIndex: _builtins.int
+    totalLeaves: _builtins.int
+    def __init__(
+        self,
+        *,
+        proof: _builtins.bytes | None = ...,
+        root: _builtins.bytes | None = ...,
+        leafIndex: _builtins.int | None = ...,
+        totalLeaves: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["leafIndex", b"leafIndex", "proof", b"proof", "root", b"root", "totalLeaves", b"totalLeaves"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["leafIndex", b"leafIndex", "proof", b"proof", "root", b"root", "totalLeaves", b"totalLeaves"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MerkleMembershipProof: _TypeAlias = MerkleMembershipProof  # noqa: Y015
 
 @_typing.final
 class Message(_message.Message):
@@ -9620,6 +12274,7 @@ class Message(_message.Message):
         GALAXY_FLOW_ACTION: Message._PeerDataOperationRequestType.ValueType  # 11
         BUSINESS_BROADCAST_INSIGHTS_DELIVERED_TO: Message._PeerDataOperationRequestType.ValueType  # 12
         BUSINESS_BROADCAST_INSIGHTS_REFRESH: Message._PeerDataOperationRequestType.ValueType  # 13
+        CONTACT_REFRESH_REQUEST: Message._PeerDataOperationRequestType.ValueType  # 14
 
     class PeerDataOperationRequestType(_PeerDataOperationRequestType, metaclass=_PeerDataOperationRequestTypeEnumTypeWrapper): ...
     UPLOAD_STICKER: Message.PeerDataOperationRequestType.ValueType  # 0
@@ -9636,6 +12291,7 @@ class Message(_message.Message):
     GALAXY_FLOW_ACTION: Message.PeerDataOperationRequestType.ValueType  # 11
     BUSINESS_BROADCAST_INSIGHTS_DELIVERED_TO: Message.PeerDataOperationRequestType.ValueType  # 12
     BUSINESS_BROADCAST_INSIGHTS_REFRESH: Message.PeerDataOperationRequestType.ValueType  # 13
+    CONTACT_REFRESH_REQUEST: Message.PeerDataOperationRequestType.ValueType  # 14
 
     class _PollContentType:
         ValueType = _typing.NewType("ValueType", _builtins.int)
@@ -9924,6 +12580,29 @@ class Message(_message.Message):
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
+    class BotHistoryShareSyncMetadata(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        BOTJID_FIELD_NUMBER: _builtins.int
+        HISTORYSHARECUTOFFTIMESTAMP_FIELD_NUMBER: _builtins.int
+        HISTORYSHAREMESSAGES_FIELD_NUMBER: _builtins.int
+        botJid: _builtins.str
+        historyShareCutoffTimestamp: _builtins.int
+        @_builtins.property
+        def historyShareMessages(self) -> _containers.RepeatedCompositeFieldContainer[Global___Message.HistoryShareMessageEntry]: ...
+        def __init__(
+            self,
+            *,
+            botJid: _builtins.str | None = ...,
+            historyShareCutoffTimestamp: _builtins.int | None = ...,
+            historyShareMessages: _abc.Iterable[Global___Message.HistoryShareMessageEntry] | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["botJid", b"botJid", "historyShareCutoffTimestamp", b"historyShareCutoffTimestamp"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["botJid", b"botJid", "historyShareCutoffTimestamp", b"historyShareCutoffTimestamp", "historyShareMessages", b"historyShareMessages"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class ButtonsMessage(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -10132,6 +12811,7 @@ class Message(_message.Message):
         DEEPLINKPAYLOAD_FIELD_NUMBER: _builtins.int
         MESSAGECONTEXTINFO_FIELD_NUMBER: _builtins.int
         CALLENTRYPOINT_FIELD_NUMBER: _builtins.int
+        CALLREASON_FIELD_NUMBER: _builtins.int
         callKey: _builtins.bytes
         conversionSource: _builtins.str
         conversionData: _builtins.bytes
@@ -10141,6 +12821,7 @@ class Message(_message.Message):
         nativeFlowCallButtonPayload: _builtins.str
         deeplinkPayload: _builtins.str
         callEntryPoint: _builtins.int
+        callReason: _builtins.str
         @_builtins.property
         def contextInfo(self) -> Global___ContextInfo: ...
         @_builtins.property
@@ -10159,10 +12840,11 @@ class Message(_message.Message):
             deeplinkPayload: _builtins.str | None = ...,
             messageContextInfo: Global___MessageContextInfo | None = ...,
             callEntryPoint: _builtins.int | None = ...,
+            callReason: _builtins.str | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["callEntryPoint", b"callEntryPoint", "callKey", b"callKey", "contextInfo", b"contextInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "deeplinkPayload", b"deeplinkPayload", "messageContextInfo", b"messageContextInfo", "nativeFlowCallButtonPayload", b"nativeFlowCallButtonPayload"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["callEntryPoint", b"callEntryPoint", "callKey", b"callKey", "callReason", b"callReason", "contextInfo", b"contextInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "deeplinkPayload", b"deeplinkPayload", "messageContextInfo", b"messageContextInfo", "nativeFlowCallButtonPayload", b"nativeFlowCallButtonPayload"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["callEntryPoint", b"callEntryPoint", "callKey", b"callKey", "contextInfo", b"contextInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "deeplinkPayload", b"deeplinkPayload", "messageContextInfo", b"messageContextInfo", "nativeFlowCallButtonPayload", b"nativeFlowCallButtonPayload"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["callEntryPoint", b"callEntryPoint", "callKey", b"callKey", "callReason", b"callReason", "contextInfo", b"contextInfo", "conversionData", b"conversionData", "conversionDelaySeconds", b"conversionDelaySeconds", "conversionSource", b"conversionSource", "ctwaPayload", b"ctwaPayload", "ctwaSignals", b"ctwaSignals", "deeplinkPayload", b"deeplinkPayload", "messageContextInfo", b"messageContextInfo", "nativeFlowCallButtonPayload", b"nativeFlowCallButtonPayload"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -11036,7 +13718,7 @@ class Message(_message.Message):
         @_builtins.property
         def contextInfo(self) -> Global___ContextInfo: ...
         @_builtins.property
-        def faviconMMSMetadata(self) -> Global___Message.MMSThumbnailMetadata: ...
+        def faviconMmsMetadata(self) -> Global___Message.MMSThumbnailMetadata: ...
         @_builtins.property
         def linkPreviewMetadata(self) -> Global___Message.LinkPreviewMetadata: ...
         @_builtins.property
@@ -11075,7 +13757,7 @@ class Message(_message.Message):
             viewOnce: _builtins.bool | None = ...,
             videoHeight: _builtins.int | None = ...,
             videoWidth: _builtins.int | None = ...,
-            faviconMMSMetadata: Global___Message.MMSThumbnailMetadata | None = ...,
+            faviconMmsMetadata: Global___Message.MMSThumbnailMetadata | None = ...,
             linkPreviewMetadata: Global___Message.LinkPreviewMetadata | None = ...,
             paymentLinkMetadata: Global___Message.PaymentLinkMetadata | None = ...,
             endCardTiles: _abc.Iterable[Global___Message.VideoEndCard] | None = ...,
@@ -11083,9 +13765,9 @@ class Message(_message.Message):
             musicMetadata: Global___EmbeddedMusic | None = ...,
             paymentExtendedMetadata: Global___Message.PaymentExtendedMetadata | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["backgroundArgb", b"backgroundArgb", "contextInfo", b"contextInfo", "description", b"description", "doNotPlayInline", b"doNotPlayInline", "faviconMMSMetadata", b"faviconMMSMetadata", "font", b"font", "inviteLinkGroupType", b"inviteLinkGroupType", "inviteLinkGroupTypeV2", b"inviteLinkGroupTypeV2", "inviteLinkParentGroupSubjectV2", b"inviteLinkParentGroupSubjectV2", "inviteLinkParentGroupThumbnailV2", b"inviteLinkParentGroupThumbnailV2", "jpegThumbnail", b"jpegThumbnail", "linkPreviewMetadata", b"linkPreviewMetadata", "matchedText", b"matchedText", "mediaKey", b"mediaKey", "mediaKeyTimestamp", b"mediaKeyTimestamp", "musicMetadata", b"musicMetadata", "paymentExtendedMetadata", b"paymentExtendedMetadata", "paymentLinkMetadata", b"paymentLinkMetadata", "previewType", b"previewType", "text", b"text", "textArgb", b"textArgb", "thumbnailDirectPath", b"thumbnailDirectPath", "thumbnailEncSha256", b"thumbnailEncSha256", "thumbnailHeight", b"thumbnailHeight", "thumbnailSha256", b"thumbnailSha256", "thumbnailWidth", b"thumbnailWidth", "title", b"title", "videoContentUrl", b"videoContentUrl", "videoHeight", b"videoHeight", "videoWidth", b"videoWidth", "viewOnce", b"viewOnce"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["backgroundArgb", b"backgroundArgb", "contextInfo", b"contextInfo", "description", b"description", "doNotPlayInline", b"doNotPlayInline", "faviconMmsMetadata", b"faviconMmsMetadata", "font", b"font", "inviteLinkGroupType", b"inviteLinkGroupType", "inviteLinkGroupTypeV2", b"inviteLinkGroupTypeV2", "inviteLinkParentGroupSubjectV2", b"inviteLinkParentGroupSubjectV2", "inviteLinkParentGroupThumbnailV2", b"inviteLinkParentGroupThumbnailV2", "jpegThumbnail", b"jpegThumbnail", "linkPreviewMetadata", b"linkPreviewMetadata", "matchedText", b"matchedText", "mediaKey", b"mediaKey", "mediaKeyTimestamp", b"mediaKeyTimestamp", "musicMetadata", b"musicMetadata", "paymentExtendedMetadata", b"paymentExtendedMetadata", "paymentLinkMetadata", b"paymentLinkMetadata", "previewType", b"previewType", "text", b"text", "textArgb", b"textArgb", "thumbnailDirectPath", b"thumbnailDirectPath", "thumbnailEncSha256", b"thumbnailEncSha256", "thumbnailHeight", b"thumbnailHeight", "thumbnailSha256", b"thumbnailSha256", "thumbnailWidth", b"thumbnailWidth", "title", b"title", "videoContentUrl", b"videoContentUrl", "videoHeight", b"videoHeight", "videoWidth", b"videoWidth", "viewOnce", b"viewOnce"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["backgroundArgb", b"backgroundArgb", "contextInfo", b"contextInfo", "description", b"description", "doNotPlayInline", b"doNotPlayInline", "endCardTiles", b"endCardTiles", "faviconMMSMetadata", b"faviconMMSMetadata", "font", b"font", "inviteLinkGroupType", b"inviteLinkGroupType", "inviteLinkGroupTypeV2", b"inviteLinkGroupTypeV2", "inviteLinkParentGroupSubjectV2", b"inviteLinkParentGroupSubjectV2", "inviteLinkParentGroupThumbnailV2", b"inviteLinkParentGroupThumbnailV2", "jpegThumbnail", b"jpegThumbnail", "linkPreviewMetadata", b"linkPreviewMetadata", "matchedText", b"matchedText", "mediaKey", b"mediaKey", "mediaKeyTimestamp", b"mediaKeyTimestamp", "musicMetadata", b"musicMetadata", "paymentExtendedMetadata", b"paymentExtendedMetadata", "paymentLinkMetadata", b"paymentLinkMetadata", "previewType", b"previewType", "text", b"text", "textArgb", b"textArgb", "thumbnailDirectPath", b"thumbnailDirectPath", "thumbnailEncSha256", b"thumbnailEncSha256", "thumbnailHeight", b"thumbnailHeight", "thumbnailSha256", b"thumbnailSha256", "thumbnailWidth", b"thumbnailWidth", "title", b"title", "videoContentUrl", b"videoContentUrl", "videoHeight", b"videoHeight", "videoWidth", b"videoWidth", "viewOnce", b"viewOnce"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["backgroundArgb", b"backgroundArgb", "contextInfo", b"contextInfo", "description", b"description", "doNotPlayInline", b"doNotPlayInline", "endCardTiles", b"endCardTiles", "faviconMmsMetadata", b"faviconMmsMetadata", "font", b"font", "inviteLinkGroupType", b"inviteLinkGroupType", "inviteLinkGroupTypeV2", b"inviteLinkGroupTypeV2", "inviteLinkParentGroupSubjectV2", b"inviteLinkParentGroupSubjectV2", "inviteLinkParentGroupThumbnailV2", b"inviteLinkParentGroupThumbnailV2", "jpegThumbnail", b"jpegThumbnail", "linkPreviewMetadata", b"linkPreviewMetadata", "matchedText", b"matchedText", "mediaKey", b"mediaKey", "mediaKeyTimestamp", b"mediaKeyTimestamp", "musicMetadata", b"musicMetadata", "paymentExtendedMetadata", b"paymentExtendedMetadata", "paymentLinkMetadata", b"paymentLinkMetadata", "previewType", b"previewType", "text", b"text", "textArgb", b"textArgb", "thumbnailDirectPath", b"thumbnailDirectPath", "thumbnailEncSha256", b"thumbnailEncSha256", "thumbnailHeight", b"thumbnailHeight", "thumbnailSha256", b"thumbnailSha256", "thumbnailWidth", b"thumbnailWidth", "title", b"title", "videoContentUrl", b"videoContentUrl", "videoHeight", b"videoHeight", "videoWidth", b"videoWidth", "viewOnce", b"viewOnce"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -11394,6 +14076,25 @@ class Message(_message.Message):
         _HasFieldArgType: _TypeAlias = _typing.Literal["deterministicLc", b"deterministicLc", "deterministicLg", b"deterministicLg", "elementName", b"elementName", "fallbackLc", b"fallbackLc", "fallbackLg", b"fallbackLg", "hydratedHsm", b"hydratedHsm", "namespace", b"namespace"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
         _ClearFieldArgType: _TypeAlias = _typing.Literal["deterministicLc", b"deterministicLc", "deterministicLg", b"deterministicLg", "elementName", b"elementName", "fallbackLc", b"fallbackLc", "fallbackLg", b"fallbackLg", "hydratedHsm", b"hydratedHsm", "localizableParams", b"localizableParams", "namespace", b"namespace", "params", b"params"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class HistoryShareMessageEntry(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        STANZAID_FIELD_NUMBER: _builtins.int
+        MESSAGESECRETPROOF_FIELD_NUMBER: _builtins.int
+        stanzaId: _builtins.str
+        messageSecretProof: _builtins.bytes
+        def __init__(
+            self,
+            *,
+            stanzaId: _builtins.str | None = ...,
+            messageSecretProof: _builtins.bytes | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["messageSecretProof", b"messageSecretProof", "stanzaId", b"stanzaId"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["messageSecretProof", b"messageSecretProof", "stanzaId", b"stanzaId"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -12517,6 +15218,31 @@ class Message(_message.Message):
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
+    class MarkAsVerifiedAction(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        USERJIDSTRING_FIELD_NUMBER: _builtins.int
+        VERIFIED_FIELD_NUMBER: _builtins.int
+        VERIFIEDIDENTITYKEY_FIELD_NUMBER: _builtins.int
+        ACTIONSEQ_FIELD_NUMBER: _builtins.int
+        userJidString: _builtins.str
+        verified: _builtins.bool
+        verifiedIdentityKey: _builtins.bytes
+        actionSeq: _builtins.int
+        def __init__(
+            self,
+            *,
+            userJidString: _builtins.str | None = ...,
+            verified: _builtins.bool | None = ...,
+            verifiedIdentityKey: _builtins.bytes | None = ...,
+            actionSeq: _builtins.int | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["actionSeq", b"actionSeq", "userJidString", b"userJidString", "verified", b"verified", "verifiedIdentityKey", b"verifiedIdentityKey"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["actionSeq", b"actionSeq", "userJidString", b"userJidString", "verified", b"verified", "verifiedIdentityKey", b"verifiedIdentityKey"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class MessageHistoryBundle(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -12591,19 +15317,66 @@ class Message(_message.Message):
 
         CONTEXTINFO_FIELD_NUMBER: _builtins.int
         MESSAGEHISTORYMETADATA_FIELD_NUMBER: _builtins.int
+        BOTHISTORYSHARESYNCMETADATA_FIELD_NUMBER: _builtins.int
         @_builtins.property
         def contextInfo(self) -> Global___ContextInfo: ...
         @_builtins.property
         def messageHistoryMetadata(self) -> Global___Message.MessageHistoryMetadata: ...
+        @_builtins.property
+        def botHistoryShareSyncMetadata(self) -> Global___Message.BotHistoryShareSyncMetadata: ...
         def __init__(
             self,
             *,
             contextInfo: Global___ContextInfo | None = ...,
             messageHistoryMetadata: Global___Message.MessageHistoryMetadata | None = ...,
+            botHistoryShareSyncMetadata: Global___Message.BotHistoryShareSyncMetadata | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["contextInfo", b"contextInfo", "messageHistoryMetadata", b"messageHistoryMetadata"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["botHistoryShareSyncMetadata", b"botHistoryShareSyncMetadata", "contextInfo", b"contextInfo", "messageHistoryMetadata", b"messageHistoryMetadata"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["contextInfo", b"contextInfo", "messageHistoryMetadata", b"messageHistoryMetadata"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["botHistoryShareSyncMetadata", b"botHistoryShareSyncMetadata", "contextInfo", b"contextInfo", "messageHistoryMetadata", b"messageHistoryMetadata"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class MusicMessage(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        class _MusicMessageStyle:
+            ValueType = _typing.NewType("ValueType", _builtins.int)
+            V: _TypeAlias = ValueType  # noqa: Y015
+
+        class _MusicMessageStyleEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[Message.MusicMessage._MusicMessageStyle.ValueType], _builtins.type):
+            DESCRIPTOR: _descriptor.EnumDescriptor
+            UNKNOWN: Message.MusicMessage._MusicMessageStyle.ValueType  # 0
+            VINYL: Message.MusicMessage._MusicMessageStyle.ValueType  # 1
+
+        class MusicMessageStyle(_MusicMessageStyle, metaclass=_MusicMessageStyleEnumTypeWrapper): ...
+        UNKNOWN: Message.MusicMessage.MusicMessageStyle.ValueType  # 0
+        VINYL: Message.MusicMessage.MusicMessageStyle.ValueType  # 1
+
+        EMBEDDEDMUSIC_FIELD_NUMBER: _builtins.int
+        SONGURI_FIELD_NUMBER: _builtins.int
+        ARTWORKURI_FIELD_NUMBER: _builtins.int
+        STYLE_FIELD_NUMBER: _builtins.int
+        CONTEXTINFO_FIELD_NUMBER: _builtins.int
+        songUri: _builtins.str
+        artworkUri: _builtins.str
+        style: _builtins.int
+        @_builtins.property
+        def embeddedMusic(self) -> Global___EmbeddedMusic: ...
+        @_builtins.property
+        def contextInfo(self) -> Global___ContextInfo: ...
+        def __init__(
+            self,
+            *,
+            embeddedMusic: Global___EmbeddedMusic | None = ...,
+            songUri: _builtins.str | None = ...,
+            artworkUri: _builtins.str | None = ...,
+            style: _builtins.int | None = ...,
+            contextInfo: Global___ContextInfo | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["artworkUri", b"artworkUri", "contextInfo", b"contextInfo", "embeddedMusic", b"embeddedMusic", "songUri", b"songUri", "style", b"style"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["artworkUri", b"artworkUri", "contextInfo", b"contextInfo", "embeddedMusic", b"embeddedMusic", "songUri", b"songUri", "style", b"style"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -12759,17 +15532,20 @@ class Message(_message.Message):
 
         TYPE_FIELD_NUMBER: _builtins.int
         PLATFORM_FIELD_NUMBER: _builtins.int
+        MESSAGEPARAMSJSON_FIELD_NUMBER: _builtins.int
         type: _builtins.int
         platform: _builtins.str
+        messageParamsJson: _builtins.str
         def __init__(
             self,
             *,
             type: _builtins.int | None = ...,
             platform: _builtins.str | None = ...,
+            messageParamsJson: _builtins.str | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["platform", b"platform", "type", b"type"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["messageParamsJson", b"messageParamsJson", "platform", b"platform", "type", b"type"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["platform", b"platform", "type", b"type"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["messageParamsJson", b"messageParamsJson", "platform", b"platform", "type", b"type"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -12799,12 +15575,14 @@ class Message(_message.Message):
             FBPAY: Message.PaymentInviteMessage._ServiceType.ValueType  # 1
             NOVI: Message.PaymentInviteMessage._ServiceType.ValueType  # 2
             UPI: Message.PaymentInviteMessage._ServiceType.ValueType  # 3
+            PIX: Message.PaymentInviteMessage._ServiceType.ValueType  # 4
 
         class ServiceType(_ServiceType, metaclass=_ServiceTypeEnumTypeWrapper): ...
         UNKNOWN: Message.PaymentInviteMessage.ServiceType.ValueType  # 0
         FBPAY: Message.PaymentInviteMessage.ServiceType.ValueType  # 1
         NOVI: Message.PaymentInviteMessage.ServiceType.ValueType  # 2
         UPI: Message.PaymentInviteMessage.ServiceType.ValueType  # 3
+        PIX: Message.PaymentInviteMessage.ServiceType.ValueType  # 4
 
         SERVICETYPE_FIELD_NUMBER: _builtins.int
         EXPIRYTIMESTAMP_FIELD_NUMBER: _builtins.int
@@ -13436,6 +16214,32 @@ class Message(_message.Message):
                 def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
             @_typing.final
+            class ContactRefreshResponse(_message.Message):
+                DESCRIPTOR: _descriptor.Descriptor
+
+                COVEREDREQUESTIDS_FIELD_NUMBER: _builtins.int
+                COLLECTIONVERSION_FIELD_NUMBER: _builtins.int
+                PRIMARYDURATIONMS_FIELD_NUMBER: _builtins.int
+                UNIQUECONTACTCOUNT_FIELD_NUMBER: _builtins.int
+                collectionVersion: _builtins.int
+                primaryDurationMs: _builtins.int
+                uniqueContactCount: _builtins.int
+                @_builtins.property
+                def coveredRequestIds(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
+                def __init__(
+                    self,
+                    *,
+                    coveredRequestIds: _abc.Iterable[_builtins.str] | None = ...,
+                    collectionVersion: _builtins.int | None = ...,
+                    primaryDurationMs: _builtins.int | None = ...,
+                    uniqueContactCount: _builtins.int | None = ...,
+                ) -> None: ...
+                _HasFieldArgType: _TypeAlias = _typing.Literal["collectionVersion", b"collectionVersion", "primaryDurationMs", b"primaryDurationMs", "uniqueContactCount", b"uniqueContactCount"]  # noqa: Y015
+                def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+                _ClearFieldArgType: _TypeAlias = _typing.Literal["collectionVersion", b"collectionVersion", "coveredRequestIds", b"coveredRequestIds", "primaryDurationMs", b"primaryDurationMs", "uniqueContactCount", b"uniqueContactCount"]  # noqa: Y015
+                def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+            @_typing.final
             class FlowResponsesCsvBundle(_message.Message):
                 DESCRIPTOR: _descriptor.Descriptor
 
@@ -13693,6 +16497,7 @@ class Message(_message.Message):
             HISTORYSYNCCHUNKRETRYRESPONSE_FIELD_NUMBER: _builtins.int
             FLOWRESPONSESCSVBUNDLE_FIELD_NUMBER: _builtins.int
             BIZBROADCASTINSIGHTSCONTACTLISTRESPONSE_FIELD_NUMBER: _builtins.int
+            CONTACTREFRESHRESPONSE_FIELD_NUMBER: _builtins.int
             mediaUploadResult: Global___MediaRetryNotification.ResultType.ValueType
             @_builtins.property
             def stickerMessage(self) -> Global___Message.StickerMessage: ...
@@ -13716,6 +16521,8 @@ class Message(_message.Message):
             def flowResponsesCsvBundle(self) -> Global___Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.FlowResponsesCsvBundle: ...
             @_builtins.property
             def bizBroadcastInsightsContactListResponse(self) -> Global___Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.BizBroadcastInsightsContactListResponse: ...
+            @_builtins.property
+            def contactRefreshResponse(self) -> Global___Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.ContactRefreshResponse: ...
             def __init__(
                 self,
                 *,
@@ -13731,10 +16538,11 @@ class Message(_message.Message):
                 historySyncChunkRetryResponse: Global___Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.HistorySyncChunkRetryResponse | None = ...,
                 flowResponsesCsvBundle: Global___Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.FlowResponsesCsvBundle | None = ...,
                 bizBroadcastInsightsContactListResponse: Global___Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.BizBroadcastInsightsContactListResponse | None = ...,
+                contactRefreshResponse: Global___Message.PeerDataOperationRequestResponseMessage.PeerDataOperationResult.ContactRefreshResponse | None = ...,
             ) -> None: ...
-            _HasFieldArgType: _TypeAlias = _typing.Literal["bizBroadcastInsightsContactListResponse", b"bizBroadcastInsightsContactListResponse", "companionCanonicalUserNonceFetchRequestResponse", b"companionCanonicalUserNonceFetchRequestResponse", "companionMetaNonceFetchRequestResponse", b"companionMetaNonceFetchRequestResponse", "flowResponsesCsvBundle", b"flowResponsesCsvBundle", "fullHistorySyncOnDemandRequestResponse", b"fullHistorySyncOnDemandRequestResponse", "historySyncChunkRetryResponse", b"historySyncChunkRetryResponse", "linkPreviewResponse", b"linkPreviewResponse", "mediaUploadResult", b"mediaUploadResult", "placeholderMessageResendResponse", b"placeholderMessageResendResponse", "stickerMessage", b"stickerMessage", "syncdSnapshotFatalRecoveryResponse", b"syncdSnapshotFatalRecoveryResponse", "waffleNonceFetchRequestResponse", b"waffleNonceFetchRequestResponse"]  # noqa: Y015
+            _HasFieldArgType: _TypeAlias = _typing.Literal["bizBroadcastInsightsContactListResponse", b"bizBroadcastInsightsContactListResponse", "companionCanonicalUserNonceFetchRequestResponse", b"companionCanonicalUserNonceFetchRequestResponse", "companionMetaNonceFetchRequestResponse", b"companionMetaNonceFetchRequestResponse", "contactRefreshResponse", b"contactRefreshResponse", "flowResponsesCsvBundle", b"flowResponsesCsvBundle", "fullHistorySyncOnDemandRequestResponse", b"fullHistorySyncOnDemandRequestResponse", "historySyncChunkRetryResponse", b"historySyncChunkRetryResponse", "linkPreviewResponse", b"linkPreviewResponse", "mediaUploadResult", b"mediaUploadResult", "placeholderMessageResendResponse", b"placeholderMessageResendResponse", "stickerMessage", b"stickerMessage", "syncdSnapshotFatalRecoveryResponse", b"syncdSnapshotFatalRecoveryResponse", "waffleNonceFetchRequestResponse", b"waffleNonceFetchRequestResponse"]  # noqa: Y015
             def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-            _ClearFieldArgType: _TypeAlias = _typing.Literal["bizBroadcastInsightsContactListResponse", b"bizBroadcastInsightsContactListResponse", "companionCanonicalUserNonceFetchRequestResponse", b"companionCanonicalUserNonceFetchRequestResponse", "companionMetaNonceFetchRequestResponse", b"companionMetaNonceFetchRequestResponse", "flowResponsesCsvBundle", b"flowResponsesCsvBundle", "fullHistorySyncOnDemandRequestResponse", b"fullHistorySyncOnDemandRequestResponse", "historySyncChunkRetryResponse", b"historySyncChunkRetryResponse", "linkPreviewResponse", b"linkPreviewResponse", "mediaUploadResult", b"mediaUploadResult", "placeholderMessageResendResponse", b"placeholderMessageResendResponse", "stickerMessage", b"stickerMessage", "syncdSnapshotFatalRecoveryResponse", b"syncdSnapshotFatalRecoveryResponse", "waffleNonceFetchRequestResponse", b"waffleNonceFetchRequestResponse"]  # noqa: Y015
+            _ClearFieldArgType: _TypeAlias = _typing.Literal["bizBroadcastInsightsContactListResponse", b"bizBroadcastInsightsContactListResponse", "companionCanonicalUserNonceFetchRequestResponse", b"companionCanonicalUserNonceFetchRequestResponse", "companionMetaNonceFetchRequestResponse", b"companionMetaNonceFetchRequestResponse", "contactRefreshResponse", b"contactRefreshResponse", "flowResponsesCsvBundle", b"flowResponsesCsvBundle", "fullHistorySyncOnDemandRequestResponse", b"fullHistorySyncOnDemandRequestResponse", "historySyncChunkRetryResponse", b"historySyncChunkRetryResponse", "linkPreviewResponse", b"linkPreviewResponse", "mediaUploadResult", b"mediaUploadResult", "placeholderMessageResendResponse", b"placeholderMessageResendResponse", "stickerMessage", b"stickerMessage", "syncdSnapshotFatalRecoveryResponse", b"syncdSnapshotFatalRecoveryResponse", "waffleNonceFetchRequestResponse", b"waffleNonceFetchRequestResponse"]  # noqa: Y015
             def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
         PEERDATAOPERATIONREQUESTTYPE_FIELD_NUMBER: _builtins.int
@@ -14188,6 +16996,8 @@ class Message(_message.Message):
             MESSAGE_UNSCHEDULE: Message.ProtocolMessage._Type.ValueType  # 32
             CHAT_THEME_SETTING: Message.ProtocolMessage._Type.ValueType  # 34
             AI_METADATA_OPERATION: Message.ProtocolMessage._Type.ValueType  # 35
+            MARK_AS_VERIFIED_ACTION: Message.ProtocolMessage._Type.ValueType  # 36
+            COEX_STATE_SYNC: Message.ProtocolMessage._Type.ValueType  # 37
 
         class Type(_Type, metaclass=_TypeEnumTypeWrapper): ...
         REVOKE: Message.ProtocolMessage.Type.ValueType  # 0
@@ -14220,6 +17030,8 @@ class Message(_message.Message):
         MESSAGE_UNSCHEDULE: Message.ProtocolMessage.Type.ValueType  # 32
         CHAT_THEME_SETTING: Message.ProtocolMessage.Type.ValueType  # 34
         AI_METADATA_OPERATION: Message.ProtocolMessage.Type.ValueType  # 35
+        MARK_AS_VERIFIED_ACTION: Message.ProtocolMessage.Type.ValueType  # 36
+        COEX_STATE_SYNC: Message.ProtocolMessage.Type.ValueType  # 37
 
         KEY_FIELD_NUMBER: _builtins.int
         TYPE_FIELD_NUMBER: _builtins.int
@@ -14249,6 +17061,8 @@ class Message(_message.Message):
         AFTERREADDURATION_FIELD_NUMBER: _builtins.int
         CHATTHEMESETTING_FIELD_NUMBER: _builtins.int
         AIMETADATAOPERATION_FIELD_NUMBER: _builtins.int
+        MARKASVERIFIEDACTION_FIELD_NUMBER: _builtins.int
+        COEXSTATESYNC_FIELD_NUMBER: _builtins.int
         type: Global___Message.ProtocolMessage.Type.ValueType
         ephemeralExpiration: _builtins.int
         ephemeralSettingTimestamp: _builtins.int
@@ -14298,6 +17112,10 @@ class Message(_message.Message):
         def chatThemeSetting(self) -> Global___Message.ChatThemeSetting: ...
         @_builtins.property
         def aiMetadataOperation(self) -> Global___AIMetadataOperation: ...
+        @_builtins.property
+        def markAsVerifiedAction(self) -> Global___Message.MarkAsVerifiedAction: ...
+        @_builtins.property
+        def coexStateSync(self) -> Global___CoexStateSync: ...
         def __init__(
             self,
             *,
@@ -14329,10 +17147,12 @@ class Message(_message.Message):
             afterReadDuration: _builtins.int | None = ...,
             chatThemeSetting: Global___Message.ChatThemeSetting | None = ...,
             aiMetadataOperation: Global___AIMetadataOperation | None = ...,
+            markAsVerifiedAction: Global___Message.MarkAsVerifiedAction | None = ...,
+            coexStateSync: Global___CoexStateSync | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["afterReadDuration", b"afterReadDuration", "aiMediaCollectionMessage", b"aiMediaCollectionMessage", "aiMetadataOperation", b"aiMetadataOperation", "aiPsiMetadata", b"aiPsiMetadata", "aiQueryFanout", b"aiQueryFanout", "appStateFatalExceptionNotification", b"appStateFatalExceptionNotification", "appStateSyncKeyRequest", b"appStateSyncKeyRequest", "appStateSyncKeyShare", b"appStateSyncKeyShare", "botFeedbackMessage", b"botFeedbackMessage", "chatThemeSetting", b"chatThemeSetting", "cloudApiThreadControlNotification", b"cloudApiThreadControlNotification", "disappearingMode", b"disappearingMode", "editedMessage", b"editedMessage", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "historySyncNotification", b"historySyncNotification", "initialSecurityNotificationSettingSync", b"initialSecurityNotificationSettingSync", "invokerJid", b"invokerJid", "key", b"key", "lidMigrationMappingSyncMessage", b"lidMigrationMappingSyncMessage", "limitSharing", b"limitSharing", "mediaNotifyMessage", b"mediaNotifyMessage", "memberLabel", b"memberLabel", "peerDataOperationRequestMessage", b"peerDataOperationRequestMessage", "peerDataOperationRequestResponseMessage", b"peerDataOperationRequestResponseMessage", "requestWelcomeMessageMetadata", b"requestWelcomeMessageMetadata", "timestampMs", b"timestampMs", "type", b"type"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["afterReadDuration", b"afterReadDuration", "aiMediaCollectionMessage", b"aiMediaCollectionMessage", "aiMetadataOperation", b"aiMetadataOperation", "aiPsiMetadata", b"aiPsiMetadata", "aiQueryFanout", b"aiQueryFanout", "appStateFatalExceptionNotification", b"appStateFatalExceptionNotification", "appStateSyncKeyRequest", b"appStateSyncKeyRequest", "appStateSyncKeyShare", b"appStateSyncKeyShare", "botFeedbackMessage", b"botFeedbackMessage", "chatThemeSetting", b"chatThemeSetting", "cloudApiThreadControlNotification", b"cloudApiThreadControlNotification", "coexStateSync", b"coexStateSync", "disappearingMode", b"disappearingMode", "editedMessage", b"editedMessage", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "historySyncNotification", b"historySyncNotification", "initialSecurityNotificationSettingSync", b"initialSecurityNotificationSettingSync", "invokerJid", b"invokerJid", "key", b"key", "lidMigrationMappingSyncMessage", b"lidMigrationMappingSyncMessage", "limitSharing", b"limitSharing", "markAsVerifiedAction", b"markAsVerifiedAction", "mediaNotifyMessage", b"mediaNotifyMessage", "memberLabel", b"memberLabel", "peerDataOperationRequestMessage", b"peerDataOperationRequestMessage", "peerDataOperationRequestResponseMessage", b"peerDataOperationRequestResponseMessage", "requestWelcomeMessageMetadata", b"requestWelcomeMessageMetadata", "timestampMs", b"timestampMs", "type", b"type"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["afterReadDuration", b"afterReadDuration", "aiMediaCollectionMessage", b"aiMediaCollectionMessage", "aiMetadataOperation", b"aiMetadataOperation", "aiPsiMetadata", b"aiPsiMetadata", "aiQueryFanout", b"aiQueryFanout", "appStateFatalExceptionNotification", b"appStateFatalExceptionNotification", "appStateSyncKeyRequest", b"appStateSyncKeyRequest", "appStateSyncKeyShare", b"appStateSyncKeyShare", "botFeedbackMessage", b"botFeedbackMessage", "chatThemeSetting", b"chatThemeSetting", "cloudApiThreadControlNotification", b"cloudApiThreadControlNotification", "disappearingMode", b"disappearingMode", "editedMessage", b"editedMessage", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "historySyncNotification", b"historySyncNotification", "initialSecurityNotificationSettingSync", b"initialSecurityNotificationSettingSync", "invokerJid", b"invokerJid", "key", b"key", "lidMigrationMappingSyncMessage", b"lidMigrationMappingSyncMessage", "limitSharing", b"limitSharing", "mediaNotifyMessage", b"mediaNotifyMessage", "memberLabel", b"memberLabel", "peerDataOperationRequestMessage", b"peerDataOperationRequestMessage", "peerDataOperationRequestResponseMessage", b"peerDataOperationRequestResponseMessage", "requestWelcomeMessageMetadata", b"requestWelcomeMessageMetadata", "timestampMs", b"timestampMs", "type", b"type"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["afterReadDuration", b"afterReadDuration", "aiMediaCollectionMessage", b"aiMediaCollectionMessage", "aiMetadataOperation", b"aiMetadataOperation", "aiPsiMetadata", b"aiPsiMetadata", "aiQueryFanout", b"aiQueryFanout", "appStateFatalExceptionNotification", b"appStateFatalExceptionNotification", "appStateSyncKeyRequest", b"appStateSyncKeyRequest", "appStateSyncKeyShare", b"appStateSyncKeyShare", "botFeedbackMessage", b"botFeedbackMessage", "chatThemeSetting", b"chatThemeSetting", "cloudApiThreadControlNotification", b"cloudApiThreadControlNotification", "coexStateSync", b"coexStateSync", "disappearingMode", b"disappearingMode", "editedMessage", b"editedMessage", "ephemeralExpiration", b"ephemeralExpiration", "ephemeralSettingTimestamp", b"ephemeralSettingTimestamp", "historySyncNotification", b"historySyncNotification", "initialSecurityNotificationSettingSync", b"initialSecurityNotificationSettingSync", "invokerJid", b"invokerJid", "key", b"key", "lidMigrationMappingSyncMessage", b"lidMigrationMappingSyncMessage", "limitSharing", b"limitSharing", "markAsVerifiedAction", b"markAsVerifiedAction", "mediaNotifyMessage", b"mediaNotifyMessage", "memberLabel", b"memberLabel", "peerDataOperationRequestMessage", b"peerDataOperationRequestMessage", "peerDataOperationRequestResponseMessage", b"peerDataOperationRequestResponseMessage", "requestWelcomeMessageMetadata", b"requestWelcomeMessageMetadata", "timestampMs", b"timestampMs", "type", b"type"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -14741,6 +17561,58 @@ class Message(_message.Message):
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
+    class SplitPaymentUpdateMessage(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        SPLITID_FIELD_NUMBER: _builtins.int
+        PARTICIPANTJID_FIELD_NUMBER: _builtins.int
+        splitId: _builtins.str
+        participantJid: _builtins.str
+        def __init__(
+            self,
+            *,
+            splitId: _builtins.str | None = ...,
+            participantJid: _builtins.str | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["participantJid", b"participantJid", "splitId", b"splitId"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["participantJid", b"participantJid", "splitId", b"splitId"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class StatusLinkPreviewMetadata(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        class _Style:
+            ValueType = _typing.NewType("ValueType", _builtins.int)
+            V: _TypeAlias = ValueType  # noqa: Y015
+
+        class _StyleEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[Message.StatusLinkPreviewMetadata._Style.ValueType], _builtins.type):
+            DESCRIPTOR: _descriptor.EnumDescriptor
+            AUTO: Message.StatusLinkPreviewMetadata._Style.ValueType  # 0
+            COMPACT: Message.StatusLinkPreviewMetadata._Style.ValueType  # 1
+            FULL: Message.StatusLinkPreviewMetadata._Style.ValueType  # 2
+            IMMERSIVE: Message.StatusLinkPreviewMetadata._Style.ValueType  # 3
+
+        class Style(_Style, metaclass=_StyleEnumTypeWrapper): ...
+        AUTO: Message.StatusLinkPreviewMetadata.Style.ValueType  # 0
+        COMPACT: Message.StatusLinkPreviewMetadata.Style.ValueType  # 1
+        FULL: Message.StatusLinkPreviewMetadata.Style.ValueType  # 2
+        IMMERSIVE: Message.StatusLinkPreviewMetadata.Style.ValueType  # 3
+
+        STYLE_FIELD_NUMBER: _builtins.int
+        style: Global___Message.StatusLinkPreviewMetadata.Style.ValueType
+        def __init__(
+            self,
+            *,
+            style: Global___Message.StatusLinkPreviewMetadata.Style.ValueType | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["style", b"style"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["style", b"style"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class StatusNotificationMessage(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -14754,12 +17626,14 @@ class Message(_message.Message):
             STATUS_ADD_YOURS: Message.StatusNotificationMessage._StatusNotificationType.ValueType  # 1
             STATUS_RESHARE: Message.StatusNotificationMessage._StatusNotificationType.ValueType  # 2
             STATUS_QUESTION_ANSWER_RESHARE: Message.StatusNotificationMessage._StatusNotificationType.ValueType  # 3
+            STATUS_GROUP_STATUS_REPLY: Message.StatusNotificationMessage._StatusNotificationType.ValueType  # 4
 
         class StatusNotificationType(_StatusNotificationType, metaclass=_StatusNotificationTypeEnumTypeWrapper): ...
         UNKNOWN: Message.StatusNotificationMessage.StatusNotificationType.ValueType  # 0
         STATUS_ADD_YOURS: Message.StatusNotificationMessage.StatusNotificationType.ValueType  # 1
         STATUS_RESHARE: Message.StatusNotificationMessage.StatusNotificationType.ValueType  # 2
         STATUS_QUESTION_ANSWER_RESHARE: Message.StatusNotificationMessage.StatusNotificationType.ValueType  # 3
+        STATUS_GROUP_STATUS_REPLY: Message.StatusNotificationMessage.StatusNotificationType.ValueType  # 4
 
         RESPONSEMESSAGEKEY_FIELD_NUMBER: _builtins.int
         ORIGINALMESSAGEKEY_FIELD_NUMBER: _builtins.int
@@ -15560,6 +18434,10 @@ class Message(_message.Message):
     SPLITPAYMENTMESSAGE_FIELD_NUMBER: _builtins.int
     NEWSLETTERADMINPROFILESTATUSMESSAGE_FIELD_NUMBER: _builtins.int
     ROOTSECRETDISTRIBUTEMESSAGE_FIELD_NUMBER: _builtins.int
+    SPLITPAYMENTUPDATEMESSAGE_FIELD_NUMBER: _builtins.int
+    MUSICMESSAGE_FIELD_NUMBER: _builtins.int
+    STATUSLINKPREVIEWMETADATA_FIELD_NUMBER: _builtins.int
+    BOTPLATFORMREGISTRATIONSUCCESSMESSAGE_FIELD_NUMBER: _builtins.int
     conversation: _builtins.str
     @_builtins.property
     def senderKeyDistributionMessage(self) -> Global___Message.SenderKeyDistributionMessage: ...
@@ -15773,6 +18651,14 @@ class Message(_message.Message):
     def newsletterAdminProfileStatusMessage(self) -> Global___Message.FutureProofMessage: ...
     @_builtins.property
     def rootSecretDistributeMessage(self) -> Global___Message.RootSecretDistributeMessage: ...
+    @_builtins.property
+    def splitPaymentUpdateMessage(self) -> Global___Message.SplitPaymentUpdateMessage: ...
+    @_builtins.property
+    def musicMessage(self) -> Global___Message.MusicMessage: ...
+    @_builtins.property
+    def statusLinkPreviewMetadata(self) -> Global___Message.StatusLinkPreviewMetadata: ...
+    @_builtins.property
+    def botPlatformRegistrationSuccessMessage(self) -> Global___Message.FutureProofMessage: ...
     def __init__(
         self,
         *,
@@ -15883,10 +18769,14 @@ class Message(_message.Message):
         splitPaymentMessage: Global___Message.SplitPaymentMessage | None = ...,
         newsletterAdminProfileStatusMessage: Global___Message.FutureProofMessage | None = ...,
         rootSecretDistributeMessage: Global___Message.RootSecretDistributeMessage | None = ...,
+        splitPaymentUpdateMessage: Global___Message.SplitPaymentUpdateMessage | None = ...,
+        musicMessage: Global___Message.MusicMessage | None = ...,
+        statusLinkPreviewMetadata: Global___Message.StatusLinkPreviewMetadata | None = ...,
+        botPlatformRegistrationSuccessMessage: Global___Message.FutureProofMessage | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["albumMessage", b"albumMessage", "associatedChildMessage", b"associatedChildMessage", "audioMessage", b"audioMessage", "bcallMessage", b"bcallMessage", "botForwardedMessage", b"botForwardedMessage", "botInvokeMessage", b"botInvokeMessage", "botTaskMessage", b"botTaskMessage", "buttonsMessage", b"buttonsMessage", "buttonsResponseMessage", b"buttonsResponseMessage", "call", b"call", "callLogMesssage", b"callLogMesssage", "cancelPaymentRequestMessage", b"cancelPaymentRequestMessage", "chat", b"chat", "commentMessage", b"commentMessage", "conditionalRevealMessage", b"conditionalRevealMessage", "contactMessage", b"contactMessage", "contactsArrayMessage", b"contactsArrayMessage", "conversation", b"conversation", "declinePaymentRequestMessage", b"declinePaymentRequestMessage", "deviceSentMessage", b"deviceSentMessage", "documentMessage", b"documentMessage", "documentWithCaptionMessage", b"documentWithCaptionMessage", "editedMessage", b"editedMessage", "encCommentMessage", b"encCommentMessage", "encEventResponseMessage", b"encEventResponseMessage", "encReactionMessage", b"encReactionMessage", "ephemeralMessage", b"ephemeralMessage", "eventCoverImage", b"eventCoverImage", "eventInviteMessage", b"eventInviteMessage", "eventMessage", b"eventMessage", "extendedTextMessage", b"extendedTextMessage", "fastRatchetKeySenderKeyDistributionMessage", b"fastRatchetKeySenderKeyDistributionMessage", "groupInviteMessage", b"groupInviteMessage", "groupMentionedMessage", b"groupMentionedMessage", "groupRootKeyShare", b"groupRootKeyShare", "groupStatusMentionMessage", b"groupStatusMentionMessage", "groupStatusMessage", b"groupStatusMessage", "groupStatusMessageV2", b"groupStatusMessageV2", "highlyStructuredMessage", b"highlyStructuredMessage", "imageMessage", b"imageMessage", "interactiveMessage", b"interactiveMessage", "interactiveResponseMessage", b"interactiveResponseMessage", "invoiceMessage", b"invoiceMessage", "keepInChatMessage", b"keepInChatMessage", "limitSharingMessage", b"limitSharingMessage", "listMessage", b"listMessage", "listResponseMessage", b"listResponseMessage", "liveLocationMessage", b"liveLocationMessage", "locationMessage", b"locationMessage", "lottieStickerMessage", b"lottieStickerMessage", "messageContextInfo", b"messageContextInfo", "messageHistoryBundle", b"messageHistoryBundle", "messageHistoryNotice", b"messageHistoryNotice", "newsletterAdminInviteMessage", b"newsletterAdminInviteMessage", "newsletterAdminProfileMessage", b"newsletterAdminProfileMessage", "newsletterAdminProfileMessageV2", b"newsletterAdminProfileMessageV2", "newsletterAdminProfileStatusMessage", b"newsletterAdminProfileStatusMessage", "newsletterFollowerInviteMessageV2", b"newsletterFollowerInviteMessageV2", "orderMessage", b"orderMessage", "paymentInviteMessage", b"paymentInviteMessage", "paymentReminderMessage", b"paymentReminderMessage", "pinInChatMessage", b"pinInChatMessage", "placeholderMessage", b"placeholderMessage", "pollAddOptionMessage", b"pollAddOptionMessage", "pollCreationMessage", b"pollCreationMessage", "pollCreationMessageV2", b"pollCreationMessageV2", "pollCreationMessageV3", b"pollCreationMessageV3", "pollCreationMessageV4", b"pollCreationMessageV4", "pollCreationMessageV5", b"pollCreationMessageV5", "pollCreationMessageV6", b"pollCreationMessageV6", "pollCreationOptionImageMessage", b"pollCreationOptionImageMessage", "pollResultSnapshotMessage", b"pollResultSnapshotMessage", "pollResultSnapshotMessageV3", b"pollResultSnapshotMessageV3", "pollUpdateMessage", b"pollUpdateMessage", "productMessage", b"productMessage", "protocolMessage", b"protocolMessage", "ptvMessage", b"ptvMessage", "questionMessage", b"questionMessage", "questionReplyMessage", b"questionReplyMessage", "questionResponseMessage", b"questionResponseMessage", "reactionMessage", b"reactionMessage", "requestPaymentMessage", b"requestPaymentMessage", "requestPhoneNumberMessage", b"requestPhoneNumberMessage", "richResponseMessage", b"richResponseMessage", "rootSecretDistributeMessage", b"rootSecretDistributeMessage", "scheduledCallCreationMessage", b"scheduledCallCreationMessage", "scheduledCallEditMessage", b"scheduledCallEditMessage", "secretEncryptedMessage", b"secretEncryptedMessage", "sendPaymentMessage", b"sendPaymentMessage", "senderKeyDistributionMessage", b"senderKeyDistributionMessage", "splitPaymentMessage", b"splitPaymentMessage", "spoilerMessage", b"spoilerMessage", "statusAddYours", b"statusAddYours", "statusMentionMessage", b"statusMentionMessage", "statusNotificationMessage", b"statusNotificationMessage", "statusQuestionAnswerMessage", b"statusQuestionAnswerMessage", "statusQuotedMessage", b"statusQuotedMessage", "statusStickerInteractionMessage", b"statusStickerInteractionMessage", "stickerMessage", b"stickerMessage", "stickerPackMessage", b"stickerPackMessage", "stickerSyncRmrMessage", b"stickerSyncRmrMessage", "templateButtonReplyMessage", b"templateButtonReplyMessage", "templateMessage", b"templateMessage", "videoMessage", b"videoMessage", "viewOnceMessage", b"viewOnceMessage", "viewOnceMessageV2", b"viewOnceMessageV2", "viewOnceMessageV2Extension", b"viewOnceMessageV2Extension"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["albumMessage", b"albumMessage", "associatedChildMessage", b"associatedChildMessage", "audioMessage", b"audioMessage", "bcallMessage", b"bcallMessage", "botForwardedMessage", b"botForwardedMessage", "botInvokeMessage", b"botInvokeMessage", "botPlatformRegistrationSuccessMessage", b"botPlatformRegistrationSuccessMessage", "botTaskMessage", b"botTaskMessage", "buttonsMessage", b"buttonsMessage", "buttonsResponseMessage", b"buttonsResponseMessage", "call", b"call", "callLogMesssage", b"callLogMesssage", "cancelPaymentRequestMessage", b"cancelPaymentRequestMessage", "chat", b"chat", "commentMessage", b"commentMessage", "conditionalRevealMessage", b"conditionalRevealMessage", "contactMessage", b"contactMessage", "contactsArrayMessage", b"contactsArrayMessage", "conversation", b"conversation", "declinePaymentRequestMessage", b"declinePaymentRequestMessage", "deviceSentMessage", b"deviceSentMessage", "documentMessage", b"documentMessage", "documentWithCaptionMessage", b"documentWithCaptionMessage", "editedMessage", b"editedMessage", "encCommentMessage", b"encCommentMessage", "encEventResponseMessage", b"encEventResponseMessage", "encReactionMessage", b"encReactionMessage", "ephemeralMessage", b"ephemeralMessage", "eventCoverImage", b"eventCoverImage", "eventInviteMessage", b"eventInviteMessage", "eventMessage", b"eventMessage", "extendedTextMessage", b"extendedTextMessage", "fastRatchetKeySenderKeyDistributionMessage", b"fastRatchetKeySenderKeyDistributionMessage", "groupInviteMessage", b"groupInviteMessage", "groupMentionedMessage", b"groupMentionedMessage", "groupRootKeyShare", b"groupRootKeyShare", "groupStatusMentionMessage", b"groupStatusMentionMessage", "groupStatusMessage", b"groupStatusMessage", "groupStatusMessageV2", b"groupStatusMessageV2", "highlyStructuredMessage", b"highlyStructuredMessage", "imageMessage", b"imageMessage", "interactiveMessage", b"interactiveMessage", "interactiveResponseMessage", b"interactiveResponseMessage", "invoiceMessage", b"invoiceMessage", "keepInChatMessage", b"keepInChatMessage", "limitSharingMessage", b"limitSharingMessage", "listMessage", b"listMessage", "listResponseMessage", b"listResponseMessage", "liveLocationMessage", b"liveLocationMessage", "locationMessage", b"locationMessage", "lottieStickerMessage", b"lottieStickerMessage", "messageContextInfo", b"messageContextInfo", "messageHistoryBundle", b"messageHistoryBundle", "messageHistoryNotice", b"messageHistoryNotice", "musicMessage", b"musicMessage", "newsletterAdminInviteMessage", b"newsletterAdminInviteMessage", "newsletterAdminProfileMessage", b"newsletterAdminProfileMessage", "newsletterAdminProfileMessageV2", b"newsletterAdminProfileMessageV2", "newsletterAdminProfileStatusMessage", b"newsletterAdminProfileStatusMessage", "newsletterFollowerInviteMessageV2", b"newsletterFollowerInviteMessageV2", "orderMessage", b"orderMessage", "paymentInviteMessage", b"paymentInviteMessage", "paymentReminderMessage", b"paymentReminderMessage", "pinInChatMessage", b"pinInChatMessage", "placeholderMessage", b"placeholderMessage", "pollAddOptionMessage", b"pollAddOptionMessage", "pollCreationMessage", b"pollCreationMessage", "pollCreationMessageV2", b"pollCreationMessageV2", "pollCreationMessageV3", b"pollCreationMessageV3", "pollCreationMessageV4", b"pollCreationMessageV4", "pollCreationMessageV5", b"pollCreationMessageV5", "pollCreationMessageV6", b"pollCreationMessageV6", "pollCreationOptionImageMessage", b"pollCreationOptionImageMessage", "pollResultSnapshotMessage", b"pollResultSnapshotMessage", "pollResultSnapshotMessageV3", b"pollResultSnapshotMessageV3", "pollUpdateMessage", b"pollUpdateMessage", "productMessage", b"productMessage", "protocolMessage", b"protocolMessage", "ptvMessage", b"ptvMessage", "questionMessage", b"questionMessage", "questionReplyMessage", b"questionReplyMessage", "questionResponseMessage", b"questionResponseMessage", "reactionMessage", b"reactionMessage", "requestPaymentMessage", b"requestPaymentMessage", "requestPhoneNumberMessage", b"requestPhoneNumberMessage", "richResponseMessage", b"richResponseMessage", "rootSecretDistributeMessage", b"rootSecretDistributeMessage", "scheduledCallCreationMessage", b"scheduledCallCreationMessage", "scheduledCallEditMessage", b"scheduledCallEditMessage", "secretEncryptedMessage", b"secretEncryptedMessage", "sendPaymentMessage", b"sendPaymentMessage", "senderKeyDistributionMessage", b"senderKeyDistributionMessage", "splitPaymentMessage", b"splitPaymentMessage", "splitPaymentUpdateMessage", b"splitPaymentUpdateMessage", "spoilerMessage", b"spoilerMessage", "statusAddYours", b"statusAddYours", "statusLinkPreviewMetadata", b"statusLinkPreviewMetadata", "statusMentionMessage", b"statusMentionMessage", "statusNotificationMessage", b"statusNotificationMessage", "statusQuestionAnswerMessage", b"statusQuestionAnswerMessage", "statusQuotedMessage", b"statusQuotedMessage", "statusStickerInteractionMessage", b"statusStickerInteractionMessage", "stickerMessage", b"stickerMessage", "stickerPackMessage", b"stickerPackMessage", "stickerSyncRmrMessage", b"stickerSyncRmrMessage", "templateButtonReplyMessage", b"templateButtonReplyMessage", "templateMessage", b"templateMessage", "videoMessage", b"videoMessage", "viewOnceMessage", b"viewOnceMessage", "viewOnceMessageV2", b"viewOnceMessageV2", "viewOnceMessageV2Extension", b"viewOnceMessageV2Extension"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["albumMessage", b"albumMessage", "associatedChildMessage", b"associatedChildMessage", "audioMessage", b"audioMessage", "bcallMessage", b"bcallMessage", "botForwardedMessage", b"botForwardedMessage", "botInvokeMessage", b"botInvokeMessage", "botTaskMessage", b"botTaskMessage", "buttonsMessage", b"buttonsMessage", "buttonsResponseMessage", b"buttonsResponseMessage", "call", b"call", "callLogMesssage", b"callLogMesssage", "cancelPaymentRequestMessage", b"cancelPaymentRequestMessage", "chat", b"chat", "commentMessage", b"commentMessage", "conditionalRevealMessage", b"conditionalRevealMessage", "contactMessage", b"contactMessage", "contactsArrayMessage", b"contactsArrayMessage", "conversation", b"conversation", "declinePaymentRequestMessage", b"declinePaymentRequestMessage", "deviceSentMessage", b"deviceSentMessage", "documentMessage", b"documentMessage", "documentWithCaptionMessage", b"documentWithCaptionMessage", "editedMessage", b"editedMessage", "encCommentMessage", b"encCommentMessage", "encEventResponseMessage", b"encEventResponseMessage", "encReactionMessage", b"encReactionMessage", "ephemeralMessage", b"ephemeralMessage", "eventCoverImage", b"eventCoverImage", "eventInviteMessage", b"eventInviteMessage", "eventMessage", b"eventMessage", "extendedTextMessage", b"extendedTextMessage", "fastRatchetKeySenderKeyDistributionMessage", b"fastRatchetKeySenderKeyDistributionMessage", "groupInviteMessage", b"groupInviteMessage", "groupMentionedMessage", b"groupMentionedMessage", "groupRootKeyShare", b"groupRootKeyShare", "groupStatusMentionMessage", b"groupStatusMentionMessage", "groupStatusMessage", b"groupStatusMessage", "groupStatusMessageV2", b"groupStatusMessageV2", "highlyStructuredMessage", b"highlyStructuredMessage", "imageMessage", b"imageMessage", "interactiveMessage", b"interactiveMessage", "interactiveResponseMessage", b"interactiveResponseMessage", "invoiceMessage", b"invoiceMessage", "keepInChatMessage", b"keepInChatMessage", "limitSharingMessage", b"limitSharingMessage", "listMessage", b"listMessage", "listResponseMessage", b"listResponseMessage", "liveLocationMessage", b"liveLocationMessage", "locationMessage", b"locationMessage", "lottieStickerMessage", b"lottieStickerMessage", "messageContextInfo", b"messageContextInfo", "messageHistoryBundle", b"messageHistoryBundle", "messageHistoryNotice", b"messageHistoryNotice", "newsletterAdminInviteMessage", b"newsletterAdminInviteMessage", "newsletterAdminProfileMessage", b"newsletterAdminProfileMessage", "newsletterAdminProfileMessageV2", b"newsletterAdminProfileMessageV2", "newsletterAdminProfileStatusMessage", b"newsletterAdminProfileStatusMessage", "newsletterFollowerInviteMessageV2", b"newsletterFollowerInviteMessageV2", "orderMessage", b"orderMessage", "paymentInviteMessage", b"paymentInviteMessage", "paymentReminderMessage", b"paymentReminderMessage", "pinInChatMessage", b"pinInChatMessage", "placeholderMessage", b"placeholderMessage", "pollAddOptionMessage", b"pollAddOptionMessage", "pollCreationMessage", b"pollCreationMessage", "pollCreationMessageV2", b"pollCreationMessageV2", "pollCreationMessageV3", b"pollCreationMessageV3", "pollCreationMessageV4", b"pollCreationMessageV4", "pollCreationMessageV5", b"pollCreationMessageV5", "pollCreationMessageV6", b"pollCreationMessageV6", "pollCreationOptionImageMessage", b"pollCreationOptionImageMessage", "pollResultSnapshotMessage", b"pollResultSnapshotMessage", "pollResultSnapshotMessageV3", b"pollResultSnapshotMessageV3", "pollUpdateMessage", b"pollUpdateMessage", "productMessage", b"productMessage", "protocolMessage", b"protocolMessage", "ptvMessage", b"ptvMessage", "questionMessage", b"questionMessage", "questionReplyMessage", b"questionReplyMessage", "questionResponseMessage", b"questionResponseMessage", "reactionMessage", b"reactionMessage", "requestPaymentMessage", b"requestPaymentMessage", "requestPhoneNumberMessage", b"requestPhoneNumberMessage", "richResponseMessage", b"richResponseMessage", "rootSecretDistributeMessage", b"rootSecretDistributeMessage", "scheduledCallCreationMessage", b"scheduledCallCreationMessage", "scheduledCallEditMessage", b"scheduledCallEditMessage", "secretEncryptedMessage", b"secretEncryptedMessage", "sendPaymentMessage", b"sendPaymentMessage", "senderKeyDistributionMessage", b"senderKeyDistributionMessage", "splitPaymentMessage", b"splitPaymentMessage", "spoilerMessage", b"spoilerMessage", "statusAddYours", b"statusAddYours", "statusMentionMessage", b"statusMentionMessage", "statusNotificationMessage", b"statusNotificationMessage", "statusQuestionAnswerMessage", b"statusQuestionAnswerMessage", "statusQuotedMessage", b"statusQuotedMessage", "statusStickerInteractionMessage", b"statusStickerInteractionMessage", "stickerMessage", b"stickerMessage", "stickerPackMessage", b"stickerPackMessage", "stickerSyncRmrMessage", b"stickerSyncRmrMessage", "templateButtonReplyMessage", b"templateButtonReplyMessage", "templateMessage", b"templateMessage", "videoMessage", b"videoMessage", "viewOnceMessage", b"viewOnceMessage", "viewOnceMessageV2", b"viewOnceMessageV2", "viewOnceMessageV2Extension", b"viewOnceMessageV2Extension"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["albumMessage", b"albumMessage", "associatedChildMessage", b"associatedChildMessage", "audioMessage", b"audioMessage", "bcallMessage", b"bcallMessage", "botForwardedMessage", b"botForwardedMessage", "botInvokeMessage", b"botInvokeMessage", "botPlatformRegistrationSuccessMessage", b"botPlatformRegistrationSuccessMessage", "botTaskMessage", b"botTaskMessage", "buttonsMessage", b"buttonsMessage", "buttonsResponseMessage", b"buttonsResponseMessage", "call", b"call", "callLogMesssage", b"callLogMesssage", "cancelPaymentRequestMessage", b"cancelPaymentRequestMessage", "chat", b"chat", "commentMessage", b"commentMessage", "conditionalRevealMessage", b"conditionalRevealMessage", "contactMessage", b"contactMessage", "contactsArrayMessage", b"contactsArrayMessage", "conversation", b"conversation", "declinePaymentRequestMessage", b"declinePaymentRequestMessage", "deviceSentMessage", b"deviceSentMessage", "documentMessage", b"documentMessage", "documentWithCaptionMessage", b"documentWithCaptionMessage", "editedMessage", b"editedMessage", "encCommentMessage", b"encCommentMessage", "encEventResponseMessage", b"encEventResponseMessage", "encReactionMessage", b"encReactionMessage", "ephemeralMessage", b"ephemeralMessage", "eventCoverImage", b"eventCoverImage", "eventInviteMessage", b"eventInviteMessage", "eventMessage", b"eventMessage", "extendedTextMessage", b"extendedTextMessage", "fastRatchetKeySenderKeyDistributionMessage", b"fastRatchetKeySenderKeyDistributionMessage", "groupInviteMessage", b"groupInviteMessage", "groupMentionedMessage", b"groupMentionedMessage", "groupRootKeyShare", b"groupRootKeyShare", "groupStatusMentionMessage", b"groupStatusMentionMessage", "groupStatusMessage", b"groupStatusMessage", "groupStatusMessageV2", b"groupStatusMessageV2", "highlyStructuredMessage", b"highlyStructuredMessage", "imageMessage", b"imageMessage", "interactiveMessage", b"interactiveMessage", "interactiveResponseMessage", b"interactiveResponseMessage", "invoiceMessage", b"invoiceMessage", "keepInChatMessage", b"keepInChatMessage", "limitSharingMessage", b"limitSharingMessage", "listMessage", b"listMessage", "listResponseMessage", b"listResponseMessage", "liveLocationMessage", b"liveLocationMessage", "locationMessage", b"locationMessage", "lottieStickerMessage", b"lottieStickerMessage", "messageContextInfo", b"messageContextInfo", "messageHistoryBundle", b"messageHistoryBundle", "messageHistoryNotice", b"messageHistoryNotice", "musicMessage", b"musicMessage", "newsletterAdminInviteMessage", b"newsletterAdminInviteMessage", "newsletterAdminProfileMessage", b"newsletterAdminProfileMessage", "newsletterAdminProfileMessageV2", b"newsletterAdminProfileMessageV2", "newsletterAdminProfileStatusMessage", b"newsletterAdminProfileStatusMessage", "newsletterFollowerInviteMessageV2", b"newsletterFollowerInviteMessageV2", "orderMessage", b"orderMessage", "paymentInviteMessage", b"paymentInviteMessage", "paymentReminderMessage", b"paymentReminderMessage", "pinInChatMessage", b"pinInChatMessage", "placeholderMessage", b"placeholderMessage", "pollAddOptionMessage", b"pollAddOptionMessage", "pollCreationMessage", b"pollCreationMessage", "pollCreationMessageV2", b"pollCreationMessageV2", "pollCreationMessageV3", b"pollCreationMessageV3", "pollCreationMessageV4", b"pollCreationMessageV4", "pollCreationMessageV5", b"pollCreationMessageV5", "pollCreationMessageV6", b"pollCreationMessageV6", "pollCreationOptionImageMessage", b"pollCreationOptionImageMessage", "pollResultSnapshotMessage", b"pollResultSnapshotMessage", "pollResultSnapshotMessageV3", b"pollResultSnapshotMessageV3", "pollUpdateMessage", b"pollUpdateMessage", "productMessage", b"productMessage", "protocolMessage", b"protocolMessage", "ptvMessage", b"ptvMessage", "questionMessage", b"questionMessage", "questionReplyMessage", b"questionReplyMessage", "questionResponseMessage", b"questionResponseMessage", "reactionMessage", b"reactionMessage", "requestPaymentMessage", b"requestPaymentMessage", "requestPhoneNumberMessage", b"requestPhoneNumberMessage", "richResponseMessage", b"richResponseMessage", "rootSecretDistributeMessage", b"rootSecretDistributeMessage", "scheduledCallCreationMessage", b"scheduledCallCreationMessage", "scheduledCallEditMessage", b"scheduledCallEditMessage", "secretEncryptedMessage", b"secretEncryptedMessage", "sendPaymentMessage", b"sendPaymentMessage", "senderKeyDistributionMessage", b"senderKeyDistributionMessage", "splitPaymentMessage", b"splitPaymentMessage", "splitPaymentUpdateMessage", b"splitPaymentUpdateMessage", "spoilerMessage", b"spoilerMessage", "statusAddYours", b"statusAddYours", "statusLinkPreviewMetadata", b"statusLinkPreviewMetadata", "statusMentionMessage", b"statusMentionMessage", "statusNotificationMessage", b"statusNotificationMessage", "statusQuestionAnswerMessage", b"statusQuestionAnswerMessage", "statusQuotedMessage", b"statusQuotedMessage", "statusStickerInteractionMessage", b"statusStickerInteractionMessage", "stickerMessage", b"stickerMessage", "stickerPackMessage", b"stickerPackMessage", "stickerSyncRmrMessage", b"stickerSyncRmrMessage", "templateButtonReplyMessage", b"templateButtonReplyMessage", "templateMessage", b"templateMessage", "videoMessage", b"videoMessage", "viewOnceMessage", b"viewOnceMessage", "viewOnceMessageV2", b"viewOnceMessageV2", "viewOnceMessageV2Extension", b"viewOnceMessageV2Extension"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___Message: _TypeAlias = Message  # noqa: Y015
@@ -16084,6 +18974,8 @@ class MessageContextInfo(_message.Message):
     THREADID_FIELD_NUMBER: _builtins.int
     WEBLINKRENDERCONFIG_FIELD_NUMBER: _builtins.int
     TEEBOTMETADATA_FIELD_NUMBER: _builtins.int
+    ACCOUNTENCRYPTIONATTESTATION_FIELD_NUMBER: _builtins.int
+    ASSOCIATEDPRIMARYIDENTITYKEY_FIELD_NUMBER: _builtins.int
     deviceListMetadataVersion: _builtins.int
     messageSecret: _builtins.bytes
     paddingBytes: _builtins.bytes
@@ -16095,6 +18987,7 @@ class MessageContextInfo(_message.Message):
     supportPayload: _builtins.str
     weblinkRenderConfig: Global___WebLinkRenderConfig.ValueType
     teeBotMetadata: _builtins.bytes
+    associatedPrimaryIdentityKey: _builtins.bytes
     @_builtins.property
     def deviceListMetadata(self) -> Global___DeviceListMetadata: ...
     @_builtins.property
@@ -16107,6 +19000,8 @@ class MessageContextInfo(_message.Message):
     def limitSharingV2(self) -> Global___LimitSharing: ...
     @_builtins.property
     def threadId(self) -> _containers.RepeatedCompositeFieldContainer[Global___ThreadID]: ...
+    @_builtins.property
+    def accountEncryptionAttestation(self) -> Global___NonE2EEAttestation: ...
     def __init__(
         self,
         *,
@@ -16127,10 +19022,12 @@ class MessageContextInfo(_message.Message):
         threadId: _abc.Iterable[Global___ThreadID] | None = ...,
         weblinkRenderConfig: Global___WebLinkRenderConfig.ValueType | None = ...,
         teeBotMetadata: _builtins.bytes | None = ...,
+        accountEncryptionAttestation: Global___NonE2EEAttestation | None = ...,
+        associatedPrimaryIdentityKey: _builtins.bytes | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["botMessageSecret", b"botMessageSecret", "botMetadata", b"botMetadata", "capiCreatedGroup", b"capiCreatedGroup", "deviceListMetadata", b"deviceListMetadata", "deviceListMetadataVersion", b"deviceListMetadataVersion", "limitSharing", b"limitSharing", "limitSharingV2", b"limitSharingV2", "messageAddOnDurationInSecs", b"messageAddOnDurationInSecs", "messageAddOnExpiryType", b"messageAddOnExpiryType", "messageAssociation", b"messageAssociation", "messageSecret", b"messageSecret", "paddingBytes", b"paddingBytes", "reportingTokenVersion", b"reportingTokenVersion", "supportPayload", b"supportPayload", "teeBotMetadata", b"teeBotMetadata", "weblinkRenderConfig", b"weblinkRenderConfig"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["accountEncryptionAttestation", b"accountEncryptionAttestation", "associatedPrimaryIdentityKey", b"associatedPrimaryIdentityKey", "botMessageSecret", b"botMessageSecret", "botMetadata", b"botMetadata", "capiCreatedGroup", b"capiCreatedGroup", "deviceListMetadata", b"deviceListMetadata", "deviceListMetadataVersion", b"deviceListMetadataVersion", "limitSharing", b"limitSharing", "limitSharingV2", b"limitSharingV2", "messageAddOnDurationInSecs", b"messageAddOnDurationInSecs", "messageAddOnExpiryType", b"messageAddOnExpiryType", "messageAssociation", b"messageAssociation", "messageSecret", b"messageSecret", "paddingBytes", b"paddingBytes", "reportingTokenVersion", b"reportingTokenVersion", "supportPayload", b"supportPayload", "teeBotMetadata", b"teeBotMetadata", "weblinkRenderConfig", b"weblinkRenderConfig"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["botMessageSecret", b"botMessageSecret", "botMetadata", b"botMetadata", "capiCreatedGroup", b"capiCreatedGroup", "deviceListMetadata", b"deviceListMetadata", "deviceListMetadataVersion", b"deviceListMetadataVersion", "limitSharing", b"limitSharing", "limitSharingV2", b"limitSharingV2", "messageAddOnDurationInSecs", b"messageAddOnDurationInSecs", "messageAddOnExpiryType", b"messageAddOnExpiryType", "messageAssociation", b"messageAssociation", "messageSecret", b"messageSecret", "paddingBytes", b"paddingBytes", "reportingTokenVersion", b"reportingTokenVersion", "supportPayload", b"supportPayload", "teeBotMetadata", b"teeBotMetadata", "threadId", b"threadId", "weblinkRenderConfig", b"weblinkRenderConfig"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["accountEncryptionAttestation", b"accountEncryptionAttestation", "associatedPrimaryIdentityKey", b"associatedPrimaryIdentityKey", "botMessageSecret", b"botMessageSecret", "botMetadata", b"botMetadata", "capiCreatedGroup", b"capiCreatedGroup", "deviceListMetadata", b"deviceListMetadata", "deviceListMetadataVersion", b"deviceListMetadataVersion", "limitSharing", b"limitSharing", "limitSharingV2", b"limitSharingV2", "messageAddOnDurationInSecs", b"messageAddOnDurationInSecs", "messageAddOnExpiryType", b"messageAddOnExpiryType", "messageAssociation", b"messageAssociation", "messageSecret", b"messageSecret", "paddingBytes", b"paddingBytes", "reportingTokenVersion", b"reportingTokenVersion", "supportPayload", b"supportPayload", "teeBotMetadata", b"teeBotMetadata", "threadId", b"threadId", "weblinkRenderConfig", b"weblinkRenderConfig"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___MessageContextInfo: _TypeAlias = MessageContextInfo  # noqa: Y015
@@ -16215,6 +19112,743 @@ class MessageText(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___MessageText: _TypeAlias = MessageText  # noqa: Y015
+
+@_typing.final
+class MessagingMailboxPublicData(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHHEAD_FIELD_NUMBER: _builtins.int
+    DEVICEROSTERHASH_FIELD_NUMBER: _builtins.int
+    SEQUENCENUMBER_FIELD_NUMBER: _builtins.int
+    SIGPK_FIELD_NUMBER: _builtins.int
+    ENCPK_FIELD_NUMBER: _builtins.int
+    AUTHPK_FIELD_NUMBER: _builtins.int
+    epochHead: _builtins.bytes
+    deviceRosterHash: _builtins.bytes
+    sequenceNumber: _builtins.int
+    sigPk: _builtins.bytes
+    encPk: _builtins.bytes
+    authPk: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        epochHead: _builtins.bytes | None = ...,
+        deviceRosterHash: _builtins.bytes | None = ...,
+        sequenceNumber: _builtins.int | None = ...,
+        sigPk: _builtins.bytes | None = ...,
+        encPk: _builtins.bytes | None = ...,
+        authPk: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "deviceRosterHash", b"deviceRosterHash", "encPk", b"encPk", "epochHead", b"epochHead", "sequenceNumber", b"sequenceNumber", "sigPk", b"sigPk"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["authPk", b"authPk", "deviceRosterHash", b"deviceRosterHash", "encPk", b"encPk", "epochHead", b"epochHead", "sequenceNumber", b"sequenceNumber", "sigPk", b"sigPk"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MessagingMailboxPublicData: _TypeAlias = MessagingMailboxPublicData  # noqa: Y015
+
+@_typing.final
+class MinosClientConfig(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PREFERREDMESSAGEENCRYPTIONVERSION_FIELD_NUMBER: _builtins.int
+    PREFERREDMEKENCRYPTIONVERSION_FIELD_NUMBER: _builtins.int
+    preferredMessageEncryptionVersion: _builtins.int
+    preferredMekEncryptionVersion: _builtins.int
+    def __init__(
+        self,
+        *,
+        preferredMessageEncryptionVersion: _builtins.int | None = ...,
+        preferredMekEncryptionVersion: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["preferredMekEncryptionVersion", b"preferredMekEncryptionVersion", "preferredMessageEncryptionVersion", b"preferredMessageEncryptionVersion"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["preferredMekEncryptionVersion", b"preferredMekEncryptionVersion", "preferredMessageEncryptionVersion", b"preferredMessageEncryptionVersion"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosClientConfig: _TypeAlias = MinosClientConfig  # noqa: Y015
+
+@_typing.final
+class MinosCommand(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTANDSIGNMESSAGE_FIELD_NUMBER: _builtins.int
+    DECRYPTANDVERIFYMESSAGE_FIELD_NUMBER: _builtins.int
+    GENERATEMEK_FIELD_NUMBER: _builtins.int
+    GENERATEMEKROSTERHASH_FIELD_NUMBER: _builtins.int
+    ENCRYPTMEKFORDISTRIBUTION_FIELD_NUMBER: _builtins.int
+    DECRYPTMEKFORDISTRIBUTION_FIELD_NUMBER: _builtins.int
+    ENCRYPTMEKSFORDISTRIBUTIONFROMTRANSPORTSENDER_FIELD_NUMBER: _builtins.int
+    DECRYPTMEKFORDISTRIBUTIONFROMTRANSPORTSENDER_FIELD_NUMBER: _builtins.int
+    WRAPTRANSPORTSIGNINGPUBLICKEY_FIELD_NUMBER: _builtins.int
+    WRAPTRANSPORTSIGNINGSECRETKEY_FIELD_NUMBER: _builtins.int
+    DERIVEMAILBOXSIGNINGKEYPAIR_FIELD_NUMBER: _builtins.int
+    DERIVEMAILBOXENCRYPTIONKEYPAIR_FIELD_NUMBER: _builtins.int
+    DERIVEMAILBOXAUTHKEYPAIR_FIELD_NUMBER: _builtins.int
+    DERIVEATTACHMENTACCESSTOKENSECRET_FIELD_NUMBER: _builtins.int
+    DERIVEATTACHMENTPRIMARYKEYSECRET_FIELD_NUMBER: _builtins.int
+    MINOSOPENINITIALEPOCH_FIELD_NUMBER: _builtins.int
+    MINOSOPENEPOCH_FIELD_NUMBER: _builtins.int
+    MINOSVALIDATEEPOCH_FIELD_NUMBER: _builtins.int
+    MINOSVERIFYSINGLEEPOCH_FIELD_NUMBER: _builtins.int
+    MINOSTHREADIDFROMONETOONETHREAD_FIELD_NUMBER: _builtins.int
+    MINOSTHREADIDFROMACTTHREADID_FIELD_NUMBER: _builtins.int
+    MANDRAKEOPENEPOCH_FIELD_NUMBER: _builtins.int
+    MANDRAKEENCRYPTMEK_FIELD_NUMBER: _builtins.int
+    MANDRAKEDECRYPTMEK_FIELD_NUMBER: _builtins.int
+    MANDRAKEOPENINITIALEPOCH_FIELD_NUMBER: _builtins.int
+    MANDRAKEVALIDATENEWMMKFROMMAILBOX_FIELD_NUMBER: _builtins.int
+    MANDRAKEVALIDATENEWMMKFROMDETACHEDDEVICE_FIELD_NUMBER: _builtins.int
+    DERIVEMESSAGINGMAILBOXKEYPAIRS_FIELD_NUMBER: _builtins.int
+    DECRYPTSELFMMKDISTRIBUTION_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def encryptAndSignMessage(self) -> Global___MinosEncryptAndSignMessageInput: ...
+    @_builtins.property
+    def decryptAndVerifyMessage(self) -> Global___MinosDecryptAndVerifyMessageInput: ...
+    @_builtins.property
+    def generateMek(self) -> Global___GenerateMekInput: ...
+    @_builtins.property
+    def generateMekRosterHash(self) -> Global___GenerateMekRosterHashInput: ...
+    @_builtins.property
+    def encryptMekForDistribution(self) -> Global___EncryptMekForDistributionInput: ...
+    @_builtins.property
+    def decryptMekForDistribution(self) -> Global___DecryptMekForDistributionInput: ...
+    @_builtins.property
+    def encryptMeksForDistributionFromTransportSender(self) -> Global___EncryptMeksForDistributionFromTransportSenderInput: ...
+    @_builtins.property
+    def decryptMekForDistributionFromTransportSender(self) -> Global___DecryptMekForDistributionFromTransportSenderInput: ...
+    @_builtins.property
+    def wrapTransportSigningPublicKey(self) -> Global___WrapTransportSigningPublicKeyInput: ...
+    @_builtins.property
+    def wrapTransportSigningSecretKey(self) -> Global___WrapTransportSigningSecretKeyInput: ...
+    @_builtins.property
+    def deriveMailboxSigningKeypair(self) -> Global___DeriveMailboxSigningKeypairInput: ...
+    @_builtins.property
+    def deriveMailboxEncryptionKeypair(self) -> Global___DeriveMailboxEncryptionKeypairInput: ...
+    @_builtins.property
+    def deriveMailboxAuthKeypair(self) -> Global___DeriveMailboxAuthKeypairInput: ...
+    @_builtins.property
+    def deriveAttachmentAccessTokenSecret(self) -> Global___DeriveAttachmentAccessTokenSecretInput: ...
+    @_builtins.property
+    def deriveAttachmentPrimaryKeySecret(self) -> Global___DeriveAttachmentPrimaryKeySecretInput: ...
+    @_builtins.property
+    def minosOpenInitialEpoch(self) -> Global___MinosOpenInitialEpochInput: ...
+    @_builtins.property
+    def minosOpenEpoch(self) -> Global___MinosOpenEpochInput: ...
+    @_builtins.property
+    def minosValidateEpoch(self) -> Global___MinosValidateEpochInput: ...
+    @_builtins.property
+    def minosVerifySingleEpoch(self) -> Global___MinosVerifySingleEpochInput: ...
+    @_builtins.property
+    def minosThreadIdFromOneToOneThread(self) -> Global___MinosThreadIdFromOneToOneThreadInput: ...
+    @_builtins.property
+    def minosThreadIdFromActThreadId(self) -> Global___MinosThreadIdFromActThreadIdInput: ...
+    @_builtins.property
+    def mandrakeOpenEpoch(self) -> Global___MandrakeOpenEpochInput: ...
+    @_builtins.property
+    def mandrakeEncryptMek(self) -> Global___MandrakeEncryptMekInput: ...
+    @_builtins.property
+    def mandrakeDecryptMek(self) -> Global___MandrakeDecryptMekInput: ...
+    @_builtins.property
+    def mandrakeOpenInitialEpoch(self) -> Global___MandrakeOpenInitialEpochInput: ...
+    @_builtins.property
+    def mandrakeValidateNewMmkFromMailbox(self) -> Global___MandrakeValidateNewMmkFromMailboxInput: ...
+    @_builtins.property
+    def mandrakeValidateNewMmkFromDetachedDevice(self) -> Global___MandrakeValidateNewMmkFromDetachedDeviceInput: ...
+    @_builtins.property
+    def deriveMessagingMailboxKeypairs(self) -> Global___DeriveMessagingMailboxKeypairsInput: ...
+    @_builtins.property
+    def decryptSelfMmkDistribution(self) -> Global___DecryptSelfMmkDistributionInput: ...
+    def __init__(
+        self,
+        *,
+        encryptAndSignMessage: Global___MinosEncryptAndSignMessageInput | None = ...,
+        decryptAndVerifyMessage: Global___MinosDecryptAndVerifyMessageInput | None = ...,
+        generateMek: Global___GenerateMekInput | None = ...,
+        generateMekRosterHash: Global___GenerateMekRosterHashInput | None = ...,
+        encryptMekForDistribution: Global___EncryptMekForDistributionInput | None = ...,
+        decryptMekForDistribution: Global___DecryptMekForDistributionInput | None = ...,
+        encryptMeksForDistributionFromTransportSender: Global___EncryptMeksForDistributionFromTransportSenderInput | None = ...,
+        decryptMekForDistributionFromTransportSender: Global___DecryptMekForDistributionFromTransportSenderInput | None = ...,
+        wrapTransportSigningPublicKey: Global___WrapTransportSigningPublicKeyInput | None = ...,
+        wrapTransportSigningSecretKey: Global___WrapTransportSigningSecretKeyInput | None = ...,
+        deriveMailboxSigningKeypair: Global___DeriveMailboxSigningKeypairInput | None = ...,
+        deriveMailboxEncryptionKeypair: Global___DeriveMailboxEncryptionKeypairInput | None = ...,
+        deriveMailboxAuthKeypair: Global___DeriveMailboxAuthKeypairInput | None = ...,
+        deriveAttachmentAccessTokenSecret: Global___DeriveAttachmentAccessTokenSecretInput | None = ...,
+        deriveAttachmentPrimaryKeySecret: Global___DeriveAttachmentPrimaryKeySecretInput | None = ...,
+        minosOpenInitialEpoch: Global___MinosOpenInitialEpochInput | None = ...,
+        minosOpenEpoch: Global___MinosOpenEpochInput | None = ...,
+        minosValidateEpoch: Global___MinosValidateEpochInput | None = ...,
+        minosVerifySingleEpoch: Global___MinosVerifySingleEpochInput | None = ...,
+        minosThreadIdFromOneToOneThread: Global___MinosThreadIdFromOneToOneThreadInput | None = ...,
+        minosThreadIdFromActThreadId: Global___MinosThreadIdFromActThreadIdInput | None = ...,
+        mandrakeOpenEpoch: Global___MandrakeOpenEpochInput | None = ...,
+        mandrakeEncryptMek: Global___MandrakeEncryptMekInput | None = ...,
+        mandrakeDecryptMek: Global___MandrakeDecryptMekInput | None = ...,
+        mandrakeOpenInitialEpoch: Global___MandrakeOpenInitialEpochInput | None = ...,
+        mandrakeValidateNewMmkFromMailbox: Global___MandrakeValidateNewMmkFromMailboxInput | None = ...,
+        mandrakeValidateNewMmkFromDetachedDevice: Global___MandrakeValidateNewMmkFromDetachedDeviceInput | None = ...,
+        deriveMessagingMailboxKeypairs: Global___DeriveMessagingMailboxKeypairsInput | None = ...,
+        decryptSelfMmkDistribution: Global___DecryptSelfMmkDistributionInput | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["commandInput", b"commandInput", "decryptAndVerifyMessage", b"decryptAndVerifyMessage", "decryptMekForDistribution", b"decryptMekForDistribution", "decryptMekForDistributionFromTransportSender", b"decryptMekForDistributionFromTransportSender", "decryptSelfMmkDistribution", b"decryptSelfMmkDistribution", "deriveAttachmentAccessTokenSecret", b"deriveAttachmentAccessTokenSecret", "deriveAttachmentPrimaryKeySecret", b"deriveAttachmentPrimaryKeySecret", "deriveMailboxAuthKeypair", b"deriveMailboxAuthKeypair", "deriveMailboxEncryptionKeypair", b"deriveMailboxEncryptionKeypair", "deriveMailboxSigningKeypair", b"deriveMailboxSigningKeypair", "deriveMessagingMailboxKeypairs", b"deriveMessagingMailboxKeypairs", "encryptAndSignMessage", b"encryptAndSignMessage", "encryptMekForDistribution", b"encryptMekForDistribution", "encryptMeksForDistributionFromTransportSender", b"encryptMeksForDistributionFromTransportSender", "generateMek", b"generateMek", "generateMekRosterHash", b"generateMekRosterHash", "mandrakeDecryptMek", b"mandrakeDecryptMek", "mandrakeEncryptMek", b"mandrakeEncryptMek", "mandrakeOpenEpoch", b"mandrakeOpenEpoch", "mandrakeOpenInitialEpoch", b"mandrakeOpenInitialEpoch", "mandrakeValidateNewMmkFromDetachedDevice", b"mandrakeValidateNewMmkFromDetachedDevice", "mandrakeValidateNewMmkFromMailbox", b"mandrakeValidateNewMmkFromMailbox", "minosOpenEpoch", b"minosOpenEpoch", "minosOpenInitialEpoch", b"minosOpenInitialEpoch", "minosThreadIdFromActThreadId", b"minosThreadIdFromActThreadId", "minosThreadIdFromOneToOneThread", b"minosThreadIdFromOneToOneThread", "minosValidateEpoch", b"minosValidateEpoch", "minosVerifySingleEpoch", b"minosVerifySingleEpoch", "wrapTransportSigningPublicKey", b"wrapTransportSigningPublicKey", "wrapTransportSigningSecretKey", b"wrapTransportSigningSecretKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["commandInput", b"commandInput", "decryptAndVerifyMessage", b"decryptAndVerifyMessage", "decryptMekForDistribution", b"decryptMekForDistribution", "decryptMekForDistributionFromTransportSender", b"decryptMekForDistributionFromTransportSender", "decryptSelfMmkDistribution", b"decryptSelfMmkDistribution", "deriveAttachmentAccessTokenSecret", b"deriveAttachmentAccessTokenSecret", "deriveAttachmentPrimaryKeySecret", b"deriveAttachmentPrimaryKeySecret", "deriveMailboxAuthKeypair", b"deriveMailboxAuthKeypair", "deriveMailboxEncryptionKeypair", b"deriveMailboxEncryptionKeypair", "deriveMailboxSigningKeypair", b"deriveMailboxSigningKeypair", "deriveMessagingMailboxKeypairs", b"deriveMessagingMailboxKeypairs", "encryptAndSignMessage", b"encryptAndSignMessage", "encryptMekForDistribution", b"encryptMekForDistribution", "encryptMeksForDistributionFromTransportSender", b"encryptMeksForDistributionFromTransportSender", "generateMek", b"generateMek", "generateMekRosterHash", b"generateMekRosterHash", "mandrakeDecryptMek", b"mandrakeDecryptMek", "mandrakeEncryptMek", b"mandrakeEncryptMek", "mandrakeOpenEpoch", b"mandrakeOpenEpoch", "mandrakeOpenInitialEpoch", b"mandrakeOpenInitialEpoch", "mandrakeValidateNewMmkFromDetachedDevice", b"mandrakeValidateNewMmkFromDetachedDevice", "mandrakeValidateNewMmkFromMailbox", b"mandrakeValidateNewMmkFromMailbox", "minosOpenEpoch", b"minosOpenEpoch", "minosOpenInitialEpoch", b"minosOpenInitialEpoch", "minosThreadIdFromActThreadId", b"minosThreadIdFromActThreadId", "minosThreadIdFromOneToOneThread", b"minosThreadIdFromOneToOneThread", "minosValidateEpoch", b"minosValidateEpoch", "minosVerifySingleEpoch", b"minosVerifySingleEpoch", "wrapTransportSigningPublicKey", b"wrapTransportSigningPublicKey", "wrapTransportSigningSecretKey", b"wrapTransportSigningSecretKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_commandInput: _TypeAlias = _typing.Literal["encryptAndSignMessage", "decryptAndVerifyMessage", "generateMek", "generateMekRosterHash", "encryptMekForDistribution", "decryptMekForDistribution", "encryptMeksForDistributionFromTransportSender", "decryptMekForDistributionFromTransportSender", "wrapTransportSigningPublicKey", "wrapTransportSigningSecretKey", "deriveMailboxSigningKeypair", "deriveMailboxEncryptionKeypair", "deriveMailboxAuthKeypair", "deriveAttachmentAccessTokenSecret", "deriveAttachmentPrimaryKeySecret", "minosOpenInitialEpoch", "minosOpenEpoch", "minosValidateEpoch", "minosVerifySingleEpoch", "minosThreadIdFromOneToOneThread", "minosThreadIdFromActThreadId", "mandrakeOpenEpoch", "mandrakeEncryptMek", "mandrakeDecryptMek", "mandrakeOpenInitialEpoch", "mandrakeValidateNewMmkFromMailbox", "mandrakeValidateNewMmkFromDetachedDevice", "deriveMessagingMailboxKeypairs", "decryptSelfMmkDistribution"]  # noqa: Y015
+    _WhichOneofArgType_commandInput: _TypeAlias = _typing.Literal["commandInput", b"commandInput"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_commandInput) -> _WhichOneofReturnType_commandInput | None: ...
+
+Global___MinosCommand: _TypeAlias = MinosCommand  # noqa: Y015
+
+@_typing.final
+class MinosDecryptAndVerifyMessageInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    TRANSPORTSIGNINGPK_FIELD_NUMBER: _builtins.int
+    MEK_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDMESSAGECIPHERTEXT_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDMESSAGESIGNATURE_FIELD_NUMBER: _builtins.int
+    METADATA_FIELD_NUMBER: _builtins.int
+    MESSAGEENCRYPTIONVERSION_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    transportSigningPk: _builtins.bytes
+    mek: _builtins.bytes
+    encryptedMessageCiphertext: _builtins.bytes
+    encryptedMessageSignature: _builtins.bytes
+    messageEncryptionVersion: _builtins.int
+    @_builtins.property
+    def metadata(self) -> Global___MinosMessageMetadata: ...
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    def __init__(
+        self,
+        *,
+        transportSigningPk: _builtins.bytes | None = ...,
+        mek: _builtins.bytes | None = ...,
+        encryptedMessageCiphertext: _builtins.bytes | None = ...,
+        encryptedMessageSignature: _builtins.bytes | None = ...,
+        metadata: Global___MinosMessageMetadata | None = ...,
+        messageEncryptionVersion: _builtins.int | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "encryptedMessageCiphertext", b"encryptedMessageCiphertext", "encryptedMessageSignature", b"encryptedMessageSignature", "mek", b"mek", "messageEncryptionVersion", b"messageEncryptionVersion", "metadata", b"metadata", "transportSigningPk", b"transportSigningPk"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "encryptedMessageCiphertext", b"encryptedMessageCiphertext", "encryptedMessageSignature", b"encryptedMessageSignature", "mek", b"mek", "messageEncryptionVersion", b"messageEncryptionVersion", "metadata", b"metadata", "transportSigningPk", b"transportSigningPk"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosDecryptAndVerifyMessageInput: _TypeAlias = MinosDecryptAndVerifyMessageInput  # noqa: Y015
+
+@_typing.final
+class MinosDecryptAndVerifyMessageResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SUCCESS_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    errorMessage: _builtins.str
+    @_builtins.property
+    def success(self) -> Global___MinosDecryptAndVerifyMessageSuccess: ...
+    def __init__(
+        self,
+        *,
+        success: Global___MinosDecryptAndVerifyMessageSuccess | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "success", b"success"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["success", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___MinosDecryptAndVerifyMessageResult: _TypeAlias = MinosDecryptAndVerifyMessageResult  # noqa: Y015
+
+@_typing.final
+class MinosDecryptAndVerifyMessageSuccess(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PLAINTEXT_FIELD_NUMBER: _builtins.int
+    plaintext: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        plaintext: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["plaintext", b"plaintext"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["plaintext", b"plaintext"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosDecryptAndVerifyMessageSuccess: _TypeAlias = MinosDecryptAndVerifyMessageSuccess  # noqa: Y015
+
+@_typing.final
+class MinosEncryptAndSignMessageInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    TRANSPORTSIGNINGSK_FIELD_NUMBER: _builtins.int
+    MEK_FIELD_NUMBER: _builtins.int
+    PLAINTEXT_FIELD_NUMBER: _builtins.int
+    METADATA_FIELD_NUMBER: _builtins.int
+    TRANSPORTSIGNINGPK_FIELD_NUMBER: _builtins.int
+    CONF_FIELD_NUMBER: _builtins.int
+    transportSigningSk: _builtins.bytes
+    mek: _builtins.bytes
+    plaintext: _builtins.bytes
+    transportSigningPk: _builtins.bytes
+    @_builtins.property
+    def metadata(self) -> Global___MinosMessageMetadata: ...
+    @_builtins.property
+    def conf(self) -> Global___MinosClientConfig: ...
+    def __init__(
+        self,
+        *,
+        transportSigningSk: _builtins.bytes | None = ...,
+        mek: _builtins.bytes | None = ...,
+        plaintext: _builtins.bytes | None = ...,
+        metadata: Global___MinosMessageMetadata | None = ...,
+        transportSigningPk: _builtins.bytes | None = ...,
+        conf: Global___MinosClientConfig | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "mek", b"mek", "metadata", b"metadata", "plaintext", b"plaintext", "transportSigningPk", b"transportSigningPk", "transportSigningSk", b"transportSigningSk"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["conf", b"conf", "mek", b"mek", "metadata", b"metadata", "plaintext", b"plaintext", "transportSigningPk", b"transportSigningPk", "transportSigningSk", b"transportSigningSk"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosEncryptAndSignMessageInput: _TypeAlias = MinosEncryptAndSignMessageInput  # noqa: Y015
+
+@_typing.final
+class MinosEncryptAndSignMessageResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    CIPHERTEXT_FIELD_NUMBER: _builtins.int
+    SIGNATURE_FIELD_NUMBER: _builtins.int
+    VERSION_FIELD_NUMBER: _builtins.int
+    ciphertext: _builtins.bytes
+    signature: _builtins.bytes
+    version: _builtins.int
+    def __init__(
+        self,
+        *,
+        ciphertext: _builtins.bytes | None = ...,
+        signature: _builtins.bytes | None = ...,
+        version: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "signature", b"signature", "version", b"version"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["ciphertext", b"ciphertext", "signature", b"signature", "version", b"version"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosEncryptAndSignMessageResult: _TypeAlias = MinosEncryptAndSignMessageResult  # noqa: Y015
+
+@_typing.final
+class MinosMessageMetadata(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MEKID_FIELD_NUMBER: _builtins.int
+    TIMESTAMP_FIELD_NUMBER: _builtins.int
+    MESSAGEID_FIELD_NUMBER: _builtins.int
+    THREADID_FIELD_NUMBER: _builtins.int
+    mekId: _builtins.bytes
+    timestamp: _builtins.int
+    messageId: _builtins.str
+    threadId: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        mekId: _builtins.bytes | None = ...,
+        timestamp: _builtins.int | None = ...,
+        messageId: _builtins.str | None = ...,
+        threadId: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["mekId", b"mekId", "messageId", b"messageId", "threadId", b"threadId", "timestamp", b"timestamp"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["mekId", b"mekId", "messageId", b"messageId", "threadId", b"threadId", "timestamp", b"timestamp"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosMessageMetadata: _TypeAlias = MinosMessageMetadata  # noqa: Y015
+
+@_typing.final
+class MinosOpenEpochInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USERFBID_FIELD_NUMBER: _builtins.int
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    PREVIOUSEXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    PREVIOUSEPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    PREVIOUSEPOCHHEAD_FIELD_NUMBER: _builtins.int
+    userFbid: _builtins.str
+    epochNumber: _builtins.int
+    exportRootKey: _builtins.bytes
+    previousExportRootKey: _builtins.bytes
+    previousEpochNumber: _builtins.int
+    previousEpochHead: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        userFbid: _builtins.str | None = ...,
+        epochNumber: _builtins.int | None = ...,
+        exportRootKey: _builtins.bytes | None = ...,
+        previousExportRootKey: _builtins.bytes | None = ...,
+        previousEpochNumber: _builtins.int | None = ...,
+        previousEpochHead: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "previousEpochHead", b"previousEpochHead", "previousEpochNumber", b"previousEpochNumber", "previousExportRootKey", b"previousExportRootKey", "userFbid", b"userFbid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "previousEpochHead", b"previousEpochHead", "previousEpochNumber", b"previousEpochNumber", "previousExportRootKey", b"previousExportRootKey", "userFbid", b"userFbid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosOpenEpochInput: _TypeAlias = MinosOpenEpochInput  # noqa: Y015
+
+@_typing.final
+class MinosOpenEpochResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MINOSSIGNEDEPOCH_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def minosSignedEpoch(self) -> Global___MinosSignedEpoch: ...
+    def __init__(
+        self,
+        *,
+        minosSignedEpoch: Global___MinosSignedEpoch | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["minosSignedEpoch", b"minosSignedEpoch"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["minosSignedEpoch", b"minosSignedEpoch"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosOpenEpochResult: _TypeAlias = MinosOpenEpochResult  # noqa: Y015
+
+@_typing.final
+class MinosOpenInitialEpochInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USERFBID_FIELD_NUMBER: _builtins.int
+    EPOCHNUMBER_FIELD_NUMBER: _builtins.int
+    EXPORTROOTKEY_FIELD_NUMBER: _builtins.int
+    userFbid: _builtins.str
+    epochNumber: _builtins.int
+    exportRootKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        userFbid: _builtins.str | None = ...,
+        epochNumber: _builtins.int | None = ...,
+        exportRootKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "userFbid", b"userFbid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochNumber", b"epochNumber", "exportRootKey", b"exportRootKey", "userFbid", b"userFbid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosOpenInitialEpochInput: _TypeAlias = MinosOpenInitialEpochInput  # noqa: Y015
+
+@_typing.final
+class MinosOpenInitialEpochResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MINOSSIGNEDEPOCH_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def minosSignedEpoch(self) -> Global___MinosSignedEpoch: ...
+    def __init__(
+        self,
+        *,
+        minosSignedEpoch: Global___MinosSignedEpoch | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["minosSignedEpoch", b"minosSignedEpoch"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["minosSignedEpoch", b"minosSignedEpoch"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosOpenInitialEpochResult: _TypeAlias = MinosOpenInitialEpochResult  # noqa: Y015
+
+@_typing.final
+class MinosSignedEpoch(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHPUBLICDATA_FIELD_NUMBER: _builtins.int
+    SIGNATURES_FIELD_NUMBER: _builtins.int
+    EPOCHHEAD_FIELD_NUMBER: _builtins.int
+    epochHead: _builtins.bytes
+    @_builtins.property
+    def epochPublicData(self) -> Global___EpochPublicData: ...
+    @_builtins.property
+    def signatures(self) -> Global___EpochSignatures: ...
+    def __init__(
+        self,
+        *,
+        epochPublicData: Global___EpochPublicData | None = ...,
+        signatures: Global___EpochSignatures | None = ...,
+        epochHead: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochHead", b"epochHead", "epochPublicData", b"epochPublicData", "signatures", b"signatures"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochHead", b"epochHead", "epochPublicData", b"epochPublicData", "signatures", b"signatures"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosSignedEpoch: _TypeAlias = MinosSignedEpoch  # noqa: Y015
+
+@_typing.final
+class MinosThreadIdFromActThreadIdInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ACTTHREADID_FIELD_NUMBER: _builtins.int
+    actThreadId: _builtins.str
+    def __init__(
+        self,
+        *,
+        actThreadId: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["actThreadId", b"actThreadId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["actThreadId", b"actThreadId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosThreadIdFromActThreadIdInput: _TypeAlias = MinosThreadIdFromActThreadIdInput  # noqa: Y015
+
+@_typing.final
+class MinosThreadIdFromActThreadIdResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    THREADID_FIELD_NUMBER: _builtins.int
+    threadId: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        threadId: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["threadId", b"threadId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["threadId", b"threadId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosThreadIdFromActThreadIdResult: _TypeAlias = MinosThreadIdFromActThreadIdResult  # noqa: Y015
+
+@_typing.final
+class MinosThreadIdFromOneToOneThreadInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ACTTHREADID_FIELD_NUMBER: _builtins.int
+    SELFFBID_FIELD_NUMBER: _builtins.int
+    actThreadId: _builtins.str
+    selfFbid: _builtins.str
+    def __init__(
+        self,
+        *,
+        actThreadId: _builtins.str | None = ...,
+        selfFbid: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["actThreadId", b"actThreadId", "selfFbid", b"selfFbid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["actThreadId", b"actThreadId", "selfFbid", b"selfFbid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosThreadIdFromOneToOneThreadInput: _TypeAlias = MinosThreadIdFromOneToOneThreadInput  # noqa: Y015
+
+@_typing.final
+class MinosThreadIdFromOneToOneThreadResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    THREADID_FIELD_NUMBER: _builtins.int
+    threadId: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        threadId: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["threadId", b"threadId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["threadId", b"threadId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosThreadIdFromOneToOneThreadResult: _TypeAlias = MinosThreadIdFromOneToOneThreadResult  # noqa: Y015
+
+@_typing.final
+class MinosValidateEpochInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHPUBLICDATA_FIELD_NUMBER: _builtins.int
+    PREVIOUSEPOCHPUBLICDATA_FIELD_NUMBER: _builtins.int
+    SIGNATURES_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def epochPublicData(self) -> Global___EpochPublicData: ...
+    @_builtins.property
+    def previousEpochPublicData(self) -> Global___EpochPublicData: ...
+    @_builtins.property
+    def signatures(self) -> Global___EpochSignatures: ...
+    def __init__(
+        self,
+        *,
+        epochPublicData: Global___EpochPublicData | None = ...,
+        previousEpochPublicData: Global___EpochPublicData | None = ...,
+        signatures: Global___EpochSignatures | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData", "previousEpochPublicData", b"previousEpochPublicData", "signatures", b"signatures"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData", "previousEpochPublicData", b"previousEpochPublicData", "signatures", b"signatures"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosValidateEpochInput: _TypeAlias = MinosValidateEpochInput  # noqa: Y015
+
+@_typing.final
+class MinosValidateEpochResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    VALID_FIELD_NUMBER: _builtins.int
+    ERRORMESSAGE_FIELD_NUMBER: _builtins.int
+    valid: _builtins.bool
+    errorMessage: _builtins.str
+    def __init__(
+        self,
+        *,
+        valid: _builtins.bool | None = ...,
+        errorMessage: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "valid", b"valid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["errorMessage", b"errorMessage", "result", b"result", "valid", b"valid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["valid", "errorMessage"]  # noqa: Y015
+    _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
+
+Global___MinosValidateEpochResult: _TypeAlias = MinosValidateEpochResult  # noqa: Y015
+
+@_typing.final
+class MinosVerifySingleEpochInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    EPOCHPUBLICDATA_FIELD_NUMBER: _builtins.int
+    SIGNATURE_FIELD_NUMBER: _builtins.int
+    signature: _builtins.bytes
+    @_builtins.property
+    def epochPublicData(self) -> Global___EpochPublicData: ...
+    def __init__(
+        self,
+        *,
+        epochPublicData: Global___EpochPublicData | None = ...,
+        signature: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData", "signature", b"signature"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["epochPublicData", b"epochPublicData", "signature", b"signature"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosVerifySingleEpochInput: _TypeAlias = MinosVerifySingleEpochInput  # noqa: Y015
+
+@_typing.final
+class MinosVerifySingleEpochResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    VALID_FIELD_NUMBER: _builtins.int
+    valid: _builtins.bool
+    def __init__(
+        self,
+        *,
+        valid: _builtins.bool | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["valid", b"valid"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["valid", b"valid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MinosVerifySingleEpochResult: _TypeAlias = MinosVerifySingleEpochResult  # noqa: Y015
+
+@_typing.final
+class MmkDistribution(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    TODETACHEDDEVICES_FIELD_NUMBER: _builtins.int
+    TOMAILBOX_FIELD_NUMBER: _builtins.int
+    VERSION_FIELD_NUMBER: _builtins.int
+    version: _builtins.int
+    @_builtins.property
+    def toDetachedDevices(self) -> _containers.RepeatedCompositeFieldContainer[Global___MmkDistributionToDetachedDevice]: ...
+    @_builtins.property
+    def toMailbox(self) -> Global___MmkDistributionToMailbox: ...
+    def __init__(
+        self,
+        *,
+        toDetachedDevices: _abc.Iterable[Global___MmkDistributionToDetachedDevice] | None = ...,
+        toMailbox: Global___MmkDistributionToMailbox | None = ...,
+        version: _builtins.int | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["toMailbox", b"toMailbox", "version", b"version"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["toDetachedDevices", b"toDetachedDevices", "toMailbox", b"toMailbox", "version", b"version"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MmkDistribution: _TypeAlias = MmkDistribution  # noqa: Y015
+
+@_typing.final
+class MmkDistributionToDetachedDevice(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTEDMMK_FIELD_NUMBER: _builtins.int
+    RECIPDEVICEHASH_FIELD_NUMBER: _builtins.int
+    encryptedMmk: _builtins.bytes
+    recipDeviceHash: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        encryptedMmk: _builtins.bytes | None = ...,
+        recipDeviceHash: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedMmk", b"encryptedMmk", "recipDeviceHash", b"recipDeviceHash"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedMmk", b"encryptedMmk", "recipDeviceHash", b"recipDeviceHash"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MmkDistributionToDetachedDevice: _TypeAlias = MmkDistributionToDetachedDevice  # noqa: Y015
+
+@_typing.final
+class MmkDistributionToMailbox(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ENCRYPTEDMMK_FIELD_NUMBER: _builtins.int
+    RECIPMAILBOXHEADHASH_FIELD_NUMBER: _builtins.int
+    encryptedMmk: _builtins.bytes
+    recipMailboxHeadHash: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        encryptedMmk: _builtins.bytes | None = ...,
+        recipMailboxHeadHash: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["encryptedMmk", b"encryptedMmk", "recipMailboxHeadHash", b"recipMailboxHeadHash"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["encryptedMmk", b"encryptedMmk", "recipMailboxHeadHash", b"recipMailboxHeadHash"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MmkDistributionToMailbox: _TypeAlias = MmkDistributionToMailbox  # noqa: Y015
+
+@_typing.final
+class MmkFromDetachedDevice(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MMK_FIELD_NUMBER: _builtins.int
+    FROMDETACHEDDEVICE_FIELD_NUMBER: _builtins.int
+    MEMBERSHIPPROOF_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def mmk(self) -> Global___MessagingMailboxPublicData: ...
+    @_builtins.property
+    def fromDetachedDevice(self) -> Global___DetachedDevicePublicData: ...
+    @_builtins.property
+    def membershipProof(self) -> Global___MerkleMembershipProof: ...
+    def __init__(
+        self,
+        *,
+        mmk: Global___MessagingMailboxPublicData | None = ...,
+        fromDetachedDevice: Global___DetachedDevicePublicData | None = ...,
+        membershipProof: Global___MerkleMembershipProof | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["fromDetachedDevice", b"fromDetachedDevice", "membershipProof", b"membershipProof", "mmk", b"mmk"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["fromDetachedDevice", b"fromDetachedDevice", "membershipProof", b"membershipProof", "mmk", b"mmk"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___MmkFromDetachedDevice: _TypeAlias = MmkFromDetachedDevice  # noqa: Y015
 
 @_typing.final
 class Money(_message.Message):
@@ -16610,6 +20244,39 @@ class NoiseCertificate(_message.Message):
 Global___NoiseCertificate: _TypeAlias = NoiseCertificate  # noqa: Y015
 
 @_typing.final
+class NonE2EEAttestation(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    class _AccountType:
+        ValueType = _typing.NewType("ValueType", _builtins.int)
+        V: _TypeAlias = ValueType  # noqa: Y015
+
+    class _AccountTypeEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[NonE2EEAttestation._AccountType.ValueType], _builtins.type):
+        DESCRIPTOR: _descriptor.EnumDescriptor
+        E2EE: NonE2EEAttestation._AccountType.ValueType  # 0
+        HYBRID_E2EE: NonE2EEAttestation._AccountType.ValueType  # 1
+        NON_E2EE: NonE2EEAttestation._AccountType.ValueType  # 2
+
+    class AccountType(_AccountType, metaclass=_AccountTypeEnumTypeWrapper): ...
+    E2EE: NonE2EEAttestation.AccountType.ValueType  # 0
+    HYBRID_E2EE: NonE2EEAttestation.AccountType.ValueType  # 1
+    NON_E2EE: NonE2EEAttestation.AccountType.ValueType  # 2
+
+    ACCOUNTTYPE_FIELD_NUMBER: _builtins.int
+    accountType: Global___NonE2EEAttestation.AccountType.ValueType
+    def __init__(
+        self,
+        *,
+        accountType: Global___NonE2EEAttestation.AccountType.ValueType | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["accountType", b"accountType"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["accountType", b"accountType"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___NonE2EEAttestation: _TypeAlias = NonE2EEAttestation  # noqa: Y015
+
+@_typing.final
 class NotificationMessageInfo(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -16670,6 +20337,48 @@ class NotificationSettings(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___NotificationSettings: _TypeAlias = NotificationSettings  # noqa: Y015
+
+@_typing.final
+class OrfThreadIdInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ORFCLIENTSTATE_FIELD_NUMBER: _builtins.int
+    THREADID_FIELD_NUMBER: _builtins.int
+    orfClientState: _builtins.bytes
+    threadId: _builtins.str
+    def __init__(
+        self,
+        *,
+        orfClientState: _builtins.bytes | None = ...,
+        threadId: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["orfClientState", b"orfClientState", "threadId", b"threadId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["orfClientState", b"orfClientState", "threadId", b"threadId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___OrfThreadIdInput: _TypeAlias = OrfThreadIdInput  # noqa: Y015
+
+@_typing.final
+class OrfThreadIdOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ORFTHREADID_FIELD_NUMBER: _builtins.int
+    ERROR_FIELD_NUMBER: _builtins.int
+    orfThreadId: _builtins.bytes
+    error: _builtins.str
+    def __init__(
+        self,
+        *,
+        orfThreadId: _builtins.bytes | None = ...,
+        error: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["error", b"error", "orfThreadId", b"orfThreadId"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["error", b"error", "orfThreadId", b"orfThreadId"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___OrfThreadIdOutput: _TypeAlias = OrfThreadIdOutput  # noqa: Y015
 
 @_typing.final
 class PairingRequest(_message.Message):
@@ -17349,12 +21058,16 @@ class PreKeySignalMessage(_message.Message):
     BASEKEY_FIELD_NUMBER: _builtins.int
     IDENTITYKEY_FIELD_NUMBER: _builtins.int
     MESSAGE_FIELD_NUMBER: _builtins.int
+    KYBERPREKEYID_FIELD_NUMBER: _builtins.int
+    KYBERCIPHERTEXT_FIELD_NUMBER: _builtins.int
     registrationId: _builtins.int
     preKeyId: _builtins.int
     signedPreKeyId: _builtins.int
     baseKey: _builtins.bytes
     identityKey: _builtins.bytes
     message: _builtins.bytes
+    kyberPreKeyId: _builtins.int
+    kyberCiphertext: _builtins.bytes
     def __init__(
         self,
         *,
@@ -17364,10 +21077,12 @@ class PreKeySignalMessage(_message.Message):
         baseKey: _builtins.bytes | None = ...,
         identityKey: _builtins.bytes | None = ...,
         message: _builtins.bytes | None = ...,
+        kyberPreKeyId: _builtins.int | None = ...,
+        kyberCiphertext: _builtins.bytes | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "identityKey", b"identityKey", "message", b"message", "preKeyId", b"preKeyId", "registrationId", b"registrationId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "identityKey", b"identityKey", "kyberCiphertext", b"kyberCiphertext", "kyberPreKeyId", b"kyberPreKeyId", "message", b"message", "preKeyId", b"preKeyId", "registrationId", b"registrationId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "identityKey", b"identityKey", "message", b"message", "preKeyId", b"preKeyId", "registrationId", b"registrationId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "identityKey", b"identityKey", "kyberCiphertext", b"kyberCiphertext", "kyberPreKeyId", b"kyberPreKeyId", "message", b"message", "preKeyId", b"preKeyId", "registrationId", b"registrationId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___PreKeySignalMessage: _TypeAlias = PreKeySignalMessage  # noqa: Y015
@@ -17761,18 +21476,141 @@ class ReportingTokenInfo(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
     REPORTINGTAG_FIELD_NUMBER: _builtins.int
+    REPORTINGTAGTIMESTAMP_FIELD_NUMBER: _builtins.int
     reportingTag: _builtins.bytes
+    reportingTagTimestamp: _builtins.int
     def __init__(
         self,
         *,
         reportingTag: _builtins.bytes | None = ...,
+        reportingTagTimestamp: _builtins.int | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["reportingTag", b"reportingTag"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["reportingTag", b"reportingTag", "reportingTagTimestamp", b"reportingTagTimestamp"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["reportingTag", b"reportingTag"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["reportingTag", b"reportingTag", "reportingTagTimestamp", b"reportingTagTimestamp"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___ReportingTokenInfo: _TypeAlias = ReportingTokenInfo  # noqa: Y015
+
+@_typing.final
+class RotateEpochInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    CURRENTEPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    CURRENTEPOCHANONID_FIELD_NUMBER: _builtins.int
+    CURRENTEPOCHFBID_FIELD_NUMBER: _builtins.int
+    EPOCHSTORAGEPRIVATEKEY_FIELD_NUMBER: _builtins.int
+    MEMBERS_FIELD_NUMBER: _builtins.int
+    currentEpochRootKey: _builtins.bytes
+    currentEpochAnonId: _builtins.bytes
+    currentEpochFbid: _builtins.int
+    epochStoragePrivateKey: _builtins.bytes
+    @_builtins.property
+    def members(self) -> _containers.RepeatedCompositeFieldContainer[Global___RotateEpochMemberInput]: ...
+    def __init__(
+        self,
+        *,
+        currentEpochRootKey: _builtins.bytes | None = ...,
+        currentEpochAnonId: _builtins.bytes | None = ...,
+        currentEpochFbid: _builtins.int | None = ...,
+        epochStoragePrivateKey: _builtins.bytes | None = ...,
+        members: _abc.Iterable[Global___RotateEpochMemberInput] | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["currentEpochAnonId", b"currentEpochAnonId", "currentEpochFbid", b"currentEpochFbid", "currentEpochRootKey", b"currentEpochRootKey", "epochStoragePrivateKey", b"epochStoragePrivateKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["currentEpochAnonId", b"currentEpochAnonId", "currentEpochFbid", b"currentEpochFbid", "currentEpochRootKey", b"currentEpochRootKey", "epochStoragePrivateKey", b"epochStoragePrivateKey", "members", b"members"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___RotateEpochInput: _TypeAlias = RotateEpochInput  # noqa: Y015
+
+@_typing.final
+class RotateEpochMemberEdge(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    DEVICEID_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDEPOCHKEY_FIELD_NUMBER: _builtins.int
+    DEVICEEPOCHHMAC_FIELD_NUMBER: _builtins.int
+    deviceId: _builtins.int
+    encryptedEpochKey: _builtins.bytes
+    deviceEpochHmac: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        deviceId: _builtins.int | None = ...,
+        encryptedEpochKey: _builtins.bytes | None = ...,
+        deviceEpochHmac: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["deviceEpochHmac", b"deviceEpochHmac", "deviceId", b"deviceId", "encryptedEpochKey", b"encryptedEpochKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["deviceEpochHmac", b"deviceEpochHmac", "deviceId", b"deviceId", "encryptedEpochKey", b"encryptedEpochKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___RotateEpochMemberEdge: _TypeAlias = RotateEpochMemberEdge  # noqa: Y015
+
+@_typing.final
+class RotateEpochMemberInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    DEVICEID_FIELD_NUMBER: _builtins.int
+    EPOCHSTORAGEPUBLICKEY_FIELD_NUMBER: _builtins.int
+    DEVICEPUBLICKEY_FIELD_NUMBER: _builtins.int
+    deviceId: _builtins.int
+    epochStoragePublicKey: _builtins.bytes
+    devicePublicKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        deviceId: _builtins.int | None = ...,
+        epochStoragePublicKey: _builtins.bytes | None = ...,
+        devicePublicKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["deviceId", b"deviceId", "devicePublicKey", b"devicePublicKey", "epochStoragePublicKey", b"epochStoragePublicKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["deviceId", b"deviceId", "devicePublicKey", b"devicePublicKey", "epochStoragePublicKey", b"epochStoragePublicKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___RotateEpochMemberInput: _TypeAlias = RotateEpochMemberInput  # noqa: Y015
+
+@_typing.final
+class RotateEpochOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    NEWEPOCHROOTKEY_FIELD_NUMBER: _builtins.int
+    NEWEPOCHANONID_FIELD_NUMBER: _builtins.int
+    NEWEPOCHFBID_FIELD_NUMBER: _builtins.int
+    EPOCHANONID_FIELD_NUMBER: _builtins.int
+    BACKWARDEDGE_FIELD_NUMBER: _builtins.int
+    MEMBEREDGES_FIELD_NUMBER: _builtins.int
+    EPOCHROOTKEYFINGERPRINT_FIELD_NUMBER: _builtins.int
+    ERROR_FIELD_NUMBER: _builtins.int
+    newEpochRootKey: _builtins.bytes
+    newEpochAnonId: _builtins.int
+    newEpochFbid: _builtins.int
+    epochAnonId: _builtins.bytes
+    epochRootKeyFingerprint: _builtins.bytes
+    error: _builtins.str
+    @_builtins.property
+    def backwardEdge(self) -> Global___BackwardEdge: ...
+    @_builtins.property
+    def memberEdges(self) -> _containers.RepeatedCompositeFieldContainer[Global___RotateEpochMemberEdge]: ...
+    def __init__(
+        self,
+        *,
+        newEpochRootKey: _builtins.bytes | None = ...,
+        newEpochAnonId: _builtins.int | None = ...,
+        newEpochFbid: _builtins.int | None = ...,
+        epochAnonId: _builtins.bytes | None = ...,
+        backwardEdge: Global___BackwardEdge | None = ...,
+        memberEdges: _abc.Iterable[Global___RotateEpochMemberEdge] | None = ...,
+        epochRootKeyFingerprint: _builtins.bytes | None = ...,
+        error: _builtins.str | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["backwardEdge", b"backwardEdge", "epochAnonId", b"epochAnonId", "epochRootKeyFingerprint", b"epochRootKeyFingerprint", "error", b"error", "newEpochAnonId", b"newEpochAnonId", "newEpochFbid", b"newEpochFbid", "newEpochRootKey", b"newEpochRootKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["backwardEdge", b"backwardEdge", "epochAnonId", b"epochAnonId", "epochRootKeyFingerprint", b"epochRootKeyFingerprint", "error", b"error", "memberEdges", b"memberEdges", "newEpochAnonId", b"newEpochAnonId", "newEpochFbid", b"newEpochFbid", "newEpochRootKey", b"newEpochRootKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___RotateEpochOutput: _TypeAlias = RotateEpochOutput  # noqa: Y015
 
 @_typing.final
 class RoutingInfo(_message.Message):
@@ -18122,19 +21960,25 @@ class SessionStructure(_message.Message):
         PREKEYID_FIELD_NUMBER: _builtins.int
         SIGNEDPREKEYID_FIELD_NUMBER: _builtins.int
         BASEKEY_FIELD_NUMBER: _builtins.int
+        KYBERPREKEYID_FIELD_NUMBER: _builtins.int
+        KYBERCIPHERTEXT_FIELD_NUMBER: _builtins.int
         preKeyId: _builtins.int
         signedPreKeyId: _builtins.int
         baseKey: _builtins.bytes
+        kyberPreKeyId: _builtins.int
+        kyberCiphertext: _builtins.bytes
         def __init__(
             self,
             *,
             preKeyId: _builtins.int | None = ...,
             signedPreKeyId: _builtins.int | None = ...,
             baseKey: _builtins.bytes | None = ...,
+            kyberPreKeyId: _builtins.int | None = ...,
+            kyberCiphertext: _builtins.bytes | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "preKeyId", b"preKeyId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "kyberCiphertext", b"kyberCiphertext", "kyberPreKeyId", b"kyberPreKeyId", "preKeyId", b"preKeyId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "preKeyId", b"preKeyId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["baseKey", b"baseKey", "kyberCiphertext", b"kyberCiphertext", "kyberPreKeyId", b"kyberPreKeyId", "preKeyId", b"preKeyId", "signedPreKeyId", b"signedPreKeyId"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     SESSIONVERSION_FIELD_NUMBER: _builtins.int
@@ -18243,6 +22087,32 @@ class SignalMessage(_message.Message):
 Global___SignalMessage: _TypeAlias = SignalMessage  # noqa: Y015
 
 @_typing.final
+class SignedMmkDistributionFromMailbox(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    MMKDISTRIBUTION_FIELD_NUMBER: _builtins.int
+    SIGNATURE_FIELD_NUMBER: _builtins.int
+    FROMMAILBOX_FIELD_NUMBER: _builtins.int
+    signature: _builtins.bytes
+    @_builtins.property
+    def mmkDistribution(self) -> Global___MmkDistribution: ...
+    @_builtins.property
+    def fromMailbox(self) -> Global___MessagingMailboxPublicData: ...
+    def __init__(
+        self,
+        *,
+        mmkDistribution: Global___MmkDistribution | None = ...,
+        signature: _builtins.bytes | None = ...,
+        fromMailbox: Global___MessagingMailboxPublicData | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["fromMailbox", b"fromMailbox", "mmkDistribution", b"mmkDistribution", "signature", b"signature"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["fromMailbox", b"fromMailbox", "mmkDistribution", b"mmkDistribution", "signature", b"signature"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___SignedMmkDistributionFromMailbox: _TypeAlias = SignedMmkDistributionFromMailbox  # noqa: Y015
+
+@_typing.final
 class SignedPreKeyRecordStructure(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -18294,6 +22164,7 @@ class StatusAttribution(_message.Message):
         NEWSLETTER_STATUS: StatusAttribution._Type.ValueType  # 9
         STATUS_CLOSE_SHARING: StatusAttribution._Type.ValueType  # 10
         PAID_PARTNERSHIP: StatusAttribution._Type.ValueType  # 11
+        USERNAME_STATUS: StatusAttribution._Type.ValueType  # 12
 
     class Type(_Type, metaclass=_TypeEnumTypeWrapper): ...
     UNKNOWN: StatusAttribution.Type.ValueType  # 0
@@ -18308,6 +22179,7 @@ class StatusAttribution(_message.Message):
     NEWSLETTER_STATUS: StatusAttribution.Type.ValueType  # 9
     STATUS_CLOSE_SHARING: StatusAttribution.Type.ValueType  # 10
     PAID_PARTNERSHIP: StatusAttribution.Type.ValueType  # 11
+    USERNAME_STATUS: StatusAttribution.Type.ValueType  # 12
 
     @_typing.final
     class AiCreatedAttribution(_message.Message):
@@ -18361,6 +22233,7 @@ class StatusAttribution(_message.Message):
             GOOGLE_PHOTOS: StatusAttribution.ExternalShare._Source.ValueType  # 10
             SOUNDCLOUD: StatusAttribution.ExternalShare._Source.ValueType  # 11
             SHAZAM: StatusAttribution.ExternalShare._Source.ValueType  # 12
+            PICSART: StatusAttribution.ExternalShare._Source.ValueType  # 13
 
         class Source(_Source, metaclass=_SourceEnumTypeWrapper): ...
         UNKNOWN: StatusAttribution.ExternalShare.Source.ValueType  # 0
@@ -18376,6 +22249,7 @@ class StatusAttribution(_message.Message):
         GOOGLE_PHOTOS: StatusAttribution.ExternalShare.Source.ValueType  # 10
         SOUNDCLOUD: StatusAttribution.ExternalShare.Source.ValueType  # 11
         SHAZAM: StatusAttribution.ExternalShare.Source.ValueType  # 12
+        PICSART: StatusAttribution.ExternalShare.Source.ValueType  # 13
 
         ACTIONURL_FIELD_NUMBER: _builtins.int
         SOURCE_FIELD_NUMBER: _builtins.int
@@ -18763,18 +22637,18 @@ class SyncActionValue(_message.Message):
         DEVICEID_FIELD_NUMBER: _builtins.int
         ISDELETED_FIELD_NUMBER: _builtins.int
         name: _builtins.str
-        deviceID: _builtins.int
+        deviceId: _builtins.int
         isDeleted: _builtins.bool
         def __init__(
             self,
             *,
             name: _builtins.str | None = ...,
-            deviceID: _builtins.int | None = ...,
+            deviceId: _builtins.int | None = ...,
             isDeleted: _builtins.bool | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["deviceID", b"deviceID", "isDeleted", b"isDeleted", "name", b"name"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["deviceId", b"deviceId", "isDeleted", b"isDeleted", "name", b"name"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["deviceID", b"deviceID", "isDeleted", b"isDeleted", "name", b"name"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["deviceId", b"deviceId", "isDeleted", b"isDeleted", "name", b"name"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -18896,6 +22770,7 @@ class SyncActionValue(_message.Message):
             EXAMPLE_RESPONSES: SyncActionValue.BizAISettingsNudgeAction._BizAISettingsCategory.ValueType  # 3
             KNOWLEDGE: SyncActionValue.BizAISettingsNudgeAction._BizAISettingsCategory.ValueType  # 4
             LEAD_GEN: SyncActionValue.BizAISettingsNudgeAction._BizAISettingsCategory.ValueType  # 5
+            HANDOFF_REMOVAL_TIMING: SyncActionValue.BizAISettingsNudgeAction._BizAISettingsCategory.ValueType  # 6
 
         class BizAISettingsCategory(_BizAISettingsCategory, metaclass=_BizAISettingsCategoryEnumTypeWrapper): ...
         UNKNOWN: SyncActionValue.BizAISettingsNudgeAction.BizAISettingsCategory.ValueType  # 0
@@ -18904,6 +22779,7 @@ class SyncActionValue(_message.Message):
         EXAMPLE_RESPONSES: SyncActionValue.BizAISettingsNudgeAction.BizAISettingsCategory.ValueType  # 3
         KNOWLEDGE: SyncActionValue.BizAISettingsNudgeAction.BizAISettingsCategory.ValueType  # 4
         LEAD_GEN: SyncActionValue.BizAISettingsNudgeAction.BizAISettingsCategory.ValueType  # 5
+        HANDOFF_REMOVAL_TIMING: SyncActionValue.BizAISettingsNudgeAction.BizAISettingsCategory.ValueType  # 6
 
         CATEGORY_FIELD_NUMBER: _builtins.int
         VERSION_FIELD_NUMBER: _builtins.int
@@ -18956,6 +22832,22 @@ class SyncActionValue(_message.Message):
         _HasFieldArgType: _TypeAlias = _typing.Literal["lidJid", b"lidJid", "pnJid", b"pnJid"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
         _ClearFieldArgType: _TypeAlias = _typing.Literal["lidJid", b"lidJid", "pnJid", b"pnJid"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class BubbleLockMessageAction(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        LOCKED_FIELD_NUMBER: _builtins.int
+        locked: _builtins.bool
+        def __init__(
+            self,
+            *,
+            locked: _builtins.bool | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["locked", b"locked"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["locked", b"locked"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -19051,9 +22943,11 @@ class SyncActionValue(_message.Message):
         LISTNAME_FIELD_NUMBER: _builtins.int
         LABELIDS_FIELD_NUMBER: _builtins.int
         AUDIENCEEXPRESSION_FIELD_NUMBER: _builtins.int
+        CUSTOMAUDIENCEFBID_FIELD_NUMBER: _builtins.int
         deleted: _builtins.bool
         listName: _builtins.str
         audienceExpression: _builtins.str
+        customAudienceFbid: _builtins.str
         @_builtins.property
         def participants(self) -> _containers.RepeatedCompositeFieldContainer[Global___SyncActionValue.BroadcastListParticipant]: ...
         @_builtins.property
@@ -19066,10 +22960,11 @@ class SyncActionValue(_message.Message):
             listName: _builtins.str | None = ...,
             labelIds: _abc.Iterable[_builtins.str] | None = ...,
             audienceExpression: _builtins.str | None = ...,
+            customAudienceFbid: _builtins.str | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["audienceExpression", b"audienceExpression", "deleted", b"deleted", "listName", b"listName"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["audienceExpression", b"audienceExpression", "customAudienceFbid", b"customAudienceFbid", "deleted", b"deleted", "listName", b"listName"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["audienceExpression", b"audienceExpression", "deleted", b"deleted", "labelIds", b"labelIds", "listName", b"listName", "participants", b"participants"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["audienceExpression", b"audienceExpression", "customAudienceFbid", b"customAudienceFbid", "deleted", b"deleted", "labelIds", b"labelIds", "listName", b"listName", "participants", b"participants"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -19094,15 +22989,15 @@ class SyncActionValue(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
         DEVICEAGENTID_FIELD_NUMBER: _builtins.int
-        deviceAgentID: _builtins.str
+        deviceAgentId: _builtins.str
         def __init__(
             self,
             *,
-            deviceAgentID: _builtins.str | None = ...,
+            deviceAgentId: _builtins.str | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["deviceAgentID", b"deviceAgentID"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["deviceAgentId", b"deviceAgentId"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["deviceAgentID", b"deviceAgentID"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["deviceAgentId", b"deviceAgentId"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -19139,6 +23034,22 @@ class SyncActionValue(_message.Message):
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
+    class CoexV2VersionAction(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        VERSION_FIELD_NUMBER: _builtins.int
+        version: _builtins.int
+        def __init__(
+            self,
+            *,
+            version: _builtins.int | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["version", b"version"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["version", b"version"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class ContactAction(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -19167,6 +23078,22 @@ class SyncActionValue(_message.Message):
         _HasFieldArgType: _TypeAlias = _typing.Literal["firstName", b"firstName", "fullName", b"fullName", "lidJid", b"lidJid", "pnJid", b"pnJid", "saveOnPrimaryAddressbook", b"saveOnPrimaryAddressbook", "username", b"username"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
         _ClearFieldArgType: _TypeAlias = _typing.Literal["firstName", b"firstName", "fullName", b"fullName", "lidJid", b"lidJid", "pnJid", b"pnJid", "saveOnPrimaryAddressbook", b"saveOnPrimaryAddressbook", "username", b"username"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class CtwaMessageReceivedAction(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        ISCTWAMESSAGERECEIVED_FIELD_NUMBER: _builtins.int
+        isCtwaMessageReceived: _builtins.bool
+        def __init__(
+            self,
+            *,
+            isCtwaMessageReceived: _builtins.bool | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["isCtwaMessageReceived", b"isCtwaMessageReceived"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["isCtwaMessageReceived", b"isCtwaMessageReceived"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -19500,6 +23427,8 @@ class SyncActionValue(_message.Message):
             LOCKED: SyncActionValue.LabelEditAction._ListType.ValueType  # 13
             INVITES: SyncActionValue.LabelEditAction._ListType.ValueType  # 14
             THIRD_PARTY: SyncActionValue.LabelEditAction._ListType.ValueType  # 15
+            LEAD: SyncActionValue.LabelEditAction._ListType.ValueType  # 16
+            MENTIONS_AND_REPLIES: SyncActionValue.LabelEditAction._ListType.ValueType  # 17
 
         class ListType(_ListType, metaclass=_ListTypeEnumTypeWrapper): ...
         NONE: SyncActionValue.LabelEditAction.ListType.ValueType  # 0
@@ -19518,6 +23447,8 @@ class SyncActionValue(_message.Message):
         LOCKED: SyncActionValue.LabelEditAction.ListType.ValueType  # 13
         INVITES: SyncActionValue.LabelEditAction.ListType.ValueType  # 14
         THIRD_PARTY: SyncActionValue.LabelEditAction.ListType.ValueType  # 15
+        LEAD: SyncActionValue.LabelEditAction.ListType.ValueType  # 16
+        MENTIONS_AND_REPLIES: SyncActionValue.LabelEditAction.ListType.ValueType  # 17
 
         NAME_FIELD_NUMBER: _builtins.int
         COLOR_FIELD_NUMBER: _builtins.int
@@ -19568,6 +23499,22 @@ class SyncActionValue(_message.Message):
             sortedLabelIds: _abc.Iterable[_builtins.int] | None = ...,
         ) -> None: ...
         _ClearFieldArgType: _TypeAlias = _typing.Literal["sortedLabelIds", b"sortedLabelIds"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
+    class LabelSublistAction(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        SUBLISTID_FIELD_NUMBER: _builtins.int
+        subListId: _builtins.int
+        def __init__(
+            self,
+            *,
+            subListId: _builtins.int | None = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _typing.Literal["subListId", b"subListId"]  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["subListId", b"subListId"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -20341,6 +24288,7 @@ class SyncActionValue(_message.Message):
             SHOULD_PLAY_SOUND_FOR_CALL_NOTIFICATION: SyncActionValue.SettingsSyncAction._SettingKey.ValueType  # 31
             CHAT_THEME_ID: SyncActionValue.SettingsSyncAction._SettingKey.ValueType  # 32
             COLOR_SCHEME_ID: SyncActionValue.SettingsSyncAction._SettingKey.ValueType  # 33
+            STOCK_WALLPAPER_IMAGE_ID: SyncActionValue.SettingsSyncAction._SettingKey.ValueType  # 34
 
         class SettingKey(_SettingKey, metaclass=_SettingKeyEnumTypeWrapper): ...
         SETTING_KEY_UNKNOWN: SyncActionValue.SettingsSyncAction.SettingKey.ValueType  # 0
@@ -20377,6 +24325,7 @@ class SyncActionValue(_message.Message):
         SHOULD_PLAY_SOUND_FOR_CALL_NOTIFICATION: SyncActionValue.SettingsSyncAction.SettingKey.ValueType  # 31
         CHAT_THEME_ID: SyncActionValue.SettingsSyncAction.SettingKey.ValueType  # 32
         COLOR_SCHEME_ID: SyncActionValue.SettingsSyncAction.SettingKey.ValueType  # 33
+        STOCK_WALLPAPER_IMAGE_ID: SyncActionValue.SettingsSyncAction.SettingKey.ValueType  # 34
 
         class _SettingPlatform:
             ValueType = _typing.NewType("ValueType", _builtins.int)
@@ -20430,6 +24379,7 @@ class SyncActionValue(_message.Message):
         SHOULDPLAYSOUNDFORCALLNOTIFICATION_FIELD_NUMBER: _builtins.int
         CHATTHEMEID_FIELD_NUMBER: _builtins.int
         COLORSCHEMEID_FIELD_NUMBER: _builtins.int
+        STOCKWALLPAPERIMAGEID_FIELD_NUMBER: _builtins.int
         startAtLogin: _builtins.bool
         minimizeToTray: _builtins.bool
         language: _builtins.str
@@ -20463,6 +24413,7 @@ class SyncActionValue(_message.Message):
         shouldPlaySoundForCallNotification: _builtins.bool
         chatThemeId: _builtins.str
         colorSchemeId: _builtins.str
+        stockWallpaperImageId: _builtins.str
         def __init__(
             self,
             *,
@@ -20499,10 +24450,11 @@ class SyncActionValue(_message.Message):
             shouldPlaySoundForCallNotification: _builtins.bool | None = ...,
             chatThemeId: _builtins.str | None = ...,
             colorSchemeId: _builtins.str | None = ...,
+            stockWallpaperImageId: _builtins.str | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["appTheme", b"appTheme", "bannerNotificationDisplayMode", b"bannerNotificationDisplayMode", "chatThemeId", b"chatThemeId", "colorSchemeId", b"colorSchemeId", "defaultNotificationToneId", b"defaultNotificationToneId", "disableLinkPreviews", b"disableLinkPreviews", "fontSize", b"fontSize", "groupDefaultNotificationToneId", b"groupDefaultNotificationToneId", "isAudiosAutodownloadEnabled", b"isAudiosAutodownloadEnabled", "isCallsNotificationEnabled", b"isCallsNotificationEnabled", "isDocumentsAutodownloadEnabled", b"isDocumentsAutodownloadEnabled", "isDoodleWallpaperEnabled", b"isDoodleWallpaperEnabled", "isEnterToSendEnabled", b"isEnterToSendEnabled", "isGroupMessageNotificationEnabled", b"isGroupMessageNotificationEnabled", "isGroupReactionsNotificationEnabled", b"isGroupReactionsNotificationEnabled", "isMessagesNotificationEnabled", b"isMessagesNotificationEnabled", "isPhotosAutodownloadEnabled", b"isPhotosAutodownloadEnabled", "isReactionsNotificationEnabled", b"isReactionsNotificationEnabled", "isSpellCheckEnabled", b"isSpellCheckEnabled", "isStatusNotificationEnabled", b"isStatusNotificationEnabled", "isStatusReactionsNotificationEnabled", b"isStatusReactionsNotificationEnabled", "isTextPreviewForNotificationEnabled", b"isTextPreviewForNotificationEnabled", "isVideosAutodownloadEnabled", b"isVideosAutodownloadEnabled", "language", b"language", "mediaUploadQuality", b"mediaUploadQuality", "minimizeToTray", b"minimizeToTray", "notificationToneId", b"notificationToneId", "replaceTextWithEmoji", b"replaceTextWithEmoji", "shouldPlaySoundForCallNotification", b"shouldPlaySoundForCallNotification", "startAtLogin", b"startAtLogin", "statusNotificationToneId", b"statusNotificationToneId", "unreadCounterBadgeDisplayMode", b"unreadCounterBadgeDisplayMode", "wallpaperId", b"wallpaperId"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["appTheme", b"appTheme", "bannerNotificationDisplayMode", b"bannerNotificationDisplayMode", "chatThemeId", b"chatThemeId", "colorSchemeId", b"colorSchemeId", "defaultNotificationToneId", b"defaultNotificationToneId", "disableLinkPreviews", b"disableLinkPreviews", "fontSize", b"fontSize", "groupDefaultNotificationToneId", b"groupDefaultNotificationToneId", "isAudiosAutodownloadEnabled", b"isAudiosAutodownloadEnabled", "isCallsNotificationEnabled", b"isCallsNotificationEnabled", "isDocumentsAutodownloadEnabled", b"isDocumentsAutodownloadEnabled", "isDoodleWallpaperEnabled", b"isDoodleWallpaperEnabled", "isEnterToSendEnabled", b"isEnterToSendEnabled", "isGroupMessageNotificationEnabled", b"isGroupMessageNotificationEnabled", "isGroupReactionsNotificationEnabled", b"isGroupReactionsNotificationEnabled", "isMessagesNotificationEnabled", b"isMessagesNotificationEnabled", "isPhotosAutodownloadEnabled", b"isPhotosAutodownloadEnabled", "isReactionsNotificationEnabled", b"isReactionsNotificationEnabled", "isSpellCheckEnabled", b"isSpellCheckEnabled", "isStatusNotificationEnabled", b"isStatusNotificationEnabled", "isStatusReactionsNotificationEnabled", b"isStatusReactionsNotificationEnabled", "isTextPreviewForNotificationEnabled", b"isTextPreviewForNotificationEnabled", "isVideosAutodownloadEnabled", b"isVideosAutodownloadEnabled", "language", b"language", "mediaUploadQuality", b"mediaUploadQuality", "minimizeToTray", b"minimizeToTray", "notificationToneId", b"notificationToneId", "replaceTextWithEmoji", b"replaceTextWithEmoji", "shouldPlaySoundForCallNotification", b"shouldPlaySoundForCallNotification", "startAtLogin", b"startAtLogin", "statusNotificationToneId", b"statusNotificationToneId", "stockWallpaperImageId", b"stockWallpaperImageId", "unreadCounterBadgeDisplayMode", b"unreadCounterBadgeDisplayMode", "wallpaperId", b"wallpaperId"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["appTheme", b"appTheme", "bannerNotificationDisplayMode", b"bannerNotificationDisplayMode", "chatThemeId", b"chatThemeId", "colorSchemeId", b"colorSchemeId", "defaultNotificationToneId", b"defaultNotificationToneId", "disableLinkPreviews", b"disableLinkPreviews", "fontSize", b"fontSize", "groupDefaultNotificationToneId", b"groupDefaultNotificationToneId", "isAudiosAutodownloadEnabled", b"isAudiosAutodownloadEnabled", "isCallsNotificationEnabled", b"isCallsNotificationEnabled", "isDocumentsAutodownloadEnabled", b"isDocumentsAutodownloadEnabled", "isDoodleWallpaperEnabled", b"isDoodleWallpaperEnabled", "isEnterToSendEnabled", b"isEnterToSendEnabled", "isGroupMessageNotificationEnabled", b"isGroupMessageNotificationEnabled", "isGroupReactionsNotificationEnabled", b"isGroupReactionsNotificationEnabled", "isMessagesNotificationEnabled", b"isMessagesNotificationEnabled", "isPhotosAutodownloadEnabled", b"isPhotosAutodownloadEnabled", "isReactionsNotificationEnabled", b"isReactionsNotificationEnabled", "isSpellCheckEnabled", b"isSpellCheckEnabled", "isStatusNotificationEnabled", b"isStatusNotificationEnabled", "isStatusReactionsNotificationEnabled", b"isStatusReactionsNotificationEnabled", "isTextPreviewForNotificationEnabled", b"isTextPreviewForNotificationEnabled", "isVideosAutodownloadEnabled", b"isVideosAutodownloadEnabled", "language", b"language", "mediaUploadQuality", b"mediaUploadQuality", "minimizeToTray", b"minimizeToTray", "notificationToneId", b"notificationToneId", "replaceTextWithEmoji", b"replaceTextWithEmoji", "shouldPlaySoundForCallNotification", b"shouldPlaySoundForCallNotification", "startAtLogin", b"startAtLogin", "statusNotificationToneId", b"statusNotificationToneId", "unreadCounterBadgeDisplayMode", b"unreadCounterBadgeDisplayMode", "wallpaperId", b"wallpaperId"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["appTheme", b"appTheme", "bannerNotificationDisplayMode", b"bannerNotificationDisplayMode", "chatThemeId", b"chatThemeId", "colorSchemeId", b"colorSchemeId", "defaultNotificationToneId", b"defaultNotificationToneId", "disableLinkPreviews", b"disableLinkPreviews", "fontSize", b"fontSize", "groupDefaultNotificationToneId", b"groupDefaultNotificationToneId", "isAudiosAutodownloadEnabled", b"isAudiosAutodownloadEnabled", "isCallsNotificationEnabled", b"isCallsNotificationEnabled", "isDocumentsAutodownloadEnabled", b"isDocumentsAutodownloadEnabled", "isDoodleWallpaperEnabled", b"isDoodleWallpaperEnabled", "isEnterToSendEnabled", b"isEnterToSendEnabled", "isGroupMessageNotificationEnabled", b"isGroupMessageNotificationEnabled", "isGroupReactionsNotificationEnabled", b"isGroupReactionsNotificationEnabled", "isMessagesNotificationEnabled", b"isMessagesNotificationEnabled", "isPhotosAutodownloadEnabled", b"isPhotosAutodownloadEnabled", "isReactionsNotificationEnabled", b"isReactionsNotificationEnabled", "isSpellCheckEnabled", b"isSpellCheckEnabled", "isStatusNotificationEnabled", b"isStatusNotificationEnabled", "isStatusReactionsNotificationEnabled", b"isStatusReactionsNotificationEnabled", "isTextPreviewForNotificationEnabled", b"isTextPreviewForNotificationEnabled", "isVideosAutodownloadEnabled", b"isVideosAutodownloadEnabled", "language", b"language", "mediaUploadQuality", b"mediaUploadQuality", "minimizeToTray", b"minimizeToTray", "notificationToneId", b"notificationToneId", "replaceTextWithEmoji", b"replaceTextWithEmoji", "shouldPlaySoundForCallNotification", b"shouldPlaySoundForCallNotification", "startAtLogin", b"startAtLogin", "statusNotificationToneId", b"statusNotificationToneId", "stockWallpaperImageId", b"stockWallpaperImageId", "unreadCounterBadgeDisplayMode", b"unreadCounterBadgeDisplayMode", "wallpaperId", b"wallpaperId"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -20596,8 +24548,8 @@ class SyncActionValue(_message.Message):
         CUSTOMLISTS_FIELD_NUMBER: _builtins.int
         MODES_FIELD_NUMBER: _builtins.int
         mode: Global___SyncActionValue.StatusPrivacyAction.StatusDistributionMode.ValueType
-        shareToFB: _builtins.bool
-        shareToIG: _builtins.bool
+        shareToFb: _builtins.bool
+        shareToIg: _builtins.bool
         @_builtins.property
         def userJid(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
         @_builtins.property
@@ -20609,14 +24561,14 @@ class SyncActionValue(_message.Message):
             *,
             mode: Global___SyncActionValue.StatusPrivacyAction.StatusDistributionMode.ValueType | None = ...,
             userJid: _abc.Iterable[_builtins.str] | None = ...,
-            shareToFB: _builtins.bool | None = ...,
-            shareToIG: _builtins.bool | None = ...,
+            shareToFb: _builtins.bool | None = ...,
+            shareToIg: _builtins.bool | None = ...,
             customLists: _abc.Iterable[Global___SyncActionValue.StatusPrivacyAction.CustomList] | None = ...,
             modes: _abc.Iterable[Global___SyncActionValue.StatusPrivacyAction.StatusDistributionMode.ValueType] | None = ...,
         ) -> None: ...
-        _HasFieldArgType: _TypeAlias = _typing.Literal["mode", b"mode", "shareToFB", b"shareToFB", "shareToIG", b"shareToIG"]  # noqa: Y015
+        _HasFieldArgType: _TypeAlias = _typing.Literal["mode", b"mode", "shareToFb", b"shareToFb", "shareToIg", b"shareToIg"]  # noqa: Y015
         def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-        _ClearFieldArgType: _TypeAlias = _typing.Literal["customLists", b"customLists", "mode", b"mode", "modes", b"modes", "shareToFB", b"shareToFB", "shareToIG", b"shareToIG", "userJid", b"userJid"]  # noqa: Y015
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["customLists", b"customLists", "mode", b"mode", "modes", b"modes", "shareToFb", b"shareToFb", "shareToIg", b"shareToIg", "userJid", b"userJid"]  # noqa: Y015
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
@@ -20927,6 +24879,59 @@ class SyncActionValue(_message.Message):
         def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
     @_typing.final
+    class WASARootSecretAction(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        @_typing.final
+        class RootSecretEntry(_message.Message):
+            DESCRIPTOR: _descriptor.Descriptor
+
+            class _Status:
+                ValueType = _typing.NewType("ValueType", _builtins.int)
+                V: _TypeAlias = ValueType  # noqa: Y015
+
+            class _StatusEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[SyncActionValue.WASARootSecretAction.RootSecretEntry._Status.ValueType], _builtins.type):
+                DESCRIPTOR: _descriptor.EnumDescriptor
+                INACTIVE: SyncActionValue.WASARootSecretAction.RootSecretEntry._Status.ValueType  # 0
+                ACTIVE: SyncActionValue.WASARootSecretAction.RootSecretEntry._Status.ValueType  # 1
+
+            class Status(_Status, metaclass=_StatusEnumTypeWrapper): ...
+            INACTIVE: SyncActionValue.WASARootSecretAction.RootSecretEntry.Status.ValueType  # 0
+            ACTIVE: SyncActionValue.WASARootSecretAction.RootSecretEntry.Status.ValueType  # 1
+
+            ID_FIELD_NUMBER: _builtins.int
+            ROOTSECRET_FIELD_NUMBER: _builtins.int
+            EPOCH_FIELD_NUMBER: _builtins.int
+            STATUS_FIELD_NUMBER: _builtins.int
+            id: _builtins.str
+            rootSecret: _builtins.bytes
+            epoch: _builtins.int
+            status: Global___SyncActionValue.WASARootSecretAction.RootSecretEntry.Status.ValueType
+            def __init__(
+                self,
+                *,
+                id: _builtins.str | None = ...,
+                rootSecret: _builtins.bytes | None = ...,
+                epoch: _builtins.int | None = ...,
+                status: Global___SyncActionValue.WASARootSecretAction.RootSecretEntry.Status.ValueType | None = ...,
+            ) -> None: ...
+            _HasFieldArgType: _TypeAlias = _typing.Literal["epoch", b"epoch", "id", b"id", "rootSecret", b"rootSecret", "status", b"status"]  # noqa: Y015
+            def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+            _ClearFieldArgType: _TypeAlias = _typing.Literal["epoch", b"epoch", "id", b"id", "rootSecret", b"rootSecret", "status", b"status"]  # noqa: Y015
+            def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+        SECRETS_FIELD_NUMBER: _builtins.int
+        @_builtins.property
+        def secrets(self) -> _containers.RepeatedCompositeFieldContainer[Global___SyncActionValue.WASARootSecretAction.RootSecretEntry]: ...
+        def __init__(
+            self,
+            *,
+            secrets: _abc.Iterable[Global___SyncActionValue.WASARootSecretAction.RootSecretEntry] | None = ...,
+        ) -> None: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["secrets", b"secrets"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+    @_typing.final
     class WaffleAccountLinkStateAction(_message.Message):
         DESCRIPTOR: _descriptor.Descriptor
 
@@ -21051,6 +25056,12 @@ class SyncActionValue(_message.Message):
     THREADPINACTION_FIELD_NUMBER: _builtins.int
     AUTOORGANIZEBUSINESSCHATSETTING_FIELD_NUMBER: _builtins.int
     BIZAISETTINGSNUDGEACTION_FIELD_NUMBER: _builtins.int
+    COEXV2VERSIONACTION_FIELD_NUMBER: _builtins.int
+    WASAROOTSECRETACTION_FIELD_NUMBER: _builtins.int
+    BUBBLELOCKMESSAGEACTION_FIELD_NUMBER: _builtins.int
+    LABELSUBLISTACTION_FIELD_NUMBER: _builtins.int
+    DEVICECAPABILITIESV2_FIELD_NUMBER: _builtins.int
+    CTWAMESSAGERECEIVEDACTION_FIELD_NUMBER: _builtins.int
     timestamp: _builtins.int
     @_builtins.property
     def starAction(self) -> Global___SyncActionValue.StarAction: ...
@@ -21206,6 +25217,18 @@ class SyncActionValue(_message.Message):
     def autoOrganizeBusinessChatSetting(self) -> Global___SyncActionValue.AutoOrganizeBusinessChatSetting: ...
     @_builtins.property
     def bizAiSettingsNudgeAction(self) -> Global___SyncActionValue.BizAISettingsNudgeAction: ...
+    @_builtins.property
+    def coexV2VersionAction(self) -> Global___SyncActionValue.CoexV2VersionAction: ...
+    @_builtins.property
+    def wasaRootSecretAction(self) -> Global___SyncActionValue.WASARootSecretAction: ...
+    @_builtins.property
+    def bubbleLockMessageAction(self) -> Global___SyncActionValue.BubbleLockMessageAction: ...
+    @_builtins.property
+    def labelSublistAction(self) -> Global___SyncActionValue.LabelSublistAction: ...
+    @_builtins.property
+    def deviceCapabilitiesV2(self) -> Global___DeviceCapabilities: ...
+    @_builtins.property
+    def ctwaMessageReceivedAction(self) -> Global___SyncActionValue.CtwaMessageReceivedAction: ...
     def __init__(
         self,
         *,
@@ -21287,10 +25310,16 @@ class SyncActionValue(_message.Message):
         threadPinAction: Global___SyncActionValue.ThreadPinAction | None = ...,
         autoOrganizeBusinessChatSetting: Global___SyncActionValue.AutoOrganizeBusinessChatSetting | None = ...,
         bizAiSettingsNudgeAction: Global___SyncActionValue.BizAISettingsNudgeAction | None = ...,
+        coexV2VersionAction: Global___SyncActionValue.CoexV2VersionAction | None = ...,
+        wasaRootSecretAction: Global___SyncActionValue.WASARootSecretAction | None = ...,
+        bubbleLockMessageAction: Global___SyncActionValue.BubbleLockMessageAction | None = ...,
+        labelSublistAction: Global___SyncActionValue.LabelSublistAction | None = ...,
+        deviceCapabilitiesV2: Global___DeviceCapabilities | None = ...,
+        ctwaMessageReceivedAction: Global___SyncActionValue.CtwaMessageReceivedAction | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["agentAction", b"agentAction", "aiThreadRenameAction", b"aiThreadRenameAction", "androidUnsupportedActions", b"androidUnsupportedActions", "archiveChatAction", b"archiveChatAction", "autoOrganizeBusinessChatSetting", b"autoOrganizeBusinessChatSetting", "avatarUpdatedAction", b"avatarUpdatedAction", "bizAiSettingsNudgeAction", b"bizAiSettingsNudgeAction", "botWelcomeRequestAction", b"botWelcomeRequestAction", "businessBroadcastCampaignAction", b"businessBroadcastCampaignAction", "businessBroadcastInsightsAction", b"businessBroadcastInsightsAction", "businessBroadcastListAction", b"businessBroadcastListAction", "callLogAction", b"callLogAction", "chatAssignment", b"chatAssignment", "chatAssignmentOpenedStatus", b"chatAssignmentOpenedStatus", "chatLockSettings", b"chatLockSettings", "clearChatAction", b"clearChatAction", "contactAction", b"contactAction", "ctwaPerCustomerDataSharingAction", b"ctwaPerCustomerDataSharingAction", "customPaymentMethodsAction", b"customPaymentMethodsAction", "customerDataAction", b"customerDataAction", "deleteChatAction", b"deleteChatAction", "deleteIndividualCallLog", b"deleteIndividualCallLog", "deleteMessageForMeAction", b"deleteMessageForMeAction", "detectedOutcomesStatusAction", b"detectedOutcomesStatusAction", "deviceCapabilities", b"deviceCapabilities", "externalWebBetaAction", b"externalWebBetaAction", "favoritesAction", b"favoritesAction", "interactiveMessageAction", b"interactiveMessageAction", "keyExpiration", b"keyExpiration", "labelAssociationAction", b"labelAssociationAction", "labelEditAction", b"labelEditAction", "labelReorderingAction", b"labelReorderingAction", "lidContactAction", b"lidContactAction", "localeSetting", b"localeSetting", "lockChatAction", b"lockChatAction", "maibaAiFeaturesControlAction", b"maibaAiFeaturesControlAction", "markChatAsReadAction", b"markChatAsReadAction", "marketingMessageAction", b"marketingMessageAction", "marketingMessageBroadcastAction", b"marketingMessageBroadcastAction", "merchantPaymentPartnerAction", b"merchantPaymentPartnerAction", "musicUserIdAction", b"musicUserIdAction", "muteAction", b"muteAction", "nctSaltSyncAction", b"nctSaltSyncAction", "newsletterSavedInterestsAction", b"newsletterSavedInterestsAction", "noteEditAction", b"noteEditAction", "notificationActivitySettingAction", b"notificationActivitySettingAction", "nuxAction", b"nuxAction", "outContactAction", b"outContactAction", "paymentInfoAction", b"paymentInfoAction", "paymentTosAction", b"paymentTosAction", "pinAction", b"pinAction", "pnForLidChatAction", b"pnForLidChatAction", "primaryFeature", b"primaryFeature", "primaryVersionAction", b"primaryVersionAction", "privacySettingChannelsPersonalisedRecommendationAction", b"privacySettingChannelsPersonalisedRecommendationAction", "privacySettingDisableLinkPreviewsAction", b"privacySettingDisableLinkPreviewsAction", "privacySettingRelayAllCalls", b"privacySettingRelayAllCalls", "privateProcessingSettingAction", b"privateProcessingSettingAction", "pushNameSetting", b"pushNameSetting", "quickReplyAction", b"quickReplyAction", "recentEmojiWeightsAction", b"recentEmojiWeightsAction", "removeRecentStickerAction", b"removeRecentStickerAction", "settingsSyncAction", b"settingsSyncAction", "starAction", b"starAction", "statusPostOptInNotificationPreferencesAction", b"statusPostOptInNotificationPreferencesAction", "statusPrivacy", b"statusPrivacy", "stickerAction", b"stickerAction", "subscriptionAction", b"subscriptionAction", "subscriptionsSyncV2Action", b"subscriptionsSyncV2Action", "threadPinAction", b"threadPinAction", "timeFormatAction", b"timeFormatAction", "timestamp", b"timestamp", "ugcBot", b"ugcBot", "unarchiveChatsSetting", b"unarchiveChatsSetting", "userStatusMuteAction", b"userStatusMuteAction", "usernameChatStartMode", b"usernameChatStartMode", "waffleAccountLinkStateAction", b"waffleAccountLinkStateAction", "wamoUserIdentifierAction", b"wamoUserIdentifierAction"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["agentAction", b"agentAction", "aiThreadRenameAction", b"aiThreadRenameAction", "androidUnsupportedActions", b"androidUnsupportedActions", "archiveChatAction", b"archiveChatAction", "autoOrganizeBusinessChatSetting", b"autoOrganizeBusinessChatSetting", "avatarUpdatedAction", b"avatarUpdatedAction", "bizAiSettingsNudgeAction", b"bizAiSettingsNudgeAction", "botWelcomeRequestAction", b"botWelcomeRequestAction", "bubbleLockMessageAction", b"bubbleLockMessageAction", "businessBroadcastCampaignAction", b"businessBroadcastCampaignAction", "businessBroadcastInsightsAction", b"businessBroadcastInsightsAction", "businessBroadcastListAction", b"businessBroadcastListAction", "callLogAction", b"callLogAction", "chatAssignment", b"chatAssignment", "chatAssignmentOpenedStatus", b"chatAssignmentOpenedStatus", "chatLockSettings", b"chatLockSettings", "clearChatAction", b"clearChatAction", "coexV2VersionAction", b"coexV2VersionAction", "contactAction", b"contactAction", "ctwaMessageReceivedAction", b"ctwaMessageReceivedAction", "ctwaPerCustomerDataSharingAction", b"ctwaPerCustomerDataSharingAction", "customPaymentMethodsAction", b"customPaymentMethodsAction", "customerDataAction", b"customerDataAction", "deleteChatAction", b"deleteChatAction", "deleteIndividualCallLog", b"deleteIndividualCallLog", "deleteMessageForMeAction", b"deleteMessageForMeAction", "detectedOutcomesStatusAction", b"detectedOutcomesStatusAction", "deviceCapabilities", b"deviceCapabilities", "deviceCapabilitiesV2", b"deviceCapabilitiesV2", "externalWebBetaAction", b"externalWebBetaAction", "favoritesAction", b"favoritesAction", "interactiveMessageAction", b"interactiveMessageAction", "keyExpiration", b"keyExpiration", "labelAssociationAction", b"labelAssociationAction", "labelEditAction", b"labelEditAction", "labelReorderingAction", b"labelReorderingAction", "labelSublistAction", b"labelSublistAction", "lidContactAction", b"lidContactAction", "localeSetting", b"localeSetting", "lockChatAction", b"lockChatAction", "maibaAiFeaturesControlAction", b"maibaAiFeaturesControlAction", "markChatAsReadAction", b"markChatAsReadAction", "marketingMessageAction", b"marketingMessageAction", "marketingMessageBroadcastAction", b"marketingMessageBroadcastAction", "merchantPaymentPartnerAction", b"merchantPaymentPartnerAction", "musicUserIdAction", b"musicUserIdAction", "muteAction", b"muteAction", "nctSaltSyncAction", b"nctSaltSyncAction", "newsletterSavedInterestsAction", b"newsletterSavedInterestsAction", "noteEditAction", b"noteEditAction", "notificationActivitySettingAction", b"notificationActivitySettingAction", "nuxAction", b"nuxAction", "outContactAction", b"outContactAction", "paymentInfoAction", b"paymentInfoAction", "paymentTosAction", b"paymentTosAction", "pinAction", b"pinAction", "pnForLidChatAction", b"pnForLidChatAction", "primaryFeature", b"primaryFeature", "primaryVersionAction", b"primaryVersionAction", "privacySettingChannelsPersonalisedRecommendationAction", b"privacySettingChannelsPersonalisedRecommendationAction", "privacySettingDisableLinkPreviewsAction", b"privacySettingDisableLinkPreviewsAction", "privacySettingRelayAllCalls", b"privacySettingRelayAllCalls", "privateProcessingSettingAction", b"privateProcessingSettingAction", "pushNameSetting", b"pushNameSetting", "quickReplyAction", b"quickReplyAction", "recentEmojiWeightsAction", b"recentEmojiWeightsAction", "removeRecentStickerAction", b"removeRecentStickerAction", "settingsSyncAction", b"settingsSyncAction", "starAction", b"starAction", "statusPostOptInNotificationPreferencesAction", b"statusPostOptInNotificationPreferencesAction", "statusPrivacy", b"statusPrivacy", "stickerAction", b"stickerAction", "subscriptionAction", b"subscriptionAction", "subscriptionsSyncV2Action", b"subscriptionsSyncV2Action", "threadPinAction", b"threadPinAction", "timeFormatAction", b"timeFormatAction", "timestamp", b"timestamp", "ugcBot", b"ugcBot", "unarchiveChatsSetting", b"unarchiveChatsSetting", "userStatusMuteAction", b"userStatusMuteAction", "usernameChatStartMode", b"usernameChatStartMode", "waffleAccountLinkStateAction", b"waffleAccountLinkStateAction", "wamoUserIdentifierAction", b"wamoUserIdentifierAction", "wasaRootSecretAction", b"wasaRootSecretAction"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["agentAction", b"agentAction", "aiThreadRenameAction", b"aiThreadRenameAction", "androidUnsupportedActions", b"androidUnsupportedActions", "archiveChatAction", b"archiveChatAction", "autoOrganizeBusinessChatSetting", b"autoOrganizeBusinessChatSetting", "avatarUpdatedAction", b"avatarUpdatedAction", "bizAiSettingsNudgeAction", b"bizAiSettingsNudgeAction", "botWelcomeRequestAction", b"botWelcomeRequestAction", "businessBroadcastCampaignAction", b"businessBroadcastCampaignAction", "businessBroadcastInsightsAction", b"businessBroadcastInsightsAction", "businessBroadcastListAction", b"businessBroadcastListAction", "callLogAction", b"callLogAction", "chatAssignment", b"chatAssignment", "chatAssignmentOpenedStatus", b"chatAssignmentOpenedStatus", "chatLockSettings", b"chatLockSettings", "clearChatAction", b"clearChatAction", "contactAction", b"contactAction", "ctwaPerCustomerDataSharingAction", b"ctwaPerCustomerDataSharingAction", "customPaymentMethodsAction", b"customPaymentMethodsAction", "customerDataAction", b"customerDataAction", "deleteChatAction", b"deleteChatAction", "deleteIndividualCallLog", b"deleteIndividualCallLog", "deleteMessageForMeAction", b"deleteMessageForMeAction", "detectedOutcomesStatusAction", b"detectedOutcomesStatusAction", "deviceCapabilities", b"deviceCapabilities", "externalWebBetaAction", b"externalWebBetaAction", "favoritesAction", b"favoritesAction", "interactiveMessageAction", b"interactiveMessageAction", "keyExpiration", b"keyExpiration", "labelAssociationAction", b"labelAssociationAction", "labelEditAction", b"labelEditAction", "labelReorderingAction", b"labelReorderingAction", "lidContactAction", b"lidContactAction", "localeSetting", b"localeSetting", "lockChatAction", b"lockChatAction", "maibaAiFeaturesControlAction", b"maibaAiFeaturesControlAction", "markChatAsReadAction", b"markChatAsReadAction", "marketingMessageAction", b"marketingMessageAction", "marketingMessageBroadcastAction", b"marketingMessageBroadcastAction", "merchantPaymentPartnerAction", b"merchantPaymentPartnerAction", "musicUserIdAction", b"musicUserIdAction", "muteAction", b"muteAction", "nctSaltSyncAction", b"nctSaltSyncAction", "newsletterSavedInterestsAction", b"newsletterSavedInterestsAction", "noteEditAction", b"noteEditAction", "notificationActivitySettingAction", b"notificationActivitySettingAction", "nuxAction", b"nuxAction", "outContactAction", b"outContactAction", "paymentInfoAction", b"paymentInfoAction", "paymentTosAction", b"paymentTosAction", "pinAction", b"pinAction", "pnForLidChatAction", b"pnForLidChatAction", "primaryFeature", b"primaryFeature", "primaryVersionAction", b"primaryVersionAction", "privacySettingChannelsPersonalisedRecommendationAction", b"privacySettingChannelsPersonalisedRecommendationAction", "privacySettingDisableLinkPreviewsAction", b"privacySettingDisableLinkPreviewsAction", "privacySettingRelayAllCalls", b"privacySettingRelayAllCalls", "privateProcessingSettingAction", b"privateProcessingSettingAction", "pushNameSetting", b"pushNameSetting", "quickReplyAction", b"quickReplyAction", "recentEmojiWeightsAction", b"recentEmojiWeightsAction", "removeRecentStickerAction", b"removeRecentStickerAction", "settingsSyncAction", b"settingsSyncAction", "starAction", b"starAction", "statusPostOptInNotificationPreferencesAction", b"statusPostOptInNotificationPreferencesAction", "statusPrivacy", b"statusPrivacy", "stickerAction", b"stickerAction", "subscriptionAction", b"subscriptionAction", "subscriptionsSyncV2Action", b"subscriptionsSyncV2Action", "threadPinAction", b"threadPinAction", "timeFormatAction", b"timeFormatAction", "timestamp", b"timestamp", "ugcBot", b"ugcBot", "unarchiveChatsSetting", b"unarchiveChatsSetting", "userStatusMuteAction", b"userStatusMuteAction", "usernameChatStartMode", b"usernameChatStartMode", "waffleAccountLinkStateAction", b"waffleAccountLinkStateAction", "wamoUserIdentifierAction", b"wamoUserIdentifierAction"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["agentAction", b"agentAction", "aiThreadRenameAction", b"aiThreadRenameAction", "androidUnsupportedActions", b"androidUnsupportedActions", "archiveChatAction", b"archiveChatAction", "autoOrganizeBusinessChatSetting", b"autoOrganizeBusinessChatSetting", "avatarUpdatedAction", b"avatarUpdatedAction", "bizAiSettingsNudgeAction", b"bizAiSettingsNudgeAction", "botWelcomeRequestAction", b"botWelcomeRequestAction", "bubbleLockMessageAction", b"bubbleLockMessageAction", "businessBroadcastCampaignAction", b"businessBroadcastCampaignAction", "businessBroadcastInsightsAction", b"businessBroadcastInsightsAction", "businessBroadcastListAction", b"businessBroadcastListAction", "callLogAction", b"callLogAction", "chatAssignment", b"chatAssignment", "chatAssignmentOpenedStatus", b"chatAssignmentOpenedStatus", "chatLockSettings", b"chatLockSettings", "clearChatAction", b"clearChatAction", "coexV2VersionAction", b"coexV2VersionAction", "contactAction", b"contactAction", "ctwaMessageReceivedAction", b"ctwaMessageReceivedAction", "ctwaPerCustomerDataSharingAction", b"ctwaPerCustomerDataSharingAction", "customPaymentMethodsAction", b"customPaymentMethodsAction", "customerDataAction", b"customerDataAction", "deleteChatAction", b"deleteChatAction", "deleteIndividualCallLog", b"deleteIndividualCallLog", "deleteMessageForMeAction", b"deleteMessageForMeAction", "detectedOutcomesStatusAction", b"detectedOutcomesStatusAction", "deviceCapabilities", b"deviceCapabilities", "deviceCapabilitiesV2", b"deviceCapabilitiesV2", "externalWebBetaAction", b"externalWebBetaAction", "favoritesAction", b"favoritesAction", "interactiveMessageAction", b"interactiveMessageAction", "keyExpiration", b"keyExpiration", "labelAssociationAction", b"labelAssociationAction", "labelEditAction", b"labelEditAction", "labelReorderingAction", b"labelReorderingAction", "labelSublistAction", b"labelSublistAction", "lidContactAction", b"lidContactAction", "localeSetting", b"localeSetting", "lockChatAction", b"lockChatAction", "maibaAiFeaturesControlAction", b"maibaAiFeaturesControlAction", "markChatAsReadAction", b"markChatAsReadAction", "marketingMessageAction", b"marketingMessageAction", "marketingMessageBroadcastAction", b"marketingMessageBroadcastAction", "merchantPaymentPartnerAction", b"merchantPaymentPartnerAction", "musicUserIdAction", b"musicUserIdAction", "muteAction", b"muteAction", "nctSaltSyncAction", b"nctSaltSyncAction", "newsletterSavedInterestsAction", b"newsletterSavedInterestsAction", "noteEditAction", b"noteEditAction", "notificationActivitySettingAction", b"notificationActivitySettingAction", "nuxAction", b"nuxAction", "outContactAction", b"outContactAction", "paymentInfoAction", b"paymentInfoAction", "paymentTosAction", b"paymentTosAction", "pinAction", b"pinAction", "pnForLidChatAction", b"pnForLidChatAction", "primaryFeature", b"primaryFeature", "primaryVersionAction", b"primaryVersionAction", "privacySettingChannelsPersonalisedRecommendationAction", b"privacySettingChannelsPersonalisedRecommendationAction", "privacySettingDisableLinkPreviewsAction", b"privacySettingDisableLinkPreviewsAction", "privacySettingRelayAllCalls", b"privacySettingRelayAllCalls", "privateProcessingSettingAction", b"privateProcessingSettingAction", "pushNameSetting", b"pushNameSetting", "quickReplyAction", b"quickReplyAction", "recentEmojiWeightsAction", b"recentEmojiWeightsAction", "removeRecentStickerAction", b"removeRecentStickerAction", "settingsSyncAction", b"settingsSyncAction", "starAction", b"starAction", "statusPostOptInNotificationPreferencesAction", b"statusPostOptInNotificationPreferencesAction", "statusPrivacy", b"statusPrivacy", "stickerAction", b"stickerAction", "subscriptionAction", b"subscriptionAction", "subscriptionsSyncV2Action", b"subscriptionsSyncV2Action", "threadPinAction", b"threadPinAction", "timeFormatAction", b"timeFormatAction", "timestamp", b"timestamp", "ugcBot", b"ugcBot", "unarchiveChatsSetting", b"unarchiveChatsSetting", "userStatusMuteAction", b"userStatusMuteAction", "usernameChatStartMode", b"usernameChatStartMode", "waffleAccountLinkStateAction", b"waffleAccountLinkStateAction", "wamoUserIdentifierAction", b"wamoUserIdentifierAction", "wasaRootSecretAction", b"wasaRootSecretAction"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___SyncActionValue: _TypeAlias = SyncActionValue  # noqa: Y015
@@ -21990,6 +26019,43 @@ class VerifiedNameCertificate(_message.Message):
 Global___VerifiedNameCertificate: _TypeAlias = VerifiedNameCertificate  # noqa: Y015
 
 @_typing.final
+class VirtualDeviceOutput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    VDID_FIELD_NUMBER: _builtins.int
+    VDPUBLICKEY_FIELD_NUMBER: _builtins.int
+    VDEPOCHSTORAGEPUBLICKEY_FIELD_NUMBER: _builtins.int
+    VDEPOCHSTORAGEPUBLICKEYSIG_FIELD_NUMBER: _builtins.int
+    OCMFROTATIONTOKEN_FIELD_NUMBER: _builtins.int
+    DEVICEEPOCHHMAC_FIELD_NUMBER: _builtins.int
+    ENCRYPTEDSECRETVALUES_FIELD_NUMBER: _builtins.int
+    vdId: _builtins.bytes
+    vdPublicKey: _builtins.bytes
+    vdEpochStoragePublicKey: _builtins.bytes
+    vdEpochStoragePublicKeySig: _builtins.bytes
+    ocmfRotationToken: _builtins.bytes
+    deviceEpochHmac: _builtins.bytes
+    @_builtins.property
+    def encryptedSecretValues(self) -> Global___EncryptedSecretValuesOutput: ...
+    def __init__(
+        self,
+        *,
+        vdId: _builtins.bytes | None = ...,
+        vdPublicKey: _builtins.bytes | None = ...,
+        vdEpochStoragePublicKey: _builtins.bytes | None = ...,
+        vdEpochStoragePublicKeySig: _builtins.bytes | None = ...,
+        ocmfRotationToken: _builtins.bytes | None = ...,
+        deviceEpochHmac: _builtins.bytes | None = ...,
+        encryptedSecretValues: Global___EncryptedSecretValuesOutput | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["deviceEpochHmac", b"deviceEpochHmac", "encryptedSecretValues", b"encryptedSecretValues", "ocmfRotationToken", b"ocmfRotationToken", "vdEpochStoragePublicKey", b"vdEpochStoragePublicKey", "vdEpochStoragePublicKeySig", b"vdEpochStoragePublicKeySig", "vdId", b"vdId", "vdPublicKey", b"vdPublicKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["deviceEpochHmac", b"deviceEpochHmac", "encryptedSecretValues", b"encryptedSecretValues", "ocmfRotationToken", b"ocmfRotationToken", "vdEpochStoragePublicKey", b"vdEpochStoragePublicKey", "vdEpochStoragePublicKeySig", b"vdEpochStoragePublicKeySig", "vdId", b"vdId", "vdPublicKey", b"vdPublicKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___VirtualDeviceOutput: _TypeAlias = VirtualDeviceOutput  # noqa: Y015
+
+@_typing.final
 class WallpaperSettings(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -22454,6 +26520,10 @@ class WebMessageInfo(_message.Message):
         GROUP_TEE_BOT_ADDED: WebMessageInfo._StubType.ValueType  # 223
         CONTACT_INFO: WebMessageInfo._StubType.ValueType  # 224
         SCHEDULED_MESSAGE_CREATED: WebMessageInfo._StubType.ValueType  # 225
+        IDENTITY_TRUST_MARKED: WebMessageInfo._StubType.ValueType  # 226
+        IDENTITY_TRUST_UNMARKED: WebMessageInfo._StubType.ValueType  # 227
+        IDENTITY_TRUST_REVOKED: WebMessageInfo._StubType.ValueType  # 228
+        CTWA_CONSUMER_DISCLOSURE: WebMessageInfo._StubType.ValueType  # 230
 
     class StubType(_StubType, metaclass=_StubTypeEnumTypeWrapper): ...
     UNKNOWN: WebMessageInfo.StubType.ValueType  # 0
@@ -22682,6 +26752,10 @@ class WebMessageInfo(_message.Message):
     GROUP_TEE_BOT_ADDED: WebMessageInfo.StubType.ValueType  # 223
     CONTACT_INFO: WebMessageInfo.StubType.ValueType  # 224
     SCHEDULED_MESSAGE_CREATED: WebMessageInfo.StubType.ValueType  # 225
+    IDENTITY_TRUST_MARKED: WebMessageInfo.StubType.ValueType  # 226
+    IDENTITY_TRUST_UNMARKED: WebMessageInfo.StubType.ValueType  # 227
+    IDENTITY_TRUST_REVOKED: WebMessageInfo.StubType.ValueType  # 228
+    CTWA_CONSUMER_DISCLOSURE: WebMessageInfo.StubType.ValueType  # 230
 
     KEY_FIELD_NUMBER: _builtins.int
     MESSAGE_FIELD_NUMBER: _builtins.int
@@ -22993,3 +27067,75 @@ class WebNotificationsInfo(_message.Message):
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___WebNotificationsInfo: _TypeAlias = WebNotificationsInfo  # noqa: Y015
+
+@_typing.final
+class WrapTransportSigningPublicKeyInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    KEYBYTES_FIELD_NUMBER: _builtins.int
+    keyBytes: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        keyBytes: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["keyBytes", b"keyBytes"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["keyBytes", b"keyBytes"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___WrapTransportSigningPublicKeyInput: _TypeAlias = WrapTransportSigningPublicKeyInput  # noqa: Y015
+
+@_typing.final
+class WrapTransportSigningPublicKeyResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PREFIXEDKEY_FIELD_NUMBER: _builtins.int
+    prefixedKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        prefixedKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["prefixedKey", b"prefixedKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["prefixedKey", b"prefixedKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___WrapTransportSigningPublicKeyResult: _TypeAlias = WrapTransportSigningPublicKeyResult  # noqa: Y015
+
+@_typing.final
+class WrapTransportSigningSecretKeyInput(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    KEYBYTES_FIELD_NUMBER: _builtins.int
+    keyBytes: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        keyBytes: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["keyBytes", b"keyBytes"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["keyBytes", b"keyBytes"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___WrapTransportSigningSecretKeyInput: _TypeAlias = WrapTransportSigningSecretKeyInput  # noqa: Y015
+
+@_typing.final
+class WrapTransportSigningSecretKeyResult(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    PREFIXEDKEY_FIELD_NUMBER: _builtins.int
+    prefixedKey: _builtins.bytes
+    def __init__(
+        self,
+        *,
+        prefixedKey: _builtins.bytes | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["prefixedKey", b"prefixedKey"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["prefixedKey", b"prefixedKey"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___WrapTransportSigningSecretKeyResult: _TypeAlias = WrapTransportSigningSecretKeyResult  # noqa: Y015

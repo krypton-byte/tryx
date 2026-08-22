@@ -111,7 +111,7 @@ class MsgSecretEntry:
 class FfiStoreProtocol(Protocol):
     """Structural typing protocol for native FFI-based storage backends.
 
-    Any object exposing a ``lib_path`` attribute and a ``connect_string``
+    Any object exposing a ``lib_path`` attribute and a ``config_json``
     attribute satisfies this protocol without inheriting from anything
     in the Tryx package — keeping third-party store packages fully
     decoupled.
@@ -122,18 +122,20 @@ class FfiStoreProtocol(Protocol):
 
     Example (tryx-store-postgres)::
 
+        import json
+
         class PostgresStore:
             lib_path: str   # path to compiled .so
-            connect_string: str
+            config_json: str
 
         backend = PostgresStore(
             lib_path="./libtryx_pg.so",
-            connect_string="host=localhost dbname=tryx",
+            config_json=json.dumps({"host": "localhost", "dbname": "tryx"}),
         )
     """
 
     lib_path: str
-    connect_string: str
+    config_json: str
 
 # ── Pure Python Store Base ───────────────────────────────────────────────────
 

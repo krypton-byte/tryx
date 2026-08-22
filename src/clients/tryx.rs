@@ -111,7 +111,7 @@ impl Tryx {
             })
         } else if let (Ok(lib_path), Ok(config_json)) = (
             backend.getattr(py, "lib_path").and_then(|v| v.extract::<String>(py)),
-            backend.getattr(py, "connect_string").and_then(|v| v.extract::<String>(py)),
+            backend.getattr(py, "config_json").and_then(|v| v.extract::<String>(py)),
         ) {
             debug!("detected FFI backend from Python via duck-typing");
 

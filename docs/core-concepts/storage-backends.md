@@ -69,16 +69,18 @@ sequenceDiagram
 
 ### Usage
 
-Any object with `lib_path` and `connect_string` attributes is detected as an FFI backend:
+Any object with `lib_path` and `config_json` attributes is detected as an FFI backend:
 
 ```python
+import json
+
 from tryx.client import Tryx
 
 
 # tryx-store-postgres exposes this interface
 class PostgresStore:
     lib_path = "./libtryx_pg.so"
-    connect_string = "host=localhost dbname=tryx"
+    config_json = json.dumps({"host": "localhost", "dbname": "tryx"})
 
 
 app = Tryx(PostgresStore())
