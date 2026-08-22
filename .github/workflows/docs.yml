@@ -190,17 +190,3 @@ jobs:
       - name: List deployed versions
         if: success()
         run: uv run --no-project mike list
-
-  # ── Job 4: Deploy to GitHub Pages (only for tag releases) ──────────────────
-  deploy_pages:
-    name: Deploy to GitHub Pages
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
