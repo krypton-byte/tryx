@@ -52,14 +52,17 @@ voip = ["whatsapp-rust/voip"]
 voip-mlow = ["whatsapp-rust/voip-mlow"]
 
 # ── Release profile ────────────────────────────────────────────────────
-# Aggressively optimize for binary size. Without this, debug symbols
-# alone can bloat the .so to ~1 GB.
+# Optimised for maximum runtime performance. opt-level=3 enables full
+# inlining and loop-unrolling; lto=fat + codegen-units=1 give the
+# optimizer a single, whole-program view. panic="unwind" is mandatory
+# because PyO3 and whatsapp-rust rely on catch_unwind() to convert
+# Rust panics into Python exceptions instead of crashing the host.
 [profile.release]
-strip = true          # strip debug symbols (~900 MB saved)
-lto = true            # link-time optimization (20-30% smaller code)
-opt-level = "z"       # optimize for size over speed
-codegen-units = 1     # single codegen unit for better optimization
-panic = "abort"       # skip unwind tables (~5% smaller)
+opt-level = 3         # maximum runtime performance
+lto = "fat"           # full cross-crate link-time optimization
+codegen-units = 1     # single codegen unit for whole-program opts
+strip = "symbols"     # strip debug symbols, keep minimal info
+panic = "unwind"      # REQUIRED: PyO3 catch_unwind → Python exceptions
 
 [profile.dev]
 # Keep dev builds fast.
