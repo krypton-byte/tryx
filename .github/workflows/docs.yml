@@ -50,6 +50,9 @@ jobs:
           uv sync --group docs --no-install-project
           uv pip install mike
 
+      # Ensure the tryx package is importable via PYTHONPATH
+      # without triggering a maturin build.
+
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
@@ -60,8 +63,8 @@ jobs:
         run: |
           VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//' | sed 's/\.[0-9]*$//')
           echo "Deploying docs for version: $VERSION"
-          uv run mike deploy --push --update-aliases "$VERSION" latest
-          uv run mike set-default --push latest
+          uv run --no-project mike deploy --push --update-aliases "$VERSION" latest
+          uv run --no-project mike set-default --push latest
         env:
           PYTHONPATH: python
 
@@ -69,8 +72,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.version != ''
         run: |
           echo "Deploying docs for version: ${{ inputs.version }}"
-          uv run mike deploy --push --update-aliases "${{ inputs.version }}" latest
-          uv run mike set-default --push latest
+          uv run --no-project mike deploy --push --update-aliases "${{ inputs.version }}" latest
+          uv run --no-project mike set-default --push latest
         env:
           PYTHONPATH: python
 
@@ -78,13 +81,13 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.delete_version != ''
         run: |
           echo "Deleting docs version: ${{ inputs.delete_version }}"
-          uv run mike delete --push "${{ inputs.delete_version }}"
+          uv run --no-project mike delete --push "${{ inputs.delete_version }}"
         env:
           PYTHONPATH: python
 
       - name: List deployed versions
         if: success()
-        run: uv run mike list
+        run: uv run --no-project mike list
 
   deploy:
     name: Deploy to GitHub Pages
