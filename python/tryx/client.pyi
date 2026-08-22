@@ -4,6 +4,7 @@ from typing import Any, Awaitable, Callable, TypeVar
 
 from .backend import BackendBase, FfiStoreProtocol, StoreBase
 from .events import EvMessage
+from .media import AudioSource, AudioSink, EncodedAudioSink, EncodedAudioSource, VideoSink, VideoSource
 from .types import JID, MediaReuploadResult, ProfilePicture, SendResult, UploadResponse
 from .wacore import MediaType, Node
 from .waproto.whatsapp_pb2 import Message as MessageProto
@@ -162,7 +163,7 @@ class CallHandle:
     def set_muted(self, muted: bool) -> None: ...
     async def hangup(self) -> None: ...
     async def wait_ended(self) -> None: ...
-    async def start_video(self, video_source: Any, video_sink: Any) -> None: ...
+    async def start_video(self, video_source: VideoSource, video_sink: VideoSink) -> None: ...
     async def stop_video(self) -> None: ...
     async def invite_participant(self, target: JID) -> None: ...
     async def ring_participant(self, target: JID) -> None: ...
@@ -176,37 +177,37 @@ class IncomingCallEvent:
     call_id: str
     peer: JID
     is_video: bool
-    async def accept(self, audio_source: Any, audio_sink: Any) -> CallHandle: ...
+    async def accept(self, audio_source: AudioSource, audio_sink: AudioSink) -> CallHandle: ...
     async def reject(self) -> None: ...
 
 class VoipClient:
     async def call(
-        self, peer: JID, audio_source: Any, audio_sink: Any
+        self, peer: JID, audio_source: AudioSource, audio_sink: AudioSink
     ) -> CallHandle: ...
     async def group_call(
         self,
         peers: list[JID],
-        audio_source: Any,
-        audio_sink: Any,
-        video_source: Any | None = None,
-        video_sink: Any | None = None,
+        audio_source: AudioSource,
+        audio_sink: AudioSink,
+        video_source: VideoSource | None = None,
+        video_sink: VideoSink | None = None,
     ) -> CallHandle: ...
     async def join_call_link(
         self,
         token_or_url: str,
         media: str,
-        audio_source: Any,
-        audio_sink: Any,
-        video_source: Any | None = None,
-        video_sink: Any | None = None,
+        audio_source: AudioSource,
+        audio_sink: AudioSink,
+        video_source: VideoSource | None = None,
+        video_sink: VideoSink | None = None,
     ) -> CallHandle: ...
     async def video_call(
         self,
         peer: JID,
-        audio_source: Any,
-        audio_sink: Any,
-        video_source: Any,
-        video_sink: Any,
+        audio_source: AudioSource,
+        audio_sink: AudioSink,
+        video_source: VideoSource,
+        video_sink: VideoSink,
     ) -> CallHandle: ...
 
 class AdvancedClient:

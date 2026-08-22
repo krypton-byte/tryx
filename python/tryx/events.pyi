@@ -5,8 +5,15 @@ from typing import Any, Awaitable, Callable, TypeVar
 
 from .types import JID, MessageInfo, MessageSource
 from .wacore import BusinessSubscription, KeyIndexInfo, Node
-from .waproto.whatsapp_pb2 import Conversation, HistorySync
+from .waproto.whatsapp_pb2 import Conversation, HistorySync, SyncActionValue
 from .waproto.whatsapp_pb2 import Message as MessageProto
+
+_ArchiveChatAction = SyncActionValue.ArchiveChatAction
+_ContactAction = SyncActionValue.ContactAction
+_DeleteChatAction = SyncActionValue.DeleteChatAction
+_DeleteMessageForMeAction = SyncActionValue.DeleteMessageForMeAction
+_MarkChatAsReadAction = SyncActionValue.MarkChatAsReadAction
+_MuteAction = SyncActionValue.MuteAction
 
 EventT = TypeVar("EventT")
 
@@ -332,7 +339,7 @@ class MuteUpdateData:
     from_full_sync: bool
 
     @property
-    def action(self) -> Any: ...
+    def action(self) -> _MuteAction: ...
 
 class EvMuteUpdate:
     """Emitted when mute settings change."""
@@ -348,7 +355,7 @@ class MarkChatAsReadUpdateData:
     from_full_sync: bool
 
     @property
-    def action(self) -> Any: ...
+    def action(self) -> _MarkChatAsReadAction: ...
 
 class EvMarkChatAsReadUpdate:
     """Emitted when read state sync action is applied."""
@@ -436,7 +443,7 @@ class EvArchiveUpdateData:
     from_full_sync: bool
 
     @property
-    def action(self) -> Any: ...
+    def action(self) -> _ArchiveChatAction: ...
 
 class EvArchiveUpdate:
     """Emitted when chat archive state changes."""
@@ -543,7 +550,7 @@ class ContactUpdateData:
     from_full_sync: bool
 
     @property
-    def action(self) -> Any: ...
+    def action(self) -> _ContactAction: ...
 
 class EvContactUpdate:
     """Emitted when contact sync actions are applied."""
@@ -584,7 +591,7 @@ class DeleteChatUpdateData:
     from_full_sync: bool
 
     @property
-    def action(self) -> Any: ...
+    def action(self) -> _DeleteChatAction: ...
 
 class EvDeleteChatUpdate:
     """Emitted when a chat is deleted via sync action."""
@@ -600,7 +607,7 @@ class DeleteMessageForMeUpdateData:
     message_id: str
     from_me: bool
     timestamp: datetime
-    action: Any
+    action: _DeleteMessageForMeAction
     from_full_sync: bool
 
 class EvDeleteMessageForMeUpdate:
