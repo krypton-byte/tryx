@@ -120,10 +120,12 @@ plugins:
       default_handler: python
       handlers:
         python:
+          paths: [python]
           inventories:
             - https://docs.python.org/3/objects.inv
           options:
             allow_inspection: false
+            find_stubs_package: true
             show_source: true
             show_root_heading: true
             show_root_full_path: false

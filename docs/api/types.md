@@ -15,6 +15,41 @@
       show_root_heading: true
       heading_level: 2
 
+::: tryx.types.SendResult
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.UploadResponse
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.MediaReuploadResult
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.ProfilePicture
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.MsgBotInfo
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.MsgMetaInfo
+    options:
+      show_root_heading: true
+      heading_level: 2
+
+::: tryx.types.DeviceSentMeta
+    options:
+      show_root_heading: true
+      heading_level: 2
+
 ---
 
 Core value objects in `tryx.types` define identity, message metadata, and result contracts used across client namespaces.
