@@ -12,6 +12,8 @@ from .waproto.whatsapp_pb2 import MessageKey, SyncActionValue
 
 # Re-export media types that are registered in the client module
 class AudioPlayer(AudioSource):
+    """Built-in audio player that decodes and plays audio files."""
+
     def __init__(self, buffer_frames: int = ...) -> None: ...
     def play(self, path: str, mode: str = ...) -> None: ...
     def stop(self) -> None: ...
@@ -24,6 +26,8 @@ class AudioPlayer(AudioSource):
     def state(self) -> str: ...
 
 class VideoPlayer(VideoSource):
+    """Built-in video player that demuxes and decodes video files."""
+
     def __init__(self, fps: int = ...) -> None: ...
     def play(self, path: str) -> None: ...
     def stop(self) -> None: ...
@@ -175,6 +179,8 @@ class TryxClient:
     ) -> MediaReuploadResult: ...
 
 class CallHandle:
+    """Handle for an active voice/video call."""
+
     call_id: str
     peer: JID
     def is_muted(self) -> bool: ...
@@ -192,6 +198,8 @@ class CallHandle:
     async def deny_waiting_user(self, target: JID) -> None: ...
 
 class IncomingCallEvent:
+    """Event emitted when an incoming call is received."""
+
     call_id: str
     peer: JID
     is_video: bool
@@ -199,6 +207,8 @@ class IncomingCallEvent:
     async def reject(self) -> None: ...
 
 class VoipClient:
+    """VoIP client for making and receiving voice/video calls."""
+
     async def call(
         self, peer: JID, audio_source: AudioSource, audio_sink: AudioSink
     ) -> CallHandle: ...
@@ -258,6 +268,8 @@ class CommentsClient:
     async def send_message(self, parent: EvMessage, message: MessageProto) -> str: ...
 
 class EventResponse:
+    """RSVP response for WhatsApp events."""
+
     Going: EventResponse
     NotGoing: EventResponse
     Maybe: EventResponse
@@ -572,17 +584,23 @@ class NewsletterMessage:
     message: MessageProto | None
 
 class NewsletterAdminProfile:
+    """Admin profile information for a newsletter."""
+
     id: str | None
     name: str
     picture_id: str | None
     picture_direct_path: str | None
 
 class NewsletterAdminInfo:
+    """Administrative information for a newsletter."""
+
     admin_count: int | None
     admin_profile: NewsletterAdminProfile | None
     admin_profiles_enabled: bool | None
 
 class NewsletterFollower:
+    """Follower entry for a newsletter."""
+
     jid: JID
     phone_jid: JID | None
     display_name: str | None
