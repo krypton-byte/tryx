@@ -14,7 +14,6 @@ WA_FRAME_SAMPLES: Final[int]
 WA_FRAME_MS: Final[int]
 
 def validate_audio_frame(frame: bytes | bytearray | memoryview) -> bytes: ...
-
 @dataclass(frozen=True)
 class VideoFrame:
     """One H.264 Annex-B access unit received from or sent to a call."""
