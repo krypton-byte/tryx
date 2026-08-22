@@ -50,7 +50,18 @@ class SqliteStore(BackendBase):
 
     path: str
 
-    def __init__(self, path: str) -> None: ...
+    def __init__(self, path: str) -> None:
+        """
+        Create a SQLite storage backend.
+
+        Args:
+            path: Filesystem path to the database file.
+
+        Example::
+
+            store = SqliteStore('session.db')
+        """
+        ...
 
 # ── Internal Rust structs (JSON-serialized across FFI) ──────────────────────
 

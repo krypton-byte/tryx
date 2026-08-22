@@ -47,7 +47,14 @@ class NodeValue:
         ...
 
     @value.setter
-    def value(self, value: str | JID) -> None: ...
+    def value(self, value: str | JID) -> None:
+        """
+        Return the current value as either a string or JID.
+
+        Returns:
+            The attribute value (str or JID).
+        """
+        ...
 
 class NodeContent:
     """Represents node payload content.
