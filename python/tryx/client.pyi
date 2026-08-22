@@ -2,42 +2,24 @@
 
 from typing import Awaitable, Callable, TypeVar
 
-from .events import Dispatcher
-
 from .backend import BackendBase, FfiStoreProtocol, StoreBase
-from .events import EvMessage
+from .events import Dispatcher, EvMessage
+from .media import (
+    AudioPlayer as AudioPlayer,
+)
 from .media import (
     AudioSink,
     AudioSource,
     VideoSink,
     VideoSource,
 )
+from .media import (
+    VideoPlayer as VideoPlayer,
+)
 from .types import JID, MediaReuploadResult, ProfilePicture, SendResult, UploadResponse
 from .wacore import MediaType, Node
 from .waproto.whatsapp_pb2 import Message as MessageProto
 from .waproto.whatsapp_pb2 import MessageKey, SyncActionValue
-
-# Re-export media types that are registered in the client module
-class AudioPlayer(AudioSource):
-    """Built-in audio player that decodes and plays audio files."""
-
-    def __init__(self, buffer_frames: int = ...) -> None: ...
-    def play(self, path: str, mode: str = ...) -> None: ...
-    def stop(self) -> None: ...
-    def pause(self) -> None: ...
-    def resume(self) -> None: ...
-    def enqueue(self, path: str) -> None: ...
-    def skip(self) -> None: ...
-    def clear_queue(self) -> None: ...
-    @property
-    def state(self) -> str: ...
-
-class VideoPlayer(VideoSource):
-    """Built-in video player that demuxes and decodes video files."""
-
-    def __init__(self, fps: int = ...) -> None: ...
-    def play(self, path: str) -> None: ...
-    def stop(self) -> None: ...
 
 EventT = TypeVar("EventT")
 

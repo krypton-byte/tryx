@@ -21,9 +21,7 @@ class Dispatcher:
     """Callback registry used by the runtime to map event classes to handlers."""
 
     def __init__(self) -> None: ...
-    def on(
-        self, event_type: type[EventT]
-    ) -> Dispatcher:
+    def on(self, event_type: type[EventT]) -> Dispatcher:
         """Select an event class and return a decorator-like dispatcher object."""
         ...
 
