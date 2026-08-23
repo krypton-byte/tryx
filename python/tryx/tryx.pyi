@@ -226,7 +226,7 @@ from .events import (
     DeviceListUpdateType as DeviceListUpdateType,
 )
 from .events import (
-    DeviceNottificationInfo as DeviceNottificationInfo,
+    DeviceNotificationInfo as DeviceNotificationInfo,
 )
 from .events import (
     Dispatcher as Dispatcher,
@@ -409,7 +409,7 @@ from .events import (
     PictureUpdateData as PictureUpdateData,
 )
 from .events import (
-    PinUpdatedata as PinUpdatedata,
+    PinUpdateData as PinUpdateData,
 )
 from .events import (
     ReceiptType as ReceiptType,

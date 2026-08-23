@@ -35,9 +35,29 @@ jobs:
       - name: Ruff format check
         run: uv run --no-project --with ruff==0.11.4 ruff format --check .
 
+  tests:
+    name: Python Tests
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dev dependencies
+        run: uv sync --group dev
+      - name: Build native extension
+        run: uv run maturin develop
+      - name: Run pytest
+        run: uv run pytest -q
+
   linux:
     name: Linux manylinux wheels
-    needs: quality
+    needs: [quality, tests]
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: false
@@ -82,7 +102,7 @@ jobs:
 
   android:
     name: Android wheels
-    needs: quality
+    needs: [quality, tests]
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -118,7 +138,7 @@ jobs:
 
   windows:
     name: Windows wheels
-    needs: quality
+    needs: [quality, tests]
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: false
@@ -153,7 +173,7 @@ jobs:
 
   macos:
     name: macOS wheels
-    needs: quality
+    needs: [quality, tests]
     # Both targets use macos-latest (Apple Silicon) — x86_64 is cross-compiled.
     # macos-13 runners have very long queues (12h+); macos-latest is faster.
     runs-on: macos-latest
@@ -185,7 +205,7 @@ jobs:
 
   sdist:
     name: Source distribution
-    needs: quality
+    needs: [quality, tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

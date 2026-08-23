@@ -465,7 +465,7 @@ class EvSelfPushNameUpdated:
     old_name: str
     new_name: str
 
-class PinUpdatedata:
+class PinUpdateData:
     """Pin update payload."""
 
     jid: JID
@@ -477,12 +477,12 @@ class EvPinUpdate:
     """Emitted when chat pin status changes."""
 
     @property
-    def data(self) -> PinUpdatedata:
+    def data(self) -> PinUpdateData:
         """
         Return the pin update payload.
 
         Returns:
-            PinUpdatedata with jid, timestamp, and pinned state.
+            PinUpdateData with jid, timestamp, and pinned state.
         """
         ...
 
@@ -599,7 +599,7 @@ class EvOfflineSyncCompleted:
         """
         ...
 
-class DeviceNottificationInfo:
+class DeviceNotificationInfo:
     """Single device info entry within a device list update."""
 
     device_id: int
@@ -611,7 +611,7 @@ class DeviceListUpdateData:
     user: JID
     lid_user: JID | None
     update_type: DeviceListUpdateType
-    devices: list[DeviceNottificationInfo]
+    devices: list[DeviceNotificationInfo]
     key_index: KeyIndexInfo | None
     contact_hash: str | None
 
