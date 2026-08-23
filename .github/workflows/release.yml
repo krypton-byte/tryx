@@ -36,7 +36,7 @@ jobs:
 
       - name: Python Semantic Release
         id: release
-        run: uv run --no-project semantic-release version
+        run: uv run --no-project python -m semantic_release version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
