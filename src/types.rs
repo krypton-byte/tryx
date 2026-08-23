@@ -195,7 +195,7 @@ impl From<WhatsAppMessageInfo> for MessageInfo {
         MessageInfo {
             inner: Arc::new(info.clone()),
             id: info.id.clone(),
-            r#type: info.r#type.clone(),
+            r#type: info.r#type.map(|t| t.to_string()).unwrap_or_default(),
             push_name: info.push_name.clone(),
         }
     }
@@ -235,7 +235,7 @@ impl MessageInfo {
     }
     #[getter]
     fn media_type(&self) -> Option<String> {
-        Some(self.inner.media_type.clone())
+        self.inner.media_type.as_ref().map(|m| m.to_string())
     }
     #[getter]
     fn edit(&self) -> &str {
@@ -265,10 +265,7 @@ impl MessageInfo {
     #[getter]
     fn meta_info(&self, py: Python<'_>) -> MsgMetaInfo{
         MsgMetaInfo {
-            target_id: match self.inner.meta_info.target_id {
-                Some(ref s) => Some(s.clone()),
-                None => None,
-            },
+            target_id: self.inner.meta_info.target_id.as_deref().map(String::from),
             target_sender: match self.inner.meta_info.target_sender {
                 Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
@@ -277,18 +274,15 @@ impl MessageInfo {
                 Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
             },
-            thread_message_id: match self.inner.meta_info.thread_message_id {
-                Some(ref s) => Some(s.clone()),
-                None => None,
-            },
+            thread_message_id: self.inner.meta_info.thread_message_id.as_deref().map(String::from),
             thread_message_sender_jid: match self.inner.meta_info.thread_message_sender_jid {
                 Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
                 None => None,
             },
-            content_type: self.inner.meta_info.content_type.clone(),
-            appdata: self.inner.meta_info.appdata.clone(),
-            reporting_tag: self.inner.meta_info.reporting_tag.clone(),
-            reporting_token: self.inner.meta_info.reporting_token.clone(),
+            content_type: self.inner.meta_info.content_type.as_deref().map(String::from),
+            appdata: self.inner.meta_info.appdata.as_deref().map(String::from),
+            reporting_tag: self.inner.meta_info.reporting_tag.as_deref().map(|b| b.to_vec()),
+            reporting_token: self.inner.meta_info.reporting_token.as_deref().map(|b| b.to_vec()),
             reporting_token_version: self.inner.meta_info.reporting_token_version,
         }
     }

@@ -15,19 +15,19 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: uv run ruff check --fix
+        entry: uv run --no-project ruff check --fix
         language: system
         types_or: [python, pyi]
 
       - id: ruff-format
         name: ruff format
-        entry: uv run ruff format
+        entry: uv run --no-project ruff format
         language: system
         types_or: [python, pyi]
 
       - id: pyright
         name: pyright type check
-        entry: uv run pyright
+        entry: uv run --no-project pyright
         language: system
         types: [python]
         pass_filenames: false
@@ -35,13 +35,13 @@ repos:
 
       - id: stub-parity
         name: check stub parity
-        entry: uv run python scripts/check_stub_parity.py
+        entry: uv run --no-project python scripts/check_stub_parity.py
         language: system
         pass_filenames: false
         files: "^python/tryx/.*\\.(py|pyi)$"
 
       - id: conventional-commit-message
         name: conventional commit message
-        entry: uv run python scripts/check_commit_message.py
+        entry: uv run --no-project python scripts/check_commit_message.py
         language: system
         stages: [commit-msg]

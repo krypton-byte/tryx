@@ -1,302 +1,255 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tryx Documentation — Zensical Modern Theme
+   Clean, professional design with teal accent and solid typography.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Theme Variables ─────────────────────────────────────────────────────── */
+/* ── Root Variables ──────────────────────────────────────────────────── */
 :root {
-  --md-text-font: "Space Grotesk";
-  --md-code-font: "JetBrains Mono";
-  --tryx-bg-a: rgba(255, 193, 90, 0.18);
-  --tryx-bg-b: rgba(39, 189, 168, 0.14);
-  --tryx-hero-bg: radial-gradient(circle at 12% 18%, #c7f4e2 0%, #f6fcfa 35%, #fef6e8 100%);
-  --tryx-card-bg: rgba(255, 255, 255, 0.72);
-  --tryx-card-border: rgba(18, 127, 112, 0.16);
-  --tryx-card-shadow: 0 10px 28px rgba(20, 35, 40, 0.08);
-  --tryx-muted-border: rgba(0, 0, 0, 0.15);
-  --tryx-code-bg: #f6f8fa;
-  --tryx-code-border: rgba(0, 0, 0, 0.06);
+  --tryx-radius: 8px;
+  --tryx-gap: 1rem;
+  --tryx-border: 1px solid var(--md-default-fg-color--lightest);
 }
 
-[data-md-color-scheme="slate"] {
-  --tryx-bg-a: rgba(255, 184, 76, 0.08);
-  --tryx-bg-b: rgba(39, 189, 168, 0.08);
-  --tryx-hero-bg: linear-gradient(135deg, rgba(40, 53, 57, 0.9), rgba(24, 37, 39, 0.9));
-  --tryx-card-bg: rgba(28, 41, 45, 0.74);
-  --tryx-card-border: rgba(88, 132, 125, 0.44);
-  --tryx-card-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
-  --tryx-muted-border: rgba(255, 255, 255, 0.24);
-  --tryx-code-bg: #1e292b;
-  --tryx-code-border: rgba(255, 255, 255, 0.08);
-}
-
-/* ── Global Typography ───────────────────────────────────────────────────── */
+/* ── Typography ──────────────────────────────────────────────────────── */
 .md-typeset h1,
 .md-typeset h2,
 .md-typeset h3 {
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  font-weight: 600;
 }
 
 .md-typeset h2 {
-  margin-top: 2rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid var(--tryx-muted-border);
+  margin-top: 2.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: var(--tryx-border);
 }
 
-/* ── Main Background ─────────────────────────────────────────────────────── */
-.md-main {
-  background:
-    radial-gradient(circle at 85% 12%, var(--tryx-bg-a), transparent 32%),
-    radial-gradient(circle at 6% 80%, var(--tryx-bg-b), transparent 28%);
+.md-typeset h3 {
+  margin-top: 1.5rem;
+  font-weight: 500;
 }
 
-/* ── Hero Section ────────────────────────────────────────────────────────── */
+/* ── Hero Section ────────────────────────────────────────────────────── */
 .tryx-hero {
-  border: 1px solid var(--tryx-card-border);
-  border-radius: 18px;
+  border: var(--tryx-border);
+  border-radius: var(--tryx-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
   background: linear-gradient(
     135deg,
-    rgba(13, 148, 136, 0.12) 0%,
-    rgba(245, 158, 11, 0.08) 50%,
-    rgba(13, 148, 136, 0.12) 100%
+    rgba(13, 148, 136, 0.04) 0%,
+    rgba(13, 148, 136, 0.01) 100%
   );
-  background-size: 200% 200%;
-  animation: heroGradient 8s ease infinite;
-  box-shadow: var(--tryx-card-shadow);
-  padding: 1.5rem 1.6rem;
-  margin-bottom: 1.5rem;
-  position: relative;
-  overflow: hidden;
 }
 
-.tryx-hero::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(13, 148, 136, 0.15), transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
+[data-md-color-scheme="slate"] .tryx-hero {
+  background: linear-gradient(
+    135deg,
+    rgba(13, 148, 136, 0.08) 0%,
+    rgba(13, 148, 136, 0.02) 100%
+  );
 }
 
-@keyframes heroGradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+.tryx-hero h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.tryx-hero p {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.95rem;
+  max-width: 640px;
 }
 
 .tryx-pill-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-top: 0.9rem;
+  gap: 0.4rem;
+  margin-top: 1rem;
 }
 
 .tryx-pill {
-  border: 1px solid var(--tryx-muted-border);
+  border: var(--tryx-border);
   border-radius: 999px;
-  padding: 0.25rem 0.7rem;
-  font-size: 0.78rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.58);
-  transition: all 0.2s ease;
-}
-
-.tryx-pill:hover {
-  background: rgba(13, 148, 136, 0.12);
-  border-color: rgba(13, 148, 136, 0.3);
+  letter-spacing: 0.02em;
+  color: var(--md-accent-fg-color);
+  background: rgba(13, 148, 136, 0.06);
 }
 
 [data-md-color-scheme="slate"] .tryx-pill {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(13, 148, 136, 0.12);
 }
 
-[data-md-color-scheme="slate"] .tryx-pill:hover {
-  background: rgba(13, 148, 136, 0.15);
-}
-
-/* ── Feature Grid ────────────────────────────────────────────────────────── */
+/* ── Feature Grid ────────────────────────────────────────────────────── */
 .tryx-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.8rem;
-  margin-top: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--tryx-gap);
+  margin-top: 1rem;
 }
 
 .tryx-card {
-  border: 1px solid var(--tryx-card-border);
-  border-radius: 14px;
-  padding: 1rem;
-  background: var(--tryx-card-bg);
-  box-shadow: var(--tryx-card-shadow);
-  transition: all 0.25s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.tryx-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--md-accent-fg-color), transparent);
-  opacity: 0;
-  transition: opacity 0.25s ease;
+  border: var(--tryx-border);
+  border-radius: var(--tryx-radius);
+  padding: 1.25rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .tryx-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 36px rgba(20, 35, 40, 0.12);
-}
-
-.tryx-card:hover::after {
-  opacity: 1;
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 [data-md-color-scheme="slate"] .tryx-card:hover {
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Link Grid ───────────────────────────────────────────────────────────── */
+.tryx-card h3 {
+  margin-top: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.tryx-card p {
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--md-default-fg-color--light);
+  line-height: 1.5;
+}
+
+/* ── Architecture Diagram ────────────────────────────────────────────── */
+.tryx-arch {
+  border: var(--tryx-border);
+  border-radius: var(--tryx-radius);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  background: var(--md-code-bg-color);
+  overflow-x: auto;
+}
+
+.tryx-arch pre {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+/* ── Link Grid ───────────────────────────────────────────────────────── */
 .tryx-link-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--tryx-gap);
 }
 
 .tryx-link-grid a {
   display: block;
-  border: 1px solid var(--tryx-card-border);
-  border-radius: 14px;
-  padding: 1rem;
+  border: var(--tryx-border);
+  border-radius: var(--tryx-radius);
+  padding: 0.8rem 1rem;
   text-decoration: none;
-  background: var(--tryx-card-bg);
-  box-shadow: var(--tryx-card-shadow);
-  transition: all 0.25s ease;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .tryx-link-grid a:hover {
-  transform: translateY(-3px);
   border-color: var(--md-accent-fg-color);
-  box-shadow: 0 12px 32px rgba(13, 148, 136, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-[data-md-color-scheme="slate"] .tryx-link-grid a:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+.tryx-link-grid strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
 }
 
-/* ── Keyboard Shortcuts ──────────────────────────────────────────────────── */
+.tryx-link-grid span {
+  font-size: 0.8rem;
+  color: var(--md-default-fg-color--light);
+}
+
+/* ── Keyboard Shortcuts ──────────────────────────────────────────────── */
 .tryx-kbd {
-  border: 1px solid var(--tryx-muted-border);
+  border: 1px solid var(--md-default-fg-color--lightest);
   border-bottom-width: 2px;
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 0.1rem 0.35rem;
   font-family: var(--md-code-font);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
 }
 
-/* ── Tables ──────────────────────────────────────────────────────────────── */
+/* ── Tables ──────────────────────────────────────────────────────────── */
 .md-typeset table:not([class]) {
-  border-radius: 10px;
+  border-radius: var(--tryx-radius);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-size: 0.85rem;
 }
 
 .md-typeset table:not([class]) th {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(13, 148, 136, 0.04));
   font-weight: 600;
+  background: var(--md-code-bg-color);
 }
 
-[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(13, 148, 136, 0.08));
+.md-typeset table:not([class]) td {
+  vertical-align: top;
 }
 
-.md-typeset table:not([class]) tr:hover {
-  background: rgba(13, 148, 136, 0.03);
-}
-
-[data-md-color-scheme="slate"] .md-typeset table:not([class]) tr:hover {
-  background: rgba(13, 148, 136, 0.08);
-}
-
-/* ── Admonitions ─────────────────────────────────────────────────────────── */
-.md-typeset .admonition {
-  border-radius: 12px;
-  border-left-width: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
+/* ── Admonitions ─────────────────────────────────────────────────────── */
+.md-typeset .admonition,
 .md-typeset details.admonition {
-  border-radius: 12px;
+  border-radius: var(--tryx-radius);
+  border-left-width: 3px;
 }
 
 .md-typeset .admonition-title {
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--tryx-radius) var(--tryx-radius) 0 0;
   font-weight: 600;
+  font-size: 0.88rem;
 }
 
-/* ── Code Blocks ─────────────────────────────────────────────────────────── */
+/* ── Code Blocks ─────────────────────────────────────────────────────── */
 .md-typeset pre {
-  border-radius: 12px;
-  border: 1px solid var(--tryx-code-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.md-typeset pre > code {
-  border-radius: 12px;
+  border-radius: var(--tryx-radius);
 }
 
 .md-typeset code:not(pre code) {
-  border-radius: 6px;
-  padding: 0.15rem 0.4rem;
-  font-size: 0.85em;
-  border: 1px solid var(--tryx-code-border);
-  background: var(--tryx-code-bg);
+  border-radius: 4px;
+  padding: 0.12rem 0.35rem;
+  font-size: 0.84em;
 }
 
-/* Code block line highlighting */
 .md-typeset .highlight .hll {
-  background: rgba(13, 148, 136, 0.12);
-  border-left: 3px solid var(--md-accent-fg-color);
+  background: rgba(13, 148, 136, 0.06);
+  border-left: 2px solid var(--md-accent-fg-color);
   margin-left: -0.4rem;
   padding-left: 0.4rem;
 }
 
-/* ── Navigation Enhancements ─────────────────────────────────────────────── */
-.md-header {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
+/* ── Navigation ──────────────────────────────────────────────────────── */
 .md-nav__link {
-  transition: color 0.15s ease, padding-left 0.15s ease;
+  transition: color 0.15s ease;
 }
 
-.md-nav__link:hover {
-  padding-left: 0.2rem;
-}
-
-/* Active nav item indicator */
 .md-nav__item--active > .md-nav__link {
   font-weight: 600;
-  color: var(--md-accent-fg-color);
 }
 
-/* ── Search Enhancement ──────────────────────────────────────────────────── */
+/* ── Search ──────────────────────────────────────────────────────────── */
 .md-search-result__link {
-  border-radius: 10px;
+  border-radius: var(--tryx-radius);
   transition: background 0.15s ease;
 }
 
 .md-search-result__link:hover {
-  background: rgba(13, 148, 136, 0.06);
+  background: rgba(13, 148, 136, 0.04);
 }
 
 .md-search-result__teaser {
   font-size: 0.82rem;
 }
 
-/* ── Focus States ────────────────────────────────────────────────────────── */
+/* ── Focus States ────────────────────────────────────────────────────── */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -306,69 +259,40 @@ summary:focus-visible {
   border-radius: 4px;
 }
 
-/* ── Animations ──────────────────────────────────────────────────────────── */
-.tryx-fade-up {
-  animation: tryxFadeUp 520ms ease-out both;
-}
-
-@keyframes tryxFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.tryx-fade-in {
-  animation: tryxFadeIn 600ms ease-out both;
-}
-
-@keyframes tryxFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Staggered card animations */
-.tryx-grid .tryx-card:nth-child(1) { animation-delay: 0ms; }
-.tryx-grid .tryx-card:nth-child(2) { animation-delay: 80ms; }
-.tryx-grid .tryx-card:nth-child(3) { animation-delay: 160ms; }
-.tryx-grid .tryx-card:nth-child(4) { animation-delay: 240ms; }
-.tryx-grid .tryx-card { animation: tryxFadeUp 520ms ease-out both; }
-
-/* ── Progress Bar (instant navigation) ───────────────────────────────────── */
+/* ── Progress Bar ────────────────────────────────────────────────────── */
 .md-vestigial__progress {
-  height: 3px;
-  background: linear-gradient(90deg, var(--md-accent-fg-color), rgba(13, 148, 136, 0.6));
+  height: 2px;
 }
 
-/* ── Footer Navigation ───────────────────────────────────────────────────── */
+/* ── Footer ──────────────────────────────────────────────────────────── */
 .md-footer {
-  border-top: 1px solid var(--tryx-muted-border);
+  border-top: var(--tryx-border);
 }
 
-.md-footer__link {
-  transition: color 0.15s ease;
-}
-
-/* ── Scrollbar Styling ───────────────────────────────────────────────────── */
+/* ── Scrollbar ───────────────────────────────────────────────────────── */
 .md-sidebar--primary .md-nav__scrollwrap {
   scrollbar-width: thin;
-  scrollbar-color: var(--tryx-muted-border) transparent;
 }
 
-.md-sidebar--primary .md-nav__scrollwrap::-webkit-scrollbar {
-  width: 4px;
+/* ── Content Tabs ────────────────────────────────────────────────────── */
+.md-typeset .tabbed-set > .tabbed-labels {
+  border-bottom: var(--tryx-border);
 }
 
-.md-sidebar--primary .md-nav__scrollwrap::-webkit-scrollbar-thumb {
-  background: var(--tryx-muted-border);
-  border-radius: 4px;
+.md-typeset .tabbed-set > .tabbed-labels > label {
+  font-weight: 500;
 }
 
-/* ── Print Styles ────────────────────────────────────────────────────────── */
+/* ── Inline Code ─────────────────────────────────────────────────────── */
+.md-typeset code {
+  border-color: rgba(13, 148, 136, 0.15);
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  border-color: rgba(13, 148, 136, 0.25);
+}
+
+/* ── Print ───────────────────────────────────────────────────────────── */
 @media print {
   .md-sidebar,
   .md-header,
@@ -379,10 +303,5 @@ summary:focus-visible {
   .md-main__inner {
     margin: 0;
     max-width: 100%;
-  }
-
-  .md-typeset .admonition {
-    border: 1px solid #ccc;
-    box-shadow: none;
   }
 }

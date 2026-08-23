@@ -1,81 +1,172 @@
 # Installation
 
-This page sets up a local development environment for the Tryx Python bindings backed by Rust.
+This guide sets up a working development environment for building with Tryx.
 
-!!! note "Recommended shell flow"
-	Use `uv` to manage the project environment and dependencies consistently.
+!!! tip "One command setup"
+    ```bash
+    uv sync --group dev && uv run maturin develop
+    ```
 
 ## Prerequisites
 
-- Python 3.8+
-- Rust toolchain (stable)
-- `uv`
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Python** | 3.8+ | Runtime |
+| **Rust** | stable | Native extension compilation |
+| **uv** | latest | Package management |
+| **OpenSSL** | 1.1+ | TLS for WebSocket connections |
 
-## Environment Bootstrap
+### Install Rust
 
 ```bash
-uv sync --group dev
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
 ```
 
-## Local Development Install
+### Install uv
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+## Quick Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/krypton-byte/tryx.git
+cd tryx
+
+# Install all dependencies
+uv sync --group dev
+
+# Build the Rust extension into your environment
+uv run maturin develop
+```
+
+!!! success "Verify installation"
+    ```bash
+    uv run python -c "from tryx.client import Tryx; print('Tryx loaded successfully')"
+    ```
+    If this prints `Tryx loaded successfully`, you're ready to go.
+
+## Build Options
+
+### Development Build (fast compilation)
 
 ```bash
 uv run maturin develop
 ```
 
-This installs the Rust extension module into your active environment in editable mode.
+This installs the extension module in editable mode. Re-run after Rust source changes.
 
-!!! tip "Fast rebuild loop"
-	Re-run `uv run maturin develop` after Rust binding changes to keep Python runtime artifacts in sync.
-
-## Build Wheel
+### Release Build (optimized binary)
 
 ```bash
 uv run maturin build --release
 ```
 
-Typical wheel output appears under `target/wheels/`.
+The wheel is output to `target/wheels/`.
 
-## Verify Installation
+### With Specific Features
 
-```python
-from tryx.client import Tryx, TryxClient
-from tryx.backend import SqliteStore
+```bash
+# Verbose build for debugging
+uv run maturin develop -v
 
-backend = SqliteStore("whatsapp.db")
-app = Tryx(backend)
-client = app.get_client()
-print(type(client).__name__)
+# Release with debug symbols
+uv run maturin develop --release --cargo-extra-args="--profile dev"
 ```
 
-If output shows `TryxClient`, extension loading is successful.
+## Project Layout
 
-## Optional Tools
+```
+tryx/
+├── Cargo.toml              # Rust dependencies and build config
+├── pyproject.toml          # Python dependencies and tool config
+├── src/                    # Rust source code
+│   ├── lib.rs              # Module entry point
+│   ├── clients/            # Client implementations
+│   ├── events/             # Event dispatcher
+│   └── types.rs            # Shared data types
+├── python/tryx/            # Python package
+│   ├── __init__.py         # Re-exports
+│   ├── *.pyi               # Type stubs for IDE support
+│   └── waproto/            # Protobuf definitions
+├── tests/                  # Test suite
+└── examples/               # Usage examples
+```
 
-- `uv run mypy ...` or `pyright` for static type checks
-- `uv run --no-project --with ruff==0.11.4 ruff check .` for linting (no project build)
-- `uv run pytest` for integration test harnesses
-- `uv run pre-commit run --all-files` for local gate parity with CI
-
-## Common Install Issues
+## Common Issues
 
 ### Rust compiler not found
 
-Install Rust with `rustup` and reopen your shell.
+```bash
+# Install Rust toolchain
+rustup default stable
+```
 
 ### Build fails with linker errors
 
-Ensure your platform build tools are installed:
+=== "Linux"
 
-- Linux: `build-essential` and OpenSSL dev headers
-- macOS: Xcode command line tools
-- Windows: MSVC Build Tools
+    ```bash
+    sudo apt install build-essential libssl-dev pkg-config
+    ```
+
+=== "macOS"
+
+    ```bash
+    xcode-select --install
+    ```
+
+=== "Windows"
+
+    Install [MSVC Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 
 ### ImportError for extension module
 
-Re-run `uv run maturin develop` in the same project environment where you run Python.
+Make sure you're using the same Python environment where `maturin develop` was run:
+
+```bash
+# Check which Python your venv uses
+which python
+
+# Rebuild if needed
+uv run maturin develop
+```
+
+### Protobuf version mismatch
+
+Tryx uses protobuf 5.28+ for code generation. If you see version warnings:
+
+```bash
+uv add "protobuf>=5.28.3,<7"
+uv run maturin develop
+```
+
+## Optional Tools
+
+| Tool | Install | Purpose |
+|------|---------|---------|
+| **mypy** | `uv add mypy` | Static type checking |
+| **pyright** | `uv add pyright` | Type checking alternative |
+| **ruff** | `uv add ruff` | Linting and formatting |
+| **pytest** | `uv add pytest` | Test runner |
+
+```bash
+# Type check
+uv run mypy your_project/
+
+# Lint
+uv run ruff check .
+
+# Format
+uv run ruff format .
+
+# Test
+uv run pytest
+```
 
 ## Next Step
 
-- Continue to [Quick Start](quickstart.md)
-- Then configure pairing in [Authentication Flow](authentication.md)
+→ [Quick Start](quickstart.md) — build your first bot in 5 minutes

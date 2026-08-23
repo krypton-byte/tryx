@@ -111,7 +111,7 @@ impl Tryx {
             })
         } else if let (Ok(lib_path), Ok(config_json)) = (
             backend.getattr(py, "lib_path").and_then(|v| v.extract::<String>(py)),
-            backend.getattr(py, "connect_string").and_then(|v| v.extract::<String>(py)),
+            backend.getattr(py, "config_json").and_then(|v| v.extract::<String>(py)),
         ) {
             debug!("detected FFI backend from Python via duck-typing");
 
@@ -582,7 +582,7 @@ impl Tryx {
                                 Py::new(py, EvContactUpdate::new(contact_update)).map(|event| event.into_any())
                             }).await;
                         }
-                        Event::PushNameUpdate(pushname) => {
+                        Event::RetiredPushNameUpdate(pushname) => {
                             let pushname = pushname.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.push_name_update, locals.clone(), "RetiredPushNameUpdate", |py| {
                                 Py::new(py, EvPushNameUpdate::from(pushname)).map(|event| event.into_any())

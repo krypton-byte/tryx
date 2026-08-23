@@ -42,17 +42,19 @@ app = Tryx(backend)
 ## FfiStoreProtocol
 
 Structural typing protocol for native FFI-based storage backends. Any object
-exposing `lib_path` and `connect_string` attributes satisfies this protocol.
+exposing `lib_path` and `config_json` attributes satisfies this protocol.
 
 ```python
+import json
+
 class PostgresStore:
     lib_path: str  # path to compiled .so
-    connect_string: str
+    config_json: str
 
 
 backend = PostgresStore(
     lib_path="./libtryx_pg.so",
-    connect_string="host=localhost dbname=tryx",
+    config_json=json.dumps({"host": "localhost", "dbname": "tryx"}),
 )
 ```
 

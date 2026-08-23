@@ -40,7 +40,7 @@ use self::events::types::{
     DeleteChatUpdateData,
     DeleteMessageForMeUpdateData,
     DeviceListUpdateType,
-    DeviceNottificationInfo,
+    DeviceNotificationInfo,
     EvArchiveUpdateData,
     EvArchiveUpdate,
     EvBusinessStatusUpdate,
@@ -106,7 +106,7 @@ use self::events::types::{
     OfflineSyncData,
     PairSuccessData,
     PictureUpdateData,
-    PinUpdatedata,
+    PinUpdateData,
     ReceiptType,
     TempBanReason,
     UnavailableType,
@@ -282,7 +282,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     events_module.add_class::<EvPushNameUpdateData>()?;
     events_module.add_class::<EvPushNameUpdate>()?;
     events_module.add_class::<EvSelfPushNameUpdated>()?;
-    events_module.add_class::<PinUpdatedata>()?;
+    events_module.add_class::<PinUpdateData>()?;
     events_module.add_class::<EvPinUpdate>()?;
     events_module.add_class::<MuteUpdateData>()?;
     events_module.add_class::<EvMuteUpdate>()?;
@@ -295,7 +295,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     events_module.add_class::<EvOfflineSyncCompleted>()?;
     events_module.add_class::<DeviceListUpdateData>()?;
     events_module.add_class::<DeviceListUpdateType>()?;
-    events_module.add_class::<DeviceNottificationInfo>()?;
+    events_module.add_class::<DeviceNotificationInfo>()?;
     events_module.add_class::<EvDeviceListUpdate>()?;
     events_module.add_class::<BusinessStatusUpdateType>()?;
     events_module.add_class::<BusinessStatusUpdateData>()?;

@@ -189,7 +189,7 @@ define_dispatcher! {
     joined_group,                    JoinedGroup,                   "joined_group",                    EvJoinedGroup,                   "joined group",                   joined_group_handlers;
     group_info_update,               GroupInfoUpdate,               "group_info_update",               EvGroupInfoUpdate,               "group info update",              group_info_update_handlers;
     contact_update,                  ContactUpdate,                 "contact_update",                  EvContactUpdate,                 "contact update",                 contact_update_handlers;
-    push_name_update,                PushNameUpdate,                  "push_name_update",                EvPushNameUpdate,                "push name update",               push_name_update_handlers;
+    push_name_update,                RetiredPushNameUpdate,              "push_name_update",                EvPushNameUpdate,                "push name update",               push_name_update_handlers;
     self_push_name_update,           SelfPushNameUpdated,           "self_push_name_updated",          EvSelfPushNameUpdated,           "self push name updated",         self_push_name_updated_handlers;
     pin_update,                      PinUpdate,                     "pin_update",                      EvPinUpdate,                     "pin update",                     pin_update_handlers;
     mute_update,                     MuteUpdate,                    "mute_update",                     EvMuteUpdate,                    "mute update",                    mute_update_handlers;

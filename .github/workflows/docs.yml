@@ -2,14 +2,14 @@ name: Documentation
 
 on:
   push:
-    branches: [master, main]
+    branches: [master, main, dev]
     paths:
       - "docs/**"
       - "mkdocs.yml"
       - "python/tryx/**"
 
   pull_request:
-    branches: [master, main]
+    branches: [master, main, dev]
     paths:
       - "docs/**"
       - "mkdocs.yml"
@@ -19,10 +19,6 @@ on:
     inputs:
       version:
         description: "Version to deploy (e.g. 0.7, 0.8)"
-        required: false
-        type: string
-      delete_version:
-        description: "Version to delete"
         required: false
         type: string
 
@@ -51,14 +47,14 @@ jobs:
 
       - uses: astral-sh/setup-uv@v5
 
+      - uses: dtolnay/rust-toolchain@stable
+
       - name: Install dependencies
-        run: |
-          uv sync --group docs --no-install-project
-          uv pip install pyright mypy --system
+        run: uv sync --group dev --group docs --no-install-project
 
       - name: Validate .pyi stubs with pyright
         run: |
-          pyright python/tryx/client.pyi \
+          uv run --no-project pyright python/tryx/client.pyi \
                  python/tryx/events.pyi \
                  python/tryx/types.pyi \
                  python/tryx/wacore.pyi \
@@ -71,7 +67,7 @@ jobs:
 
       - name: Validate .pyi stubs with mypy
         run: |
-          mypy python/tryx/client.pyi \
+          uv run --no-project mypy python/tryx/client.pyi \
                python/tryx/events.pyi \
                python/tryx/types.pyi \
                python/tryx/wacore.pyi \
@@ -84,16 +80,14 @@ jobs:
                --ignore-missing-imports
 
       - name: Build docs (validation only)
-        run: uv run --no-project mkdocs build --strict
-        env:
-          PYTHONPATH: python
+        run: uv run --no-project zensical build -f mkdocs.yml -s
 
-  # ── Job 2: Deploy (runs on push to master or tag) ──────────────────────────
+  # ── Job 2: Deploy (runs on push or manual trigger) ─────────────────────────
   deploy:
     name: Deploy Documentation
     needs: validate
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -107,9 +101,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: |
-          uv sync --group docs --no-install-project
-          uv pip install mike
+        run: uv sync --group dev --group docs --no-install-project
 
       - name: Configure git
         run: |
@@ -124,83 +116,31 @@ jobs:
           echo "Deploying docs for version: $VERSION"
           uv run --no-project mike deploy --push --update-aliases "$VERSION" latest
           uv run --no-project mike set-default --push latest
-        env:
-          PYTHONPATH: python
 
-      # Auto-deploy from master → "latest" (without version number)
-      - name: Deploy latest docs (from master)
-        if: "!startsWith(github.ref, 'refs/tags/')"
+      # Auto-deploy from master → "dev" version
+      - name: Deploy dev docs (from master)
+        if: "!startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'"
         run: |
-          echo "Deploying docs as latest"
+          echo "Deploying docs as dev"
           uv run --no-project mike deploy --push --update-aliases dev latest
           uv run --no-project mike set-default --push latest
-        env:
-          PYTHONPATH: python
 
-      - name: List deployed versions
-        if: success()
-        run: uv run --no-project mike list
-
-  # ── Job 3: Manual deploy (workflow_dispatch) ────────────────────────────────
-  manual_deploy:
-    name: Manual Deploy
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - uses: astral-sh/setup-uv@v5
-
-      - name: Install dependencies
-        run: |
-          uv sync --group docs --no-install-project
-          uv pip install mike
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Deploy custom version
-      - name: Deploy custom version
-        if: inputs.version != ''
+      # Manual deploy with custom version
+      - name: Deploy custom version (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
         run: |
           echo "Deploying docs for version: ${{ inputs.version }}"
           uv run --no-project mike deploy --push --update-aliases "${{ inputs.version }}" latest
           uv run --no-project mike set-default --push latest
-        env:
-          PYTHONPATH: python
 
-      # Delete a version
-      - name: Delete docs version
-        if: inputs.delete_version != ''
+      # Manual deploy without version → deploy as dev
+      - name: Deploy dev docs (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.version == ''
         run: |
-          echo "Deleting docs version: ${{ inputs.delete_version }}"
-          uv run --no-project mike delete --push "${{ inputs.delete_version }}"
-        env:
-          PYTHONPATH: python
+          echo "Deploying docs as dev"
+          uv run --no-project mike deploy --push --update-aliases dev latest
+          uv run --no-project mike set-default --push latest
 
       - name: List deployed versions
         if: success()
         run: uv run --no-project mike list
-
-  # ── Job 4: Deploy to GitHub Pages (only for tag releases) ──────────────────
-  deploy_pages:
-    name: Deploy to GitHub Pages
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

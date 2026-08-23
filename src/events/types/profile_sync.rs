@@ -12,12 +12,12 @@ pub struct EvPushNameUpdateData {
 
 #[pyclass]
 pub struct EvPushNameUpdate {
-    inner: Box<wacore::types::events::PushNameUpdate>,
+    inner: Box<wacore::types::events::RetiredPushNameUpdate>,
     data_cache: OnceLock<Py<EvPushNameUpdateData>>,
 }
 
 impl EvPushNameUpdate {
-    pub fn new(inner: wacore::types::events::PushNameUpdate) -> Self {
+    pub fn new(inner: wacore::types::events::RetiredPushNameUpdate) -> Self {
         Self {
             inner: Box::new(inner),
             data_cache: OnceLock::new(),
@@ -25,8 +25,8 @@ impl EvPushNameUpdate {
     }
 }
 
-impl From<wacore::types::events::PushNameUpdate> for EvPushNameUpdate {
-    fn from(event: wacore::types::events::PushNameUpdate) -> Self {
+impl From<wacore::types::events::RetiredPushNameUpdate> for EvPushNameUpdate {
+    fn from(event: wacore::types::events::RetiredPushNameUpdate) -> Self {
         EvPushNameUpdate::new(event)
     }
 }
@@ -68,7 +68,7 @@ impl From<wacore::types::events::SelfPushNameUpdated> for EvSelfPushNameUpdated 
 }
 
 #[pyclass]
-pub struct PinUpdatedata {
+pub struct PinUpdateData {
     #[pyo3(get)]
     jid: Py<JID>,
     #[pyo3(get)]
@@ -78,7 +78,7 @@ pub struct PinUpdatedata {
     #[pyo3(get)]
     from_full_sync: bool,
 }
-impl PinUpdatedata {
+impl PinUpdateData {
     pub fn new(jid: Jid, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::PinAction, from_full_sync: bool) -> Self {
         Python::attach(|py| {
             Self {
@@ -94,7 +94,7 @@ impl PinUpdatedata {
 #[pyclass]
 pub struct EvPinUpdate {
     inner: Box<wacore::types::events::PinUpdate>,
-    data_cached: OnceLock<Py<PinUpdatedata>>,
+    data_cached: OnceLock<Py<PinUpdateData>>,
 }
 impl EvPinUpdate {
     pub fn new(inner: wacore::types::events::PinUpdate) -> Self {
@@ -109,11 +109,11 @@ impl From<wacore::types::events::PinUpdate> for EvPinUpdate {
 #[pymethods]
 impl EvPinUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> PyResult<Py<PinUpdatedata>> {
+    fn data(&mut self, py: Python<'_>) -> PyResult<Py<PinUpdateData>> {
         if let Some(ref data) = self.data_cached.get() {
             Ok(data.clone_ref(py))
         } else {
-            let new_data = PinUpdatedata::new(self.inner.jid.clone(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
+            let new_data = PinUpdateData::new(self.inner.jid.clone(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached.set(py_data.clone_ref(py)).ok();
             Ok(py_data)
@@ -392,7 +392,7 @@ pub enum DeviceListUpdateType {
     Updated
 }
 #[pyclass]
-pub struct DeviceNottificationInfo {
+pub struct DeviceNotificationInfo {
     #[pyo3(get)]
     device_id: u32,
     #[pyo3(get)]
@@ -407,7 +407,7 @@ pub struct DeviceListUpdateData {
     #[pyo3(get)]
     update_type: Py<DeviceListUpdateType>,
     #[pyo3(get)]
-    devices: Vec<Py<DeviceNottificationInfo>>,
+    devices: Vec<Py<DeviceNotificationInfo>>,
     #[pyo3(get)]
     key_index: Option<Py<KeyIndexInfo>>,
     #[pyo3(get)]
@@ -442,7 +442,7 @@ impl EvDeviceListUpdate {
                 wacore::types::events::DeviceListUpdateType::Update => DeviceListUpdateType::Updated,
             };
             let devices = self.inner.devices.iter().map(|d| {
-                Py::new(py, DeviceNottificationInfo { device_id: d.device_id, key_index: d.key_index }).unwrap()
+                Py::new(py, DeviceNotificationInfo { device_id: d.device_id, key_index: d.key_index }).unwrap()
             }).collect();
             let key_index = self.inner.key_index.clone().map(|k| Py::new(py, KeyIndexInfo::new(k.timestamp, k.signed_bytes)).unwrap());
             let new_data = DeviceListUpdateData {
