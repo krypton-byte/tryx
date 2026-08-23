@@ -16,9 +16,14 @@ on:
       - "python/tryx/**"
 
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy (e.g. 0.7, 0.8)"
+        required: false
+        type: string
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -75,18 +80,13 @@ jobs:
       - name: Build docs (validation only)
         run: uv run --no-project zensical build -f mkdocs.yml -s
 
-  # ── Job 2: Deploy (runs on push to master or tag) ──────────────────────────
+  # ── Job 2: Deploy (runs on push or manual trigger) ─────────────────────────
   deploy:
     name: Deploy Documentation
     needs: validate
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/configure-pages@v5
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -101,14 +101,44 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev --group docs --no-install-project
 
-      - name: Build docs
-        run: uv run --no-project zensical build -f mkdocs.yml -c
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
+      # Auto-deploy from tag → versioned docs (e.g. v0.8.0 → "0.8")
+      - name: Deploy versioned docs (from tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//' | sed 's/\.[0-9]*$//')
+          echo "Deploying docs for version: $VERSION"
+          uv run --no-project mike deploy --push --update-aliases "$VERSION" latest
+          uv run --no-project mike set-default --push latest
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # Auto-deploy from master → "dev" version
+      - name: Deploy dev docs (from master)
+        if: "!startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'"
+        run: |
+          echo "Deploying docs as dev"
+          uv run --no-project mike deploy --push --update-aliases dev latest
+          uv run --no-project mike set-default --push latest
+
+      # Manual deploy with custom version
+      - name: Deploy custom version (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+        run: |
+          echo "Deploying docs for version: ${{ inputs.version }}"
+          uv run --no-project mike deploy --push --update-aliases "${{ inputs.version }}" latest
+          uv run --no-project mike set-default --push latest
+
+      # Manual deploy without version → deploy as dev
+      - name: Deploy dev docs (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.version == ''
+        run: |
+          echo "Deploying docs as dev"
+          uv run --no-project mike deploy --push --update-aliases dev latest
+          uv run --no-project mike set-default --push latest
+
+      - name: List deployed versions
+        if: success()
+        run: uv run --no-project mike list
