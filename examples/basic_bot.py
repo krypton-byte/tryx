@@ -50,7 +50,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
     sender_jid = source.sender
     text = (data.get_text() or "").strip()
 
-    print(f"[message] from={jid_to_text(sender_jid)} chat={jid_to_text(chat_jid)} text={text!r}")
+    sender = jid_to_text(sender_jid)
+    chat = jid_to_text(chat_jid)
+    print(f"[message] from={sender} chat={chat} text={text!r}")
 
     if not text:
         return
@@ -83,7 +85,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
     # ── /info ────────────────────────────────────────────────────────────
     elif cmd == "info":
         info_lines = [
-            f"*Your Info*",
+            "*Your Info*",
             f"• JID: {jid_to_text(sender_jid)}",
             f"• Chat: {jid_to_text(chat_jid)}",
             f"• Push name: {info.push_name or '(none)'}",
@@ -92,6 +94,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
+
 
 async def main() -> None:
     print(f"Starting basic bot with DB: {DB_PATH}")

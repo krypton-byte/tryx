@@ -98,7 +98,9 @@ Persist context before recovery attempts:
 
 ```python
 # Store poll metadata first
-poll_id, secret = await client.polls.create(to=chat_jid, name="Q", options=["A", "B"], selectable_count=1)
+poll_id, secret = await client.polls.create(
+    to=chat_jid, name="Q", options=["A", "B"], selectable_count=1
+)
 
 # Now if vote fails, we have the poll_id and secret for recovery
 try:

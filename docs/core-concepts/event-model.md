@@ -26,13 +26,16 @@ from tryx.events import EvMessage, EvConnected, EvDisconnected
 
 app = Tryx(store)
 
+
 @app.on(EvConnected)
 async def on_connected(client):
     print("Connected to WhatsApp!")
 
+
 @app.on(EvMessage)
 async def on_message(client, event):
     print(f"Message from {event.sender}: {event.text}")
+
 
 @app.on(EvDisconnected)
 async def on_disconnected(client):
@@ -44,8 +47,7 @@ async def on_disconnected(client):
 Every handler receives two arguments:
 
 ```python
-async def handler(client: TryxClient, event: EventType) -> None:
-    ...
+async def handler(client: TryxClient, event: EventType) -> None: ...
 ```
 
 - `client` — The `TryxClient` instance, ready to send messages and query state
@@ -60,6 +62,7 @@ called for each event:
 @app.on(EvMessage)
 async def log_message(client, event):
     logger.info(f"Received: {event.message_id}")
+
 
 @app.on(EvMessage)
 async def process_message(client, event):
@@ -210,6 +213,7 @@ Build idempotent handlers using message identifiers:
 
 ```python
 processed = set()
+
 
 @app.on(EvMessage)
 async def idempotent_handler(client, event):

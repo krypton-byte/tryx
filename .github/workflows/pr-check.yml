@@ -1,0 +1,138 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [master, main, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dev dependencies
+        run: uv sync --group dev --no-install-project
+
+      - name: Ruff lint
+        run: uv run --no-project ruff check .
+
+      - name: Ruff format check
+        run: uv run --no-project ruff format --check .
+
+  tests:
+    name: Python Tests
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache (tryx root)
+        uses: Swatinem/rust-cache@v2
+
+      - name: Rust cache (whatsapp-rust workspace)
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "libs/whatsapp-rust -> target"
+
+      - name: Install dev dependencies
+        run: uv sync --group dev --no-install-project
+
+      - name: Build native extension
+        run: uv run maturin develop
+
+      - name: Run pytest
+        run: uv run pytest -q
+
+  stubs:
+    name: Type Stubs Check
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: uv sync --group dev --group docs --no-install-project
+
+      - name: Validate .pyi stubs with pyright
+        run: |
+          uv run --no-project pyright python/tryx/client.pyi \
+                 python/tryx/events.pyi \
+                 python/tryx/types.pyi \
+                 python/tryx/wacore.pyi \
+                 python/tryx/helpers.pyi \
+                 python/tryx/backend.pyi \
+                 python/tryx/exceptions.pyi \
+                 python/tryx/__init__.pyi \
+                 python/tryx/tryx.pyi \
+                 python/tryx/media.pyi
+
+      - name: Validate .pyi stubs with mypy
+        run: |
+          uv run --no-project mypy python/tryx/client.pyi \
+               python/tryx/events.pyi \
+               python/tryx/types.pyi \
+               python/tryx/wacore.pyi \
+               python/tryx/helpers.pyi \
+               python/tryx/backend.pyi \
+               python/tryx/exceptions.pyi \
+               python/tryx/__init__.pyi \
+               python/tryx/tryx.pyi \
+               python/tryx/media.pyi \
+               --ignore-missing-imports
+
+  docs:
+    name: Documentation Build
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: uv sync --group dev --group docs --no-install-project
+
+      - name: Build docs (validation only)
+        run: uv run --no-project zensical build -f mkdocs.yml -s

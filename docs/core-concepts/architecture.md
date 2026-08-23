@@ -175,6 +175,7 @@ All WhatsApp interactions flow through typed events:
 ```python
 from tryx.events import EvMessage
 
+
 @app.on(EvMessage)
 async def handle_message(client, event: EvMessage):
     # event.sender, event.text, event.media, etc.

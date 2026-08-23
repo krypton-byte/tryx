@@ -19,6 +19,7 @@ backend = SqliteStore("whatsapp.db")
 # Initialize the Tryx runtime
 app = Tryx(backend)
 
+
 # Register an event handler
 @app.on(EvMessage)
 async def on_message(client, event):
@@ -27,6 +28,7 @@ async def on_message(client, event):
 
     if text.lower() == "ping":
         await client.send_text(chat, "pong")
+
 
 # Start the bot
 asyncio.run(app.run())
@@ -113,8 +115,8 @@ with open("voice.ogg", "rb") as f:
 await client.send_audio(
     to=jid,
     audio_data=audio_data,
-    ptt=True,       # Push-to-talk (voice note)
-    seconds=15,     # Duration hint
+    ptt=True,  # Push-to-talk (voice note)
+    seconds=15,  # Duration hint
 )
 ```
 
@@ -163,9 +165,11 @@ await client.send_sticker(to=jid, sticker_data=sticker_data)
 ```python
 from tryx.events import EvMessage, EvConnected, EvDisconnected
 
+
 @app.on(EvConnected)
 async def on_connected(client):
     print("Connected to WhatsApp!")
+
 
 @app.on(EvMessage)
 async def on_message(client, event):
@@ -181,6 +185,7 @@ async def on_message(client, event):
         groups = await client.groups.get_participating()
         names = [m.subject for m in groups.values()]
         await client.send_text(chat, f"Groups: {', '.join(names)}")
+
 
 @app.on(EvDisconnected)
 async def on_disconnected(client):
@@ -228,6 +233,7 @@ Always wrap handler logic to prevent one bad event from crashing your bot:
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 @app.on(EvMessage)
 async def safe_handler(client, event):

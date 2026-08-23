@@ -84,7 +84,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
     sender_jid = source.sender
     text = (data.get_text() or "").strip().lower()
 
-    print(f"[message] from={jid_to_text(sender_jid)} chat={jid_to_text(chat_jid)} text={text!r}")
+    sender = jid_to_text(sender_jid)
+    chat = jid_to_text(chat_jid)
+    print(f"[message] from={sender} chat={chat} text={text!r}")
 
     if not text:
         return
@@ -99,7 +101,8 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             )
             print(f"[photo] sent: {result.message_id}")
         except Exception as exc:
-            await client.send_text(chat_jid, f"Failed to send photo: {exc}", quoted=event)
+            msg = f"Failed to send photo: {exc}"
+            await client.send_text(chat_jid, msg, quoted=event)
 
     # ── /document ────────────────────────────────────────────────────────
     elif text == "document":
@@ -107,11 +110,15 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             await client.chatstate.send_composing(chat_jid)
             doc_data = await download_bytes(SAMPLE_MEDIA["document"]["url"])
             result = await client.send_document(
-                chat_jid, doc_data, file_name="sample.pdf", caption="Sample PDF document"
+                chat_jid,
+                doc_data,
+                file_name="sample.pdf",
+                caption="Sample PDF document",
             )
             print(f"[document] sent: {result.message_id}")
         except Exception as exc:
-            await client.send_text(chat_jid, f"Failed to send document: {exc}", quoted=event)
+            msg = f"Failed to send document: {exc}"
+            await client.send_text(chat_jid, msg, quoted=event)
 
     # ── /audio ───────────────────────────────────────────────────────────
     elif text == "audio":
@@ -121,7 +128,8 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             result = await client.send_audio(chat_jid, audio_data)
             print(f"[audio] sent: {result.message_id}")
         except Exception as exc:
-            await client.send_text(chat_jid, f"Failed to send audio: {exc}", quoted=event)
+            msg = f"Failed to send audio: {exc}"
+            await client.send_text(chat_jid, msg, quoted=event)
 
     # ── /video ───────────────────────────────────────────────────────────
     elif text == "video":
@@ -133,7 +141,8 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             )
             print(f"[video] sent: {result.message_id}")
         except Exception as exc:
-            await client.send_text(chat_jid, f"Failed to send video: {exc}", quoted=event)
+            msg = f"Failed to send video: {exc}"
+            await client.send_text(chat_jid, msg, quoted=event)
 
     # ── /help ────────────────────────────────────────────────────────────
     elif text == "help":
@@ -149,6 +158,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
+
 
 async def main() -> None:
     print(f"Starting media bot with DB: {DB_PATH}")

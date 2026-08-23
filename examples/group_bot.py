@@ -53,7 +53,9 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
     sender_jid = source.sender
     text = (data.get_text() or "").strip()
 
-    print(f"[message] from={jid_to_text(sender_jid)} chat={jid_to_text(chat_jid)} text={text!r}")
+    sender = jid_to_text(sender_jid)
+    chat = jid_to_text(chat_jid)
+    print(f"[message] from={sender} chat={chat} text={text!r}")
 
     if not text or not source.is_group:
         return
@@ -66,7 +68,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
         try:
             metadata = await client.groups.get_metadata(chat_jid)
             lines = [
-                f"*Group Info*",
+                "*Group Info*",
                 f"• Name: {metadata.subject}",
                 f"• Members: {metadata.size or len(metadata.participants)}",
                 f"• Locked: {'Yes' if metadata.is_locked else 'No'}",
@@ -114,15 +116,18 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
     # ── /ephemeral N ─────────────────────────────────────────────────────
     elif cmd == "ephemeral":
         if len(cmd_parts) < 2:
-            await client.send_text(chat_jid, "Usage: /ephemeral <seconds>\n0 = off", quoted=event)
+            msg = "Usage: /ephemeral <seconds>\n0 = off"
+            await client.send_text(chat_jid, msg, quoted=event)
             return
         try:
             seconds = int(cmd_parts[1])
             await client.groups.set_ephemeral(chat_jid, seconds)
             if seconds == 0:
-                await client.send_text(chat_jid, "Disabling disappearing messages", quoted=event)
+                msg = "Disabling disappearing messages"
+                await client.send_text(chat_jid, msg, quoted=event)
             else:
-                await client.send_text(chat_jid, f"Disappearing messages set to {seconds}s", quoted=event)
+                msg = f"Disappearing messages set to {seconds}s"
+                await client.send_text(chat_jid, msg, quoted=event)
         except ValueError:
             await client.send_text(chat_jid, "Invalid number", quoted=event)
 
@@ -157,6 +162,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
+
 
 async def main() -> None:
     print(f"Starting group bot with DB: {DB_PATH}")

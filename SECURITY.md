@@ -1,5 +1,7 @@
 # Security Policy
 
+> For security inquiries, please follow the disclosure process below.
+
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability in Tryx, please report it

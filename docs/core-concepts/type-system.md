@@ -57,6 +57,7 @@ Contains identity, routing, and attribute information:
 ```python
 from tryx.events import EvMessage
 
+
 @app.on(EvMessage)
 async def handle(client, event):
     info = event.data.message_info
@@ -66,12 +67,12 @@ async def handle(client, event):
     timestamp = info.timestamp
 
     # Routing
-    sender = info.source.sender        # JID
-    chat = info.source.chat            # JID
+    sender = info.source.sender  # JID
+    chat = info.source.chat  # JID
     participant = info.source.participant  # JID | None
 
     # Attributes
-    msg_type = info.message_type       # "text", "image", etc.
+    msg_type = info.message_type  # "text", "image", etc.
     is_from_me = info.is_from_me
 ```
 
@@ -82,9 +83,9 @@ Returned by all send methods:
 ```python
 result = await client.send_text(jid, "Hello")
 
-result.message_id   # str: unique message ID
-result.timestamp    # int: server timestamp
-result.key          # MessageKey: message key for tracking
+result.message_id  # str: unique message ID
+result.timestamp  # int: server timestamp
+result.key  # MessageKey: message key for tracking
 ```
 
 ### MediaReuploadResult — Media Retry Output
@@ -98,7 +99,7 @@ result = await client.request_media_reupload(
     media_key=b"...",
 )
 
-result.url          # str: re-uploaded media URL
+result.url  # str: re-uploaded media URL
 result.direct_path  # str: direct download path
 ```
 
@@ -109,9 +110,9 @@ Returned by media upload methods:
 ```python
 upload = await client.upload_photo(photo_bytes, jid)
 
-upload.url          # str: media URL
+upload.url  # str: media URL
 upload.direct_path  # str: direct path
-upload.media_key    # bytes: encryption key
+upload.media_key  # bytes: encryption key
 upload.file_length  # int: file size
 ```
 
@@ -120,10 +121,10 @@ upload.file_length  # int: file size
 ```python
 picture = await client.contact.get_profile_picture(jid, preview=False)
 
-picture.url         # str: image URL
-picture.direct_path # str: direct download path
-picture.file_length # int: file size
-picture.mimetype    # str: image MIME type
+picture.url  # str: image URL
+picture.direct_path  # str: direct download path
+picture.file_length  # int: file size
+picture.mimetype  # str: image MIME type
 ```
 
 ---
@@ -134,14 +135,15 @@ Every event class has a defined payload contract:
 
 ```python
 from tryx.events import (
-    EvMessage,        # Incoming message
-    EvConnected,      # WebSocket connected
-    EvDisconnected,   # WebSocket lost
-    EvLoggedOut,      # Session invalidated
-    EvPresence,       # User typing/recording
-    EvGroupUpdate,    # Group metadata changed
-    EvReceipt,        # Delivery/read receipt
+    EvMessage,  # Incoming message
+    EvConnected,  # WebSocket connected
+    EvDisconnected,  # WebSocket lost
+    EvLoggedOut,  # Session invalidated
+    EvPresence,  # User typing/recording
+    EvGroupUpdate,  # Group metadata changed
+    EvReceipt,  # Delivery/read receipt
 )
+
 
 @app.on(EvMessage)
 async def handle(client, event: EvMessage):
@@ -195,9 +197,9 @@ StatusPrivacySetting.DenyList
 ```python
 from tryx.types import ChatStateType
 
-ChatStateType.Composing    # User is typing
-ChatStateType.Recording    # User is recording audio
-ChatStateType.Paused       # User stopped typing
+ChatStateType.Composing  # User is typing
+ChatStateType.Recording  # User is recording audio
+ChatStateType.Paused  # User stopped typing
 ```
 
 ### Presence
@@ -262,9 +264,11 @@ Keep type boundaries clean between layers:
 from tryx.events import EvMessage
 from tryx.types import JID
 
+
 # Input boundary: accept typed events
 def extract_sender(event: EvMessage) -> JID:
     return event.data.message_info.source.sender
+
 
 # Output boundary: return typed results
 async def forward_message(client, event: EvMessage, target: JID) -> SendResult:

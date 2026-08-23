@@ -49,12 +49,14 @@ from tryx.backend import SqliteStore
 app = Tryx(SqliteStore("whatsapp.db"))
 client = app.get_client()
 
+
 @app.on(EvMessage)
 async def on_message(client, event):
     text = event.data.get_text()
     chat = event.data.message_info.source.chat
     if text:
         await client.send_text(chat, f"Echo: {text}")
+
 
 app.run_blocking()
 ```
