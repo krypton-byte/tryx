@@ -3,12 +3,12 @@ import asyncio
 import pytest
 
 from tryx.media import (
-    AudioPlayer,
     AudioSink,
     AudioSource,
     VideoFrame,
     validate_audio_frame,
 )
+from tryx.media import _PythonPrototypeAudioPlayer as AudioPlayer
 
 
 async def _frames(*frames: bytes):
