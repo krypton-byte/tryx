@@ -68,9 +68,7 @@ dev = [
     "segno>=1.6.6",
 ]
 docs = [
-    "mkdocs>=1.6.0; python_version >= '3.10'",
-    "mkdocs-material>=9.6.0; python_version >= '3.10'",
-    "mkdocs-minify-plugin>=0.8.0; python_version >= '3.10'",
+    "zensical>=0.0.57; python_version >= '3.10'",
     "mkdocstrings>=1.0.0; python_version >= '3.10'",
     "mkdocstrings-python>=1.12.0; python_version >= '3.10'",
     "mike>=2.1.0; python_version >= '3.10'",
