@@ -82,7 +82,7 @@ jobs:
                --ignore-missing-imports
 
       - name: Build docs (validation only)
-        run: uv run mkdocs build --strict
+        run: uv run --no-project mkdocs build --strict
         env:
           PYTHONPATH: python
 
@@ -105,7 +105,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --group docs --no-install-project
+        run: uv sync --group dev --group docs --no-install-project
 
       - name: Configure git
         run: |
@@ -118,8 +118,8 @@ jobs:
         run: |
           VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//' | sed 's/\.[0-9]*$//')
           echo "Deploying docs for version: $VERSION"
-          uv run mike deploy --push --update-aliases "$VERSION" latest
-          uv run mike set-default --push latest
+          uv run --no-project mike deploy --push --update-aliases "$VERSION" latest
+          uv run --no-project mike set-default --push latest
         env:
           PYTHONPATH: python
 
@@ -128,14 +128,14 @@ jobs:
         if: "!startsWith(github.ref, 'refs/tags/')"
         run: |
           echo "Deploying docs as latest"
-          uv run mike deploy --push --update-aliases dev latest
-          uv run mike set-default --push latest
+          uv run --no-project mike deploy --push --update-aliases dev latest
+          uv run --no-project mike set-default --push latest
         env:
           PYTHONPATH: python
 
       - name: List deployed versions
         if: success()
-        run: uv run mike list
+        run: uv run --no-project mike list
 
   # ── Job 3: Manual deploy (workflow_dispatch) ────────────────────────────────
   manual_deploy:
@@ -155,7 +155,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --group docs --no-install-project
+        run: uv sync --group dev --group docs --no-install-project
 
       - name: Configure git
         run: |
@@ -167,8 +167,8 @@ jobs:
         if: inputs.version != ''
         run: |
           echo "Deploying docs for version: ${{ inputs.version }}"
-          uv run mike deploy --push --update-aliases "${{ inputs.version }}" latest
-          uv run mike set-default --push latest
+          uv run --no-project mike deploy --push --update-aliases "${{ inputs.version }}" latest
+          uv run --no-project mike set-default --push latest
         env:
           PYTHONPATH: python
 
@@ -177,10 +177,10 @@ jobs:
         if: inputs.delete_version != ''
         run: |
           echo "Deleting docs version: ${{ inputs.delete_version }}"
-          uv run mike delete --push "${{ inputs.delete_version }}"
+          uv run --no-project mike delete --push "${{ inputs.delete_version }}"
         env:
           PYTHONPATH: python
 
       - name: List deployed versions
         if: success()
-        run: uv run mike list
+        run: uv run --no-project mike list
