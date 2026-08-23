@@ -51,7 +51,10 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v5
       - uses: dtolnay/rust-toolchain@stable
-      - name: Rust cache
+      - name: Rust cache (tryx root)
+        uses: Swatinem/rust-cache@v2
+
+      - name: Rust cache (whatsapp-rust workspace)
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "libs/whatsapp-rust -> target"
