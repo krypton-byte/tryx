@@ -16,18 +16,9 @@ on:
       - "python/tryx/**"
 
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to deploy (e.g. 0.7, 0.8)"
-        required: false
-        type: string
-      delete_version:
-        description: "Version to delete"
-        required: false
-        type: string
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -82,9 +73,7 @@ jobs:
                --ignore-missing-imports
 
       - name: Build docs (validation only)
-        run: uv run --no-project mkdocs build --strict
-        env:
-          PYTHONPATH: python
+        run: uv run --no-project zensical build -f mkdocs.yml -s
 
   # ── Job 2: Deploy (runs on push to master or tag) ──────────────────────────
   deploy:
@@ -92,7 +81,12 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/configure-pages@v5
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -107,80 +101,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev --group docs --no-install-project
 
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Build docs
+        run: uv run --no-project zensical build -f mkdocs.yml -c
 
-      # Auto-deploy from tag → versioned docs (e.g. v0.8.0 → "0.8")
-      - name: Deploy versioned docs (from tag)
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//' | sed 's/\.[0-9]*$//')
-          echo "Deploying docs for version: $VERSION"
-          uv run --no-project mike deploy --push --update-aliases "$VERSION" latest
-          uv run --no-project mike set-default --push latest
-        env:
-          PYTHONPATH: python
-
-      # Auto-deploy from master → "latest" (without version number)
-      - name: Deploy latest docs (from master)
-        if: "!startsWith(github.ref, 'refs/tags/')"
-        run: |
-          echo "Deploying docs as latest"
-          uv run --no-project mike deploy --push --update-aliases dev latest
-          uv run --no-project mike set-default --push latest
-        env:
-          PYTHONPATH: python
-
-      - name: List deployed versions
-        if: success()
-        run: uv run --no-project mike list
-
-  # ── Job 3: Manual deploy (workflow_dispatch) ────────────────────────────────
-  manual_deploy:
-    name: Manual Deploy
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          fetch-depth: 0
-          submodules: recursive
+          path: site
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - uses: astral-sh/setup-uv@v5
-
-      - name: Install dependencies
-        run: uv sync --group dev --group docs --no-install-project
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Deploy custom version
-      - name: Deploy custom version
-        if: inputs.version != ''
-        run: |
-          echo "Deploying docs for version: ${{ inputs.version }}"
-          uv run --no-project mike deploy --push --update-aliases "${{ inputs.version }}" latest
-          uv run --no-project mike set-default --push latest
-        env:
-          PYTHONPATH: python
-
-      # Delete a version
-      - name: Delete docs version
-        if: inputs.delete_version != ''
-        run: |
-          echo "Deleting docs version: ${{ inputs.delete_version }}"
-          uv run --no-project mike delete --push "${{ inputs.delete_version }}"
-        env:
-          PYTHONPATH: python
-
-      - name: List deployed versions
-        if: success()
-        run: uv run --no-project mike list
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

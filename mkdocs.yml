@@ -108,12 +108,6 @@ theme:
 
 plugins:
   - search
-  - mike:
-      alias_type: symlink
-      redirect_template: null
-      deploy_prefix: ""
-      canonical_version: null
-      version_selector: true
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -175,10 +169,6 @@ extra_css:
   - assets/stylesheets/extra.css
 
 extra:
-  version:
-    provider: mike
-    default: latest
-    alias: true
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/krypton-byte/tryx
