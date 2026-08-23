@@ -47,6 +47,7 @@ exposing `lib_path` and `config_json` attributes satisfies this protocol.
 ```python
 import json
 
+
 class PostgresStore:
     lib_path: str  # path to compiled .so
     config_json: str

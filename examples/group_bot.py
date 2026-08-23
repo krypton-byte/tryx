@@ -163,6 +163,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 # ── Entry point ──────────────────────────────────────────────────────────────
 
+
 async def main() -> None:
     print(f"Starting group bot with DB: {DB_PATH}")
     await app.run()

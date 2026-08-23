@@ -234,12 +234,12 @@ async def cmd_ban(client, event, args):
 ```python
 COMMANDS = {
     "ping": cmd_ping,
-    "p": cmd_ping,           # alias
+    "p": cmd_ping,  # alias
     "echo": cmd_echo,
-    "e": cmd_echo,           # alias
+    "e": cmd_echo,  # alias
     "help": cmd_help,
-    "h": cmd_help,           # alias
-    "?": cmd_help,           # alias
+    "h": cmd_help,  # alias
+    "?": cmd_help,  # alias
 }
 ```
 

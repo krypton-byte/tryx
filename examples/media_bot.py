@@ -110,7 +110,8 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
             await client.chatstate.send_composing(chat_jid)
             doc_data = await download_bytes(SAMPLE_MEDIA["document"]["url"])
             result = await client.send_document(
-                chat_jid, doc_data,
+                chat_jid,
+                doc_data,
                 file_name="sample.pdf",
                 caption="Sample PDF document",
             )
@@ -157,6 +158,7 @@ async def on_message(client: TryxClient, event: EvMessage) -> None:
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
+
 
 async def main() -> None:
     print(f"Starting media bot with DB: {DB_PATH}")
