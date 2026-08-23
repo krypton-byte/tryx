@@ -47,7 +47,7 @@ jobs:
 
       - name: Validate .pyi stubs with pyright
         run: |
-          uv run pyright python/tryx/client.pyi \
+          uv run --no-project pyright python/tryx/client.pyi \
                  python/tryx/events.pyi \
                  python/tryx/types.pyi \
                  python/tryx/wacore.pyi \
@@ -60,7 +60,7 @@ jobs:
 
       - name: Validate .pyi stubs with mypy
         run: |
-          uv run mypy python/tryx/client.pyi \
+          uv run --no-project mypy python/tryx/client.pyi \
                python/tryx/events.pyi \
                python/tryx/types.pyi \
                python/tryx/wacore.pyi \
