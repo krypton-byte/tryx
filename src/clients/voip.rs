@@ -113,15 +113,20 @@ impl CallHandle {
         self.inner.is_muted()
     }
 
-    fn set_muted(&self, muted: bool) {
-        self.inner.set_muted(muted);
+    fn set_muted<'py>(&self, py: Python<'py>, muted: bool) -> PyResult<Bound<'py, PyAny>> {
+        let call = self.inner.clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let _ = call.set_muted(muted).await;
+            Ok(())
+        })
     }
 
     fn hangup<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let call = self.inner.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
-            call.hangup().await;
+            call.hangup_local().await;
             Ok(())
         })
     }
