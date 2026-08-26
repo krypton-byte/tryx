@@ -1,4 +1,4 @@
-# Security Practices
+# :material-lock: Security Practices
 
 Secure your client around four risk zones: session state, operator controls, user input, and outbound behavior.
 

@@ -1,4 +1,4 @@
-# Types API
+# :material-shape: Types API
 
 ::: tryx.types.JID
     options:

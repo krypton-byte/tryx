@@ -1,4 +1,4 @@
-# Event Model
+# :material-bell-ring: Event Model
 
 Tryx uses an event-driven architecture. All WhatsApp interactions — messages,
 presence changes, group updates, contact syncs — flow through typed event

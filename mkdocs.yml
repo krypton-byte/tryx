@@ -7,18 +7,18 @@ repo_name: krypton-byte/tryx
 edit_uri: edit/main/docs/
 
 nav:
-  - Home: index.md
-  - Getting Started:
+  - ":material-home: Home": index.md
+  - ":material-rocket-launch: Getting Started":
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
       - Authentication Flow: getting-started/authentication.md
       - Contributing: getting-started/contributing.md
-  - Core Concepts:
+  - ":material-puzzle: Core Concepts":
       - Architecture: core-concepts/architecture.md
       - Event Model: core-concepts/event-model.md
       - Storage Backends: core-concepts/storage-backends.md
       - Type System: core-concepts/type-system.md
-  - API Reference:
+  - ":material-api: API Reference":
       - Client API Gateway: api/client.md
       - Storage Backends: api/backend.md
       - Client Namespaces:
@@ -39,19 +39,19 @@ nav:
       - Exceptions: api/exceptions.md
       - Helpers: api/helpers.md
       - WACore: api/wacore.md
-  - Tutorials:
+  - ":material-school: Tutorials":
       - Command Bot: tutorials/command-bot.md
       - Profile & Privacy: tutorials/profile-privacy.md
       - Poll Survey: tutorials/poll-survey.md
       - Media Workflows: tutorials/media-workflows.md
       - Group Automation: tutorials/group-automation.md
-  - Operations:
+  - ":material-cog: Operations":
       - Deployment: operations/deployment.md
       - Reliability: operations/reliability.md
       - Troubleshooting: operations/troubleshooting.md
       - Performance: operations/performance.md
       - Security: operations/security.md
-  - Reference:
+  - ":material-bookshelf: Reference":
       - FAQ: faq/qna.md
       - Glossary: reference/glossary.md
       - Error Handling: reference/error-handling.md
@@ -63,6 +63,8 @@ theme:
   variant: modern
   language: en
   custom_dir: docs/overrides
+  logo: assets/mascot.png
+  favicon: assets/mascot.png
   font:
     text: Inter
     code: JetBrains Mono

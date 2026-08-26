@@ -1,4 +1,4 @@
-# Tutorial: Media Workflows
+# :material-image-multiple: Tutorial: Media Workflows
 
 This tutorial covers send, download, and recovery flows for media-heavy bots.
 

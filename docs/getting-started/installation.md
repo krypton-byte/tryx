@@ -1,4 +1,4 @@
-# Installation
+# :material-package-variant: Installation
 
 This guide sets up a working development environment for building with Tryx.
 

@@ -1,4 +1,4 @@
-# Type System
+# :material-code-braces: Type System
 
 Tryx ships with complete `.pyi` stub files and a `py.typed` marker,
 enabling full editor intelligence, static analysis, and API discoverability.

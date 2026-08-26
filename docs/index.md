@@ -1,3 +1,7 @@
+<div align="center">
+<img src="assets/mascot.png" width="15%" alt="Tryx">
+</div>
+
 # Tryx
 
 **Rust-powered Python SDK for event-driven WhatsApp automation.**

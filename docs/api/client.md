@@ -1,4 +1,4 @@
-# Client API Gateway
+# :material-api: Client API Gateway
 
 ::: tryx.client.Tryx
     options:

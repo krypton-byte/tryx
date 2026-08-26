@@ -1,4 +1,4 @@
-# Changelog Policy
+# :material-history: Changelog Policy
 
 Tryx changelog is generated automatically with `python-semantic-release`.
 

@@ -1,4 +1,4 @@
-# Events API
+# :material-broadcast: Events API
 
 ::: tryx.events.Dispatcher
     options:

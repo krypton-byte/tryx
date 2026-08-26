@@ -1,4 +1,4 @@
-# Architecture
+# :material-puzzle: Architecture
 
 Tryx splits performance-sensitive protocol work (Rust) from application
 ergonomics (Python). This gives you WhatsApp protocol handling at native

@@ -1,4 +1,4 @@
-# Authentication Flow
+# :material-key-variant: Authentication Flow
 
 Tryx follows the WhatsApp multi-device pairing flow. The first run links
 a session, and later runs reuse stored state.

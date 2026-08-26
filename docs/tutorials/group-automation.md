@@ -1,4 +1,4 @@
-# Tutorial: Group Automation
+# :material-account-multiple: Tutorial: Group Automation
 
 Automate full group lifecycle with safe participant governance.
 
