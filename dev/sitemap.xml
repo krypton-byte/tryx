@@ -4,6 +4,9 @@
         <loc>https://krypton-byte.github.io/tryx/dev/</loc>
       </url>
       <url>
+        <loc>https://krypton-byte.github.io/tryx/dev/getting-started/</loc>
+      </url>
+      <url>
         <loc>https://krypton-byte.github.io/tryx/dev/getting-started/installation/</loc>
       </url>
       <url>
@@ -16,6 +19,9 @@
         <loc>https://krypton-byte.github.io/tryx/dev/getting-started/contributing/</loc>
       </url>
       <url>
+        <loc>https://krypton-byte.github.io/tryx/dev/core-concepts/</loc>
+      </url>
+      <url>
         <loc>https://krypton-byte.github.io/tryx/dev/core-concepts/architecture/</loc>
       </url>
       <url>
@@ -26,6 +32,9 @@
       </url>
       <url>
         <loc>https://krypton-byte.github.io/tryx/dev/core-concepts/type-system/</loc>
+      </url>
+      <url>
+        <loc>https://krypton-byte.github.io/tryx/dev/api/</loc>
       </url>
       <url>
         <loc>https://krypton-byte.github.io/tryx/dev/api/client/</loc>
@@ -85,6 +94,9 @@
         <loc>https://krypton-byte.github.io/tryx/dev/api/wacore/</loc>
       </url>
       <url>
+        <loc>https://krypton-byte.github.io/tryx/dev/tutorials/</loc>
+      </url>
+      <url>
         <loc>https://krypton-byte.github.io/tryx/dev/tutorials/command-bot/</loc>
       </url>
       <url>
@@ -100,6 +112,9 @@
         <loc>https://krypton-byte.github.io/tryx/dev/tutorials/group-automation/</loc>
       </url>
       <url>
+        <loc>https://krypton-byte.github.io/tryx/dev/operations/</loc>
+      </url>
+      <url>
         <loc>https://krypton-byte.github.io/tryx/dev/operations/deployment/</loc>
       </url>
       <url>
@@ -113,6 +128,9 @@
       </url>
       <url>
         <loc>https://krypton-byte.github.io/tryx/dev/operations/security/</loc>
+      </url>
+      <url>
+        <loc>https://krypton-byte.github.io/tryx/dev/reference/</loc>
       </url>
       <url>
         <loc>https://krypton-byte.github.io/tryx/dev/faq/qna/</loc>
