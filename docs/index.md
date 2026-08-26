@@ -1,3 +1,7 @@
+---
+icon: material/home
+---
+
 <div align="center">
 <img src="assets/mascot.png" width="15%" alt="Tryx">
 </div>
