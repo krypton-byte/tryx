@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+  {{ super() }}
+  <!-- Context7 Widget: Up-to-date documentation for LLMs -->
+  <script src="https://context7.com/widget.js" data-library="/krypton-byte/tryx"></script>
+{% endblock %}
+
 {% block outdated %}
   You're not viewing the latest version.
   <a href="{{ '../' ~ base_url }}">
