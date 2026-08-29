@@ -1982,6 +1982,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#example-group-subject-change-with-lid-addressing" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example: Group Subject Change with LID Addressing
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#enum-like-support-types" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3306,6 +3317,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#example-group-subject-change-with-lid-addressing" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example: Group Subject Change with LID Addressing
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#enum-like-support-types" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -4446,6 +4468,37 @@
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="c1"># keep side effects minimal; enqueue heavy processing</span>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">pass</span>
 </span></code></pre></div>
+<h2 id="example-group-subject-change-with-lid-addressing">Example: Group Subject Change with LID Addressing<a class="headerlink" href="#example-group-subject-change-with-lid-addressing" title="Permanent link">&para;</a></h2>
+<p>When a group subject (name) is changed, the <code>Subject</code> action carries the renamer's identity. In LID-addressed groups, the phone-number alias arrives in a separate field:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tryx.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">EvGroupUpdate</span><span class="p">,</span> <span class="n">GroupNotificationAction</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nd">@app</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">EvGroupUpdate</span><span class="p">)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_group_update</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">action</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">action</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">GroupNotificationAction</span><span class="o">.</span><span class="n">Subject</span><span class="p">):</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="n">renamer</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">subject_owner</span>          <span class="c1"># JID (may be a LID)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">renamer_pn</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">subject_owner_pn</span>    <span class="c1"># phone-number JID (when LID addressing)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="n">renamer_name</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">subject_owner_username</span>  <span class="c1"># username (when enabled)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="c1"># Prefer the phone-number JID for display when available</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="n">display_jid</span> <span class="o">=</span> <span class="n">renamer_pn</span> <span class="ow">or</span> <span class="n">renamer</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>        <span class="nb">print</span><span class="p">(</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>            <span class="sa">f</span><span class="s2">"Group renamed to </span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">subject</span><span class="si">!r}</span><span class="s2"> "</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            <span class="sa">f</span><span class="s2">"by </span><span class="si">{</span><span class="n">display_jid</span><span class="si">}</span><span class="s2">"</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        <span class="p">)</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>        <span class="c1"># Log all identity fields for audit</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>        <span class="k">if</span> <span class="n">renamer_pn</span><span class="p">:</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  LID: </span><span class="si">{</span><span class="n">renamer</span><span class="si">}</span><span class="s2">, PN: </span><span class="si">{</span><span class="n">renamer_pn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>        <span class="k">if</span> <span class="n">renamer_name</span><span class="p">:</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Username: </span><span class="si">{</span><span class="n">renamer_name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">LID vs Phone Number</p>
+<p>In WhatsApp's LID addressing mode, <code>subject_owner</code> may be a <code>@lid</code> JID that is not human-readable. The <code>subject_owner_pn</code> field provides the corresponding phone-number JID for display. When LID addressing is not active, <code>subject_owner_pn</code> is <code>None</code> and <code>subject_owner</code> already contains the phone-number JID.</p>
+</div>
 <h2 id="enum-like-support-types">Enum-like Support Types<a class="headerlink" href="#enum-like-support-types" title="Permanent link">&para;</a></h2>
 <p>Common reason/state classes used by event payloads:</p>
 <ul>
