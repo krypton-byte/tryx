@@ -1,4 +1,4 @@
-# Tutorial: Command Bot
+# :material-console: Tutorial: Command Bot
 
 Build a command-driven WhatsApp bot that stays maintainable as command count
 grows. This tutorial progresses from a minimal router to a production-ready

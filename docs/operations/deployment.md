@@ -1,4 +1,4 @@
-# Deployment Guide
+# :material-cloud-upload: Deployment Guide
 
 Deploy Tryx bots safely in production with stable session storage and predictable restarts.
 

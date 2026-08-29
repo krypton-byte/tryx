@@ -1,4 +1,4 @@
-# Events API
+# :material-broadcast: Events API
 
 ::: tryx.events.Dispatcher
     options:
@@ -171,6 +171,40 @@ async def on_presence(client, event):
     # keep side effects minimal; enqueue heavy processing
     pass
 ```
+
+## Example: Group Subject Change with LID Addressing
+
+When a group subject (name) is changed, the `Subject` action carries the renamer's identity. In LID-addressed groups, the phone-number alias arrives in a separate field:
+
+```python
+from tryx.events import EvGroupUpdate, GroupNotificationAction
+
+
+@app.on(EvGroupUpdate)
+async def on_group_update(client, event):
+    action = event.data.action
+
+    if isinstance(action, GroupNotificationAction.Subject):
+        renamer = action.subject_owner          # JID (may be a LID)
+        renamer_pn = action.subject_owner_pn    # phone-number JID (when LID addressing)
+        renamer_name = action.subject_owner_username  # username (when enabled)
+
+        # Prefer the phone-number JID for display when available
+        display_jid = renamer_pn or renamer
+        print(
+            f"Group renamed to {action.subject!r} "
+            f"by {display_jid}"
+        )
+
+        # Log all identity fields for audit
+        if renamer_pn:
+            print(f"  LID: {renamer}, PN: {renamer_pn}")
+        if renamer_name:
+            print(f"  Username: {renamer_name}")
+```
+
+!!! tip "LID vs Phone Number"
+	In WhatsApp's LID addressing mode, `subject_owner` may be a `@lid` JID that is not human-readable. The `subject_owner_pn` field provides the corresponding phone-number JID for display. When LID addressing is not active, `subject_owner_pn` is `None` and `subject_owner` already contains the phone-number JID.
 
 ## Enum-like Support Types
 

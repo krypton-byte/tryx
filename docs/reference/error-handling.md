@@ -1,4 +1,4 @@
-# Error Handling
+# :material-bug: Error Handling
 
 Use exception classes and failure classification to decide whether to retry,
 fail fast, or trigger operator action.

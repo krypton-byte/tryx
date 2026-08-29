@@ -1,4 +1,4 @@
-# Glossary
+# :material-book-alphabetical: Glossary
 
 ---
 
