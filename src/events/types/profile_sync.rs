@@ -12,14 +12,14 @@ pub struct EvPushNameUpdateData {
 
 #[pyclass]
 pub struct EvPushNameUpdate {
-    inner: Box<wacore::types::events::RetiredPushNameUpdate>,
+    _inner: Box<wacore::types::events::RetiredPushNameUpdate>,
     data_cache: OnceLock<Py<EvPushNameUpdateData>>,
 }
 
 impl EvPushNameUpdate {
     pub fn new(inner: wacore::types::events::RetiredPushNameUpdate) -> Self {
         Self {
-            inner: Box::new(inner),
+            _inner: Box::new(inner),
             data_cache: OnceLock::new(),
         }
     }

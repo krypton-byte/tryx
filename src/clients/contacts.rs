@@ -13,7 +13,7 @@ use wacore::iq::usync::{
 };
 
 use crate::types::{JID, ProfilePicture};
-use crate::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
+use crate::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo, UsernameLookupUser};
 
 #[pyclass]
 pub struct ContactClient {
@@ -84,10 +84,45 @@ impl ContactClient {
                         info.is_business,
                         info.status,
                         info.picture_id,
+                        info.username.map(|u| u.to_string()),
                     );
                     dict.set_item(JID::from(jid), contact_info)?;
                 }
                 Ok(dict.unbind())
+            })
+        })
+    }
+
+    #[pyo3(signature = (username, username_key=None))]
+    fn find_by_username<'py>(
+        &self,
+        py: Python<'py>,
+        username: String,
+        username_key: Option<String>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+
+        future_into_py_with_locals::<_, Option<Py<UsernameLookupUser>>>(py, locals, async move {
+            let result = client
+                .contacts()
+                .find_by_username(&username, username_key.as_deref())
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+
+            Python::attach(|py| match result {
+                wacore::iq::usync::UsernameLookup::Found(user) => {
+                    let py_user = UsernameLookupUser {
+                        jid: Py::new(py, JID::from(user.jid))?,
+                        pn_jid: user.pn_jid.map(|j| Py::new(py, JID::from(j))).transpose()?,
+                        username: user.username.map(|u| u.to_string()),
+                        is_business: user.is_business,
+                    };
+                    Ok(Some(Py::new(py, py_user)?))
+                }
+                wacore::iq::usync::UsernameLookup::NotFound
+                | wacore::iq::usync::UsernameLookup::KeyRequired { .. }
+                | _ => Ok(None),
             })
         })
     }

@@ -28,6 +28,8 @@ class IsOnWhatsAppResult:
 
     jid: JID
     is_registered: bool
+    username: str | None
+    pn_jid: JID | None
 
 class UserInfo:
     """Basic profile metadata for a single user."""
@@ -36,6 +38,15 @@ class UserInfo:
     lid: JID | None
     status: str | None
     picture_id: str | None
+    is_business: bool
+    username: str | None
+
+class UsernameLookupUser:
+    """User lookup result by username."""
+
+    jid: JID
+    pn_jid: JID | None
+    username: str | None
     is_business: bool
 
 class ContactInfo:
@@ -580,6 +591,47 @@ class CallHandle:
 
     async def stop_video(self) -> None:
         """Stop sending video (audio continues).
+
+        Raises:
+            RuntimeError: If the call has ended.
+        """
+        ...
+
+    async def resume_video(
+        self, video_source: VideoSource, video_sink: VideoSink
+    ) -> None:
+        """Resume video transmission in the call.
+
+        Args:
+            video_source: Source providing outgoing video frames.
+            video_sink: Sink receiving incoming video frames.
+
+        Raises:
+            RuntimeError: If the call has ended or video adapter is missing.
+        """
+        ...
+
+    async def re_request_video_upgrade(self) -> None:
+        """Re-request video upgrade in the call.
+
+        Raises:
+            RuntimeError: If the call has ended.
+        """
+        ...
+
+    async def announce_video_enabled(self) -> None:
+        """Announce to call participants that local video is enabled.
+
+        Raises:
+            RuntimeError: If the call has ended.
+        """
+        ...
+
+    async def set_video_orientation(self, orientation: int) -> None:
+        """Set the local video orientation.
+
+        Args:
+            orientation: Orientation angle (e.g. 0, 90, 180, 270).
 
         Raises:
             RuntimeError: If the call has ended.
@@ -1195,6 +1247,23 @@ class ContactClient:
         """
         ...
 
+    async def find_by_username(
+        self, username: str, username_key: str | None = None
+    ) -> UsernameLookupUser | None:
+        """Look up a contact by their WhatsApp username.
+
+        Args:
+            username: The username to search for.
+            username_key: Optional username lookup key.
+
+        Returns:
+            UsernameLookupUser if found, None otherwise.
+
+        Raises:
+            RuntimeError: If the client is not running.
+        """
+        ...
+
 class ChatActionsClient:
     """Chat-level actions such as archive, pin, mute, and reactions.
 
@@ -1672,7 +1741,7 @@ class GroupMetadata:
     """Full metadata for a WhatsApp group."""
 
     id: JID
-    subject: str
+    subject: str | None
     participants: list[GroupParticipant]
     addressing_mode: str
     creator: JID | None
@@ -2371,11 +2440,23 @@ class MembershipRequest:
     request_time: int | None
 
 class GroupInfo:
-    """Basic group information returned by query_info."""
+    """Basic group information returned by query_info / routing_info."""
 
     participants: list[JID]
     addressing_mode: str
     lid_to_pn_map: list[tuple[str, JID]]
+
+class GroupOverview:
+    """Overview of a participating group.
+
+    Contains identity, subject, hierarchy, and participant count.
+    """
+
+    id: JID
+    subject: str | None
+    hierarchy: str
+    parent_jid: JID | None
+    participant_count: int | None
 
 class GroupsClient:
     """WhatsApp group management operations.
@@ -2383,8 +2464,24 @@ class GroupsClient:
     All async methods raise ``RuntimeError`` if the client is not running.
     """
 
+    async def routing_info(self, jid: JID) -> GroupInfo:
+        """Query basic group routing info (participants, addressing mode).
+
+        Args:
+            jid: Group JID.
+
+        Returns:
+            GroupInfo with participants and addressing mode.
+
+        Raises:
+            RuntimeError: If the client is not running.
+        """
+        ...
+
     async def query_info(self, jid: JID) -> GroupInfo:
         """Query basic group info (participants, addressing mode).
+
+        Alias for :meth:`routing_info`.
 
         Args:
             jid: Group JID.
@@ -2402,11 +2499,24 @@ class GroupsClient:
         """
         ...
 
-    async def get_participating(self) -> dict[str, GroupMetadata]:
-        """Get all groups the account is participating in.
+    async def list_participating(self) -> list[GroupOverview]:
+        """Get an overview of all groups the account is participating in.
 
         Returns:
-            Dict mapping group JID strings to GroupMetadata.
+            List of GroupOverview objects.
+
+        Raises:
+            RuntimeError: If the client is not running.
+        """
+        ...
+
+    async def get_participating(self) -> list[GroupOverview]:
+        """Get all groups the account is participating in.
+
+        Alias for :meth:`list_participating`.
+
+        Returns:
+            List of GroupOverview objects.
 
         Raises:
             RuntimeError: If the client is not running.
@@ -2414,13 +2524,43 @@ class GroupsClient:
         Example::
 
             groups = await client.groups.get_participating()
-            for jid_str, metadata in groups.items():
-                print(metadata.subject)
+            for overview in groups:
+                print(overview.subject)
+        """
+        ...
+
+    async def fetch_overviews(self, jids: list[JID]) -> list[GroupOverview]:
+        """Fetch group overviews for multiple groups.
+
+        Args:
+            jids: List of group JIDs to fetch overviews for.
+
+        Returns:
+            List of GroupOverview objects.
+
+        Raises:
+            RuntimeError: If the client is not running.
+        """
+        ...
+
+    async def fetch_metadata(self, jid: JID) -> GroupMetadata:
+        """Fetch full group metadata including participants from network.
+
+        Args:
+            jid: Group JID.
+
+        Returns:
+            GroupMetadata with full participant list.
+
+        Raises:
+            RuntimeError: If the client is not running.
         """
         ...
 
     async def get_metadata(self, jid: JID) -> GroupMetadata:
         """Get full group metadata including participants.
+
+        Alias for :meth:`fetch_metadata`.
 
         Args:
             jid: Group JID.

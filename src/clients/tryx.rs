@@ -420,7 +420,7 @@ impl Tryx {
                 async move {
                     match event.as_ref() {
                         Event::IncomingCall(incoming) => {
-                            let incoming = incoming.clone();
+                            let incoming = (**incoming).clone();
                             let client = client.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.incoming_call, locals.clone(), "IncomingCall", |py| {
                                 Py::new(py, crate::clients::voip::IncomingCallEvent {
@@ -440,7 +440,7 @@ impl Tryx {
                             }).await;
                         }
                         Event::LoggedOut(logout) => {
-                            let logout = logout.clone();
+                            let logout = (**logout).clone();
                             Self::emit_built_event(&tryx_client, &callbacks.logout, locals.clone(), "LoggedOut", |py| {
                                 Py::new(py, EvLoggedOut::new(logout)).map(|event| event.into_any())
                             }).await;
@@ -521,7 +521,7 @@ impl Tryx {
                                 |_py| {
                                     Ok(EvReceipt::new(
                                         receipt.source,
-                                        receipt.message_ids,
+                                        receipt.message_ids.into_iter().map(|id| id.to_string()).collect(),
                                         receipt.timestamp,
                                         receipt.r#type,
                                     )

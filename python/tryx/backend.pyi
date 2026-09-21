@@ -17,6 +17,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Protocol, runtime_checkable
 
+from .types import JID
+
 # ── Built-in backends ────────────────────────────────────────────────────────
 
 class BackendBase:
@@ -31,6 +33,15 @@ class BackendBase:
 
     ...
 
+class StoredDeviceSummary:
+    """Summary of a stored WhatsApp device session."""
+
+    id: int
+    pn: JID | None
+    lid: JID | None
+    push_name: str
+    linked: bool
+
 class SqliteStore(BackendBase):
     """Built-in SQLite storage backend.
 
@@ -40,6 +51,7 @@ class SqliteStore(BackendBase):
     Args:
         path: Filesystem path to the SQLite database file.
               Created automatically if it doesn't exist.
+        device_id: Device ID index (default 0).
 
     Example::
 
@@ -49,17 +61,53 @@ class SqliteStore(BackendBase):
     """
 
     path: str
+    device_id: int
 
-    def __init__(self, path: str) -> None:
-        """
-        Create a SQLite storage backend.
+    def __init__(self, path: str, device_id: int = 0) -> None:
+        """Create a SQLite storage backend.
 
         Args:
             path: Filesystem path to the database file.
+            device_id: Device ID index (default 0).
 
         Example::
 
             store = SqliteStore('session.db')
+        """
+        ...
+
+    async def create_new_device(self) -> int:
+        """Create a new device entry in the database and return its ID.
+
+        Returns:
+            The newly created device ID.
+        """
+        ...
+
+    async def list_devices(self) -> list[StoredDeviceSummary]:
+        """List all stored device sessions in the database.
+
+        Returns:
+            List of StoredDeviceSummary entries.
+        """
+        ...
+
+    async def remove_device(self, device_id: int) -> None:
+        """Delete a device session by ID.
+
+        Args:
+            device_id: ID of the device to remove.
+        """
+        ...
+
+    async def device_exists(self, device_id: int) -> bool:
+        """Check if a device with the given ID exists.
+
+        Args:
+            device_id: ID of the device to check.
+
+        Returns:
+            True if the device exists, False otherwise.
         """
         ...
 

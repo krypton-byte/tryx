@@ -185,16 +185,13 @@ async def on_group_update(client, event):
     action = event.data.action
 
     if isinstance(action, GroupNotificationAction.Subject):
-        renamer = action.subject_owner          # JID (may be a LID)
-        renamer_pn = action.subject_owner_pn    # phone-number JID (when LID addressing)
+        renamer = action.subject_owner  # JID (may be a LID)
+        renamer_pn = action.subject_owner_pn  # phone-number JID (when LID addressing)
         renamer_name = action.subject_owner_username  # username (when enabled)
 
         # Prefer the phone-number JID for display when available
         display_jid = renamer_pn or renamer
-        print(
-            f"Group renamed to {action.subject!r} "
-            f"by {display_jid}"
-        )
+        print(f"Group renamed to {action.subject!r} by {display_jid}")
 
         # Log all identity fields for audit
         if renamer_pn:

@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
-use pyo3::types::{PyDict, PyDictMethods};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
 use whatsapp_rust::Client;
@@ -12,6 +11,7 @@ use crate::wacore::iq::groups::{
     CreateGroupOptions,
     CreateGroupResult,
     GroupInfo,
+    GroupOverview,
     JoinGroupResult,
     MemberAddMode,
     MemberLinkMode,
@@ -36,7 +36,7 @@ impl GroupsClient {
 
 #[pymethods]
 impl GroupsClient {
-    fn query_info<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
+    fn routing_info<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
         let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
@@ -44,7 +44,7 @@ impl GroupsClient {
         future_into_py_with_locals::<_, Py<GroupInfo>>(py, locals, async move {
             let result = client
                 .groups()
-                .query_info(&jid_value)
+                .routing_info(&jid_value)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Python::attach(|py| {
@@ -54,29 +54,37 @@ impl GroupsClient {
         })
     }
 
-    fn get_participating<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+    fn query_info<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
+        self.routing_info(py, jid)
+    }
+
+    fn list_participating<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
 
-        future_into_py_with_locals::<_, Py<PyDict>>(py, locals, async move {
+        future_into_py_with_locals::<_, Vec<Py<GroupOverview>>>(py, locals, async move {
             let result = client
                 .groups()
-                .get_participating()
+                .list_participating()
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Python::attach(|py| {
-                let dict = PyDict::new(py);
-                for (jid, meta) in result {
-                    let py_meta = GroupMetadata::from_inner(py, meta)?;
-                    let py_jid = Py::new(py, JID::from(jid))?;
-                    dict.set_item(py_jid, Py::new(py, py_meta)?)?;
-                }
-                Ok(dict.unbind())
+                result
+                    .into_iter()
+                    .map(|overview| {
+                        let py_overview = GroupOverview::from_inner(py, overview)?;
+                        Py::new(py, py_overview)
+                    })
+                    .collect::<PyResult<Vec<_>>>()
             })
         })
     }
 
-    fn get_metadata<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
+    fn get_participating<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.list_participating(py)
+    }
+
+    fn fetch_metadata<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
         let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
@@ -84,7 +92,7 @@ impl GroupsClient {
         future_into_py_with_locals::<_, Py<GroupMetadata>>(py, locals, async move {
             let result = client
                 .groups()
-                .get_metadata(&jid_value)
+                .fetch_metadata(&jid_value)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Python::attach(|py| {
@@ -92,6 +100,10 @@ impl GroupsClient {
                 Py::new(py, py_result)
             })
         })
+    }
+
+    fn get_metadata<'py>(&self, py: Python<'py>, jid: Py<JID>) -> PyResult<Bound<'py, PyAny>> {
+        self.fetch_metadata(py, jid)
     }
 
     fn create_group<'py>(
@@ -840,6 +852,46 @@ impl GroupsClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
+        })
+    }
+
+    fn fetch_overviews<'py>(&self, py: Python<'py>, jids: Vec<Py<JID>>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let jids_value: Vec<whatsapp_rust::Jid> = jids.iter().map(|j| j.bind(py).borrow().as_whatsapp_jid()).collect();
+
+        future_into_py_with_locals::<_, Vec<Py<GroupOverview>>>(py, locals, async move {
+            let result = client
+                .groups()
+                .fetch_overviews(&jids_value)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| {
+                let overviews = result
+                    .into_iter()
+                    .filter_map(|res| match res {
+                        whatsapp_rust::GroupOverviewResult::Found(overview) => {
+                            let py_overview = GroupOverview::from_inner(py, overview).ok()?;
+                            Py::new(py, py_overview).ok()
+                        }
+                        whatsapp_rust::GroupOverviewResult::Truncated {
+                            id,
+                            participant_count,
+                        } => {
+                            let py_overview = GroupOverview {
+                                id: Py::new(py, JID::from(id)).ok()?,
+                                subject: None,
+                                hierarchy: "unknown".to_string(),
+                                parent_jid: None,
+                                participant_count: Some(participant_count),
+                            };
+                            Py::new(py, py_overview).ok()
+                        }
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                Ok(overviews)
+            })
         })
     }
 }

@@ -41,6 +41,11 @@ impl From<wacore::types::events::TemporaryBan> for EvTemporaryBan {
         EvTemporaryBan::new(event)
     }
 }
+impl From<Box<wacore::types::events::TemporaryBan>> for EvTemporaryBan {
+    fn from(event: Box<wacore::types::events::TemporaryBan>) -> Self {
+        EvTemporaryBan::new(*event)
+    }
+}
 #[pymethods]
 impl EvTemporaryBan {
     #[getter]
@@ -866,7 +871,7 @@ impl EvGroupUpdate {
                     .collect::<Vec<_>>()
             };
 
-            let action = match &self.inner.action {
+            let action = match &*self.inner.action {
                 wacore::stanza::groups::GroupNotificationAction::Add { participants, reason } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Add { participants: py_participants, reason: reason.clone() }

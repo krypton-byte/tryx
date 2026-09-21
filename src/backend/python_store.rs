@@ -459,7 +459,7 @@ impl AppSyncStore for PythonStore {
         })
     }
 
-    async fn get_version(&self, name: &str) -> StoreResult<HashState> {
+    async fn get_version(&self, name: &str) -> StoreResult<Option<HashState>> {
         let name_c = name.to_string();
         let fut = Python::attach(|_py| {
             let kwargs = pyo3::types::PyDict::new(_py);
@@ -469,8 +469,33 @@ impl AppSyncStore for PythonStore {
         })?;
         let _res = fut.await.map_err(|e| make_err(e.to_string()))?;
         Python::attach(|_py| {
-            let v = _res.bind(_py).extract::<Vec<u8>>().map_err(|e| make_err(e.to_string()))?; serde_json::from_slice(&v).map_err(|e| make_err(e.to_string()))
+            let bound = _res.bind(_py);
+            if bound.is_none() {
+                Ok(None)
+            } else {
+                let v = bound.extract::<Vec<u8>>().map_err(|e| make_err(e.to_string()))?;
+                serde_json::from_slice(&v).map_err(|e| make_err(e.to_string())).map(Some)
+            }
         })
+    }
+
+    async fn delete_version(&self, name: &str) -> StoreResult<()> {
+        let name_c = name.to_string();
+        let fut = Python::attach(|_py| -> StoreResult<_> {
+            let obj = self.py_obj.bind(_py);
+            if obj.hasattr("delete_version").unwrap_or(false) {
+                let kwargs = pyo3::types::PyDict::new(_py);
+                kwargs.set_item("name", name_c).unwrap();
+                let coro = obj.call_method("delete_version", (), Some(&kwargs)).map_err(|e| make_err(e.to_string()))?;
+                Ok(Some(pyo3_async_runtimes::tokio::into_future(coro).map_err(|e| make_err(e.to_string()))?))
+            } else {
+                Ok(None)
+            }
+        })?;
+        if let Some(f) = fut {
+            f.await.map_err(|e| make_err(e.to_string()))?;
+        }
+        Ok(())
     }
 
     async fn set_version(&self, name: &str, state: HashState) -> StoreResult<()> {

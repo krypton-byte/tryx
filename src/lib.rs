@@ -114,13 +114,13 @@ use self::events::types::{
     DeviceListUpdateData,
     EvPushNameUpdateData,
 };
-use self::backend::{BackendBase, SqliteStore, store_types::*};
+use self::backend::{BackendBase, SqliteStore, StoredDeviceSummary, store_types::*};
 use self::exceptions::{EventDispatchError, FailedBuildClient, FailedToDecodeProto, PyPayloadBuildError, UnsupportedBackend, UnsupportedEventType};
 use self::types::{DeviceSentMeta, JID, MediaReuploadResult, MessageInfo, MessageSource, MsgBotInfo, MsgMetaInfo, ProfilePicture, SendResult, UploadResponse};
 use self::wacore::download::MediaType;
 use self::wacore::node::{Attrs, Node, NodeContent, NodeValue};
 use self::wacore::stanza::{BusinessSubscription, KeyIndexInfo};
-use self::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo};
+use self::wacore::iq::usync::{ContactInfo, IsOnWhatsAppResult, UserInfo, UsernameLookupUser};
 use self::wacore::iq::community::{
     CommunitySubgroup,
     CreateCommunityOptions,
@@ -146,6 +146,7 @@ use self::wacore::iq::groups::{
     CreateGroupOptions,
     CreateGroupResult,
     GroupInfo,
+    GroupOverview,
     GroupParticipantOptions,
     JoinGroupResult,
     MemberAddMode,
@@ -200,6 +201,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<ContactInfo>()?;
     client_module.add_class::<IsOnWhatsAppResult>()?;
     client_module.add_class::<UserInfo>()?;
+    client_module.add_class::<UsernameLookupUser>()?;
     client_module.add_class::<GroupType>()?;
     client_module.add_class::<CreateCommunityOptions>()?;
     client_module.add_class::<CreateCommunityResult>()?;
@@ -227,6 +229,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     client_module.add_class::<ParticipantChangeResponse>()?;
     client_module.add_class::<MembershipRequest>()?;
     client_module.add_class::<GroupInfo>()?;
+    client_module.add_class::<GroupOverview>()?;
     client_module.add_class::<StatusPrivacySetting>()?;
     client_module.add_class::<StatusSendOptions>()?;
     client_module.add_class::<ChatStateType>()?;
@@ -331,6 +334,7 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     let backend_module = PyModule::new(_py.py(), "backend")?;
     backend_module.add_class::<BackendBase>()?;
     backend_module.add_class::<SqliteStore>()?;
+    backend_module.add_class::<StoredDeviceSummary>()?;
     backend_module.add_class::<PyDevice>()?;
     backend_module.add_class::<PyLidPnMappingEntry>()?;
     backend_module.add_class::<PyDeviceListRecord>()?;
