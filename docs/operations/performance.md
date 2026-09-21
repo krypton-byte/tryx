@@ -1,4 +1,4 @@
-# Performance Guide
+# :material-speedometer: Performance Guide
 
 Optimize for predictable latency and stable memory under burst traffic.
 

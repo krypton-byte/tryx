@@ -108,10 +108,31 @@ class BusinessStatusUpdateType:
     Unknown: BusinessStatusUpdateType
 
 class GroupNotificationAction:
-    """Opaque group update action variant.
+    """Group update action variant.
 
     The runtime returns one action object that describes what changed in a group.
+    Access the variant type via ``isinstance`` checks, for example::
+
+        from tryx.events import GroupNotificationAction
+
+        if isinstance(action, GroupNotificationAction.Subject):
+            print(action.subject)
+            print(action.subject_owner_pn)
     """
+
+    class Subject:
+        """Group subject (name) was changed."""
+
+        subject: str
+        """New group name."""
+        subject_owner: JID | None
+        """JID of the user who renamed the group (follows addressing mode)."""
+        subject_owner_pn: JID | None
+        """Phone-number JID of the renamer when ``subject_owner`` is a LID."""
+        subject_owner_username: str | None
+        """Renamer's username, when username addressing is enabled."""
+        subject_timestamp: datetime | None
+        """Server timestamp of the rename."""
 
 class EvConnected:
     """Emitted when the session becomes connected."""

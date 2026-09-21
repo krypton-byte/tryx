@@ -5,43 +5,53 @@ use crate::types::JID;
 #[pyclass]
 pub struct IsOnWhatsAppResult {
     #[pyo3(get)]
-    jid: Py<JID>,
+    pub jid: Py<JID>,
     #[pyo3(get)]
-    is_registered: bool,
+    pub is_registered: bool,
+    #[pyo3(get)]
+    pub pn_jid: Option<Py<JID>>,
+    #[pyo3(get)]
+    pub username: Option<String>,
 }
 
 impl IsOnWhatsAppResult {
-    pub fn new(jid: JID, is_registered: bool) -> Self {
+    pub fn new(jid: JID, is_registered: bool, pn_jid: Option<JID>, username: Option<String>) -> Self {
         Python::attach(|py| {
             Self {
                 jid: Py::new(py, JID::from(jid)).unwrap(),
                 is_registered,
+                pn_jid: pn_jid.map(|j| Py::new(py, JID::from(j)).unwrap()),
+                username,
             }
         })
     }
 }
+
 impl From<wacore::iq::usync::IsOnWhatsAppResult> for IsOnWhatsAppResult {
     fn from(result: wacore::iq::usync::IsOnWhatsAppResult) -> Self {
-        IsOnWhatsAppResult::new(result.jid.into(), result.is_registered)
+        IsOnWhatsAppResult::new(
+            result.jid.into(),
+            result.is_registered,
+            result.pn_jid.map(Into::into),
+            result.username.map(|u| u.to_string()),
+        )
     }
 }
-
-
 
 #[pyclass]
 pub struct ContactInfo {
     #[pyo3(get)]
-    jid: Py<JID>,
+    pub jid: Py<JID>,
     #[pyo3(get)]
-    lid: Option<Py<JID>>,
+    pub lid: Option<Py<JID>>,
     #[pyo3(get)]
-    is_registered: bool,
+    pub is_registered: bool,
     #[pyo3(get)]
-    is_business: bool,
+    pub is_business: bool,
     #[pyo3(get)]
-    status: Option<String>,
+    pub status: Option<String>,
     #[pyo3(get)]
-    picture_id: Option<u64>,
+    pub picture_id: Option<u64>,
 }
 
 impl ContactInfo {
@@ -66,7 +76,6 @@ impl ContactInfo {
     }
 }
 
-
 impl From<wacore::iq::usync::IsOnWhatsAppResult> for ContactInfo {
     fn from(info: wacore::iq::usync::IsOnWhatsAppResult) -> Self {
         ContactInfo::new(
@@ -83,15 +92,17 @@ impl From<wacore::iq::usync::IsOnWhatsAppResult> for ContactInfo {
 #[pyclass]
 pub struct UserInfo {
     #[pyo3(get)]
-    jid: Py<JID>,
+    pub jid: Py<JID>,
     #[pyo3(get)]
-    lid: Option<Py<JID>>,
+    pub lid: Option<Py<JID>>,
     #[pyo3(get)]
-    status: Option<String>,
+    pub status: Option<String>,
     #[pyo3(get)]
-    picture_id: Option<String>,
+    pub picture_id: Option<String>,
     #[pyo3(get)]
-    is_business: bool,
+    pub is_business: bool,
+    #[pyo3(get)]
+    pub username: Option<String>,
 }
 
 impl UserInfo {
@@ -101,6 +112,7 @@ impl UserInfo {
         is_business: bool,
         status: Option<String>,
         picture_id: Option<String>,
+        username: Option<String>,
     ) -> Self {
         Python::attach(|py| {
             Self {
@@ -109,6 +121,7 @@ impl UserInfo {
                 status,
                 picture_id,
                 is_business,
+                username,
             }
         })
     }
@@ -122,8 +135,20 @@ impl From<wacore::iq::usync::UserInfo> for UserInfo {
             info.is_business,
             info.status,
             info.picture_id,
-
+            info.username.map(|u| u.to_string()),
         )
     }
+}
+
+#[pyclass]
+pub struct UsernameLookupUser {
+    #[pyo3(get)]
+    pub jid: Py<JID>,
+    #[pyo3(get)]
+    pub pn_jid: Option<Py<JID>>,
+    #[pyo3(get)]
+    pub username: Option<String>,
+    #[pyo3(get)]
+    pub is_business: bool,
 }
 

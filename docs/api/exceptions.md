@@ -1,4 +1,4 @@
-# Exceptions API
+# :material-alert-circle: Exceptions API
 
 ::: tryx.exceptions.FailedBuildClient
     options:

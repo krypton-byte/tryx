@@ -1,4 +1,4 @@
-# Storage Backends
+# :material-database: Storage Backends
 
 Tryx supports a **3-tier storage architecture** so you can pick the right balance between simplicity, performance, and flexibility for your project.
 

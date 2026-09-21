@@ -194,9 +194,9 @@ impl From<WhatsAppMessageInfo> for MessageInfo {
     fn from(info: WhatsAppMessageInfo) -> Self {
         MessageInfo {
             inner: Arc::new(info.clone()),
-            id: info.id.clone(),
+            id: info.id.to_string(),
             r#type: info.r#type.map(|t| t.to_string()).unwrap_or_default(),
-            push_name: info.push_name.clone(),
+            push_name: info.push_name.to_string(),
         }
     }
 }
@@ -253,37 +253,51 @@ impl MessageInfo {
     fn bot_info(&self) -> Option<MsgBotInfo> {
         match &self.inner.bot_info {
             Some(msg) => {
-                Some(MsgBotInfo { inner: Arc::new(msg.clone()), edit_target_id: match msg.edit_target_id {
-                        Some(ref s) => Some(s.clone()),
-                        None => None,
-
-                } })
-            },
+                Some(MsgBotInfo {
+                    inner: Arc::new((**msg).clone()),
+                    edit_target_id: msg.edit_target_id.as_deref().map(String::from),
+                })
+            }
             None => None,
         }
     }
     #[getter]
-    fn meta_info(&self, py: Python<'_>) -> MsgMetaInfo{
-        MsgMetaInfo {
-            target_id: self.inner.meta_info.target_id.as_deref().map(String::from),
-            target_sender: match self.inner.meta_info.target_sender {
-                Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
-                None => None,
-            },
-            target_chat: match self.inner.meta_info.target_chat {
-                Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
-                None => None,
-            },
-            thread_message_id: self.inner.meta_info.thread_message_id.as_deref().map(String::from),
-            thread_message_sender_jid: match self.inner.meta_info.thread_message_sender_jid {
-                Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
-                None => None,
-            },
-            content_type: self.inner.meta_info.content_type.as_deref().map(String::from),
-            appdata: self.inner.meta_info.appdata.as_deref().map(String::from),
-            reporting_tag: self.inner.meta_info.reporting_tag.as_deref().map(|b| b.to_vec()),
-            reporting_token: self.inner.meta_info.reporting_token.as_deref().map(|b| b.to_vec()),
-            reporting_token_version: self.inner.meta_info.reporting_token_version,
+    fn meta_info(&self, py: Python<'_>) -> MsgMetaInfo {
+        if let Some(meta) = &self.inner.meta_info {
+            MsgMetaInfo {
+                target_id: meta.target_id.as_deref().map(String::from),
+                target_sender: match meta.target_sender {
+                    Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
+                    None => None,
+                },
+                target_chat: match meta.target_chat {
+                    Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
+                    None => None,
+                },
+                thread_message_id: meta.thread_message_id.as_deref().map(String::from),
+                thread_message_sender_jid: match meta.thread_message_sender_jid {
+                    Some(ref jid) => Some(pyo3::Py::new(py, JID::from(jid.clone())).unwrap()),
+                    None => None,
+                },
+                content_type: meta.content_type.as_deref().map(String::from),
+                appdata: meta.appdata.as_deref().map(String::from),
+                reporting_tag: meta.reporting_tag.as_deref().map(|b| b.to_vec()),
+                reporting_token: meta.reporting_token.as_deref().map(|b| b.to_vec()),
+                reporting_token_version: meta.reporting_token_version,
+            }
+        } else {
+            MsgMetaInfo {
+                target_id: None,
+                target_sender: None,
+                target_chat: None,
+                thread_message_id: None,
+                thread_message_sender_jid: None,
+                content_type: None,
+                appdata: None,
+                reporting_tag: None,
+                reporting_token: None,
+                reporting_token_version: None,
+            }
         }
     }
     #[getter]
@@ -320,7 +334,7 @@ impl MessageInfo {
     }
     #[getter]
     fn ephemeral_expiration(&self) -> Option<u32> {
-        self.inner.ephemeral_expiration
+        None
     }
     #[getter]
     fn is_offline(&self) -> bool {

@@ -1,8 +1,13 @@
+<div align="center">
+<img src="assets/mascot.png" width="20%" alt="Tryx">
+
 # Tryx
 
 [![PyPI version](https://img.shields.io/pypi/v/tryx?color=blue)](https://pypi.org/project/tryx/)
 [![Python](https://img.shields.io/pypi/pyversions/tryx.svg)](https://pypi.org/project/tryx/)
 [![License](https://img.shields.io/github/license/krypton-byte/tryx)](LICENSE)
+
+</div>
 [![Docs](https://img.shields.io/badge/docs-online-brightgreen)](https://krypton-byte.github.io/tryx/)
 
 **Bahasa:** [English](README.md) | [简体中文](README.zh.md) | Bahasa Indonesia

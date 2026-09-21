@@ -9,60 +9,67 @@ edit_uri: edit/main/docs/
 nav:
   - Home: index.md
   - Getting Started:
-      - Installation: getting-started/installation.md
-      - Quick Start: getting-started/quickstart.md
-      - Authentication Flow: getting-started/authentication.md
-      - Contributing: getting-started/contributing.md
+      - getting-started/index.md
+      - getting-started/installation.md
+      - getting-started/quickstart.md
+      - getting-started/authentication.md
+      - getting-started/contributing.md
   - Core Concepts:
-      - Architecture: core-concepts/architecture.md
-      - Event Model: core-concepts/event-model.md
-      - Storage Backends: core-concepts/storage-backends.md
-      - Type System: core-concepts/type-system.md
+      - core-concepts/index.md
+      - core-concepts/architecture.md
+      - core-concepts/event-model.md
+      - core-concepts/storage-backends.md
+      - core-concepts/type-system.md
   - API Reference:
-      - Client API Gateway: api/client.md
-      - Storage Backends: api/backend.md
-      - Client Namespaces:
-          - Contact: api/contact.md
-          - Chat Actions: api/chat-actions.md
-          - Community: api/community.md
-          - Newsletter: api/newsletter.md
-          - Groups: api/groups.md
-          - Status: api/status.md
-          - Chatstate: api/chatstate.md
-          - Blocking: api/blocking.md
-          - Polls: api/polls.md
-          - Presence: api/presence.md
-          - Privacy: api/privacy.md
-          - Profile: api/profile.md
-      - Events API: api/events.md
-      - Types API: api/types.md
-      - Exceptions: api/exceptions.md
-      - Helpers: api/helpers.md
-      - WACore: api/wacore.md
+      - api/index.md
+      - api/client.md
+      - api/backend.md
+      - api/contact.md
+      - api/chat-actions.md
+      - api/community.md
+      - api/newsletter.md
+      - api/groups.md
+      - api/status.md
+      - api/chatstate.md
+      - api/blocking.md
+      - api/polls.md
+      - api/presence.md
+      - api/privacy.md
+      - api/profile.md
+      - api/events.md
+      - api/types.md
+      - api/exceptions.md
+      - api/helpers.md
+      - api/wacore.md
   - Tutorials:
-      - Command Bot: tutorials/command-bot.md
-      - Profile & Privacy: tutorials/profile-privacy.md
-      - Poll Survey: tutorials/poll-survey.md
-      - Media Workflows: tutorials/media-workflows.md
-      - Group Automation: tutorials/group-automation.md
+      - tutorials/index.md
+      - tutorials/command-bot.md
+      - tutorials/profile-privacy.md
+      - tutorials/poll-survey.md
+      - tutorials/media-workflows.md
+      - tutorials/group-automation.md
   - Operations:
-      - Deployment: operations/deployment.md
-      - Reliability: operations/reliability.md
-      - Troubleshooting: operations/troubleshooting.md
-      - Performance: operations/performance.md
-      - Security: operations/security.md
+      - operations/index.md
+      - operations/deployment.md
+      - operations/reliability.md
+      - operations/troubleshooting.md
+      - operations/performance.md
+      - operations/security.md
   - Reference:
-      - FAQ: faq/qna.md
-      - Glossary: reference/glossary.md
-      - Error Handling: reference/error-handling.md
-      - Roadmap: reference/roadmap.md
-      - Changelog: reference/changelog.md
+      - reference/index.md
+      - faq/qna.md
+      - reference/glossary.md
+      - reference/error-handling.md
+      - reference/roadmap.md
+      - reference/changelog.md
 
 theme:
   name: material
   variant: modern
   language: en
   custom_dir: docs/overrides
+  logo: assets/mascot.png
+  favicon: assets/mascot.png
   font:
     text: Inter
     code: JetBrains Mono
@@ -70,6 +77,7 @@ theme:
     - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
+    - navigation.indexes
     - navigation.top
     - navigation.path
     - navigation.tracking
@@ -87,7 +95,7 @@ theme:
     - search.highlight
     - search.share
     - toc.follow
-    - toc.integrate
+    # - toc.integrate  # not compatible with navigation.indexes
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

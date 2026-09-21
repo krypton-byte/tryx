@@ -1,4 +1,4 @@
-# Contributing
+# :material-account-group: Contributing
 
 This guide explains how to contribute to Tryx development.
 

@@ -1,4 +1,4 @@
-# Tutorial: Profile and Privacy
+# :material-account-cog: Tutorial: Profile and Privacy
 
 Build admin-controlled profile and privacy management commands.
 

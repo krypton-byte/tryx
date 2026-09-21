@@ -1,4 +1,4 @@
-# FAQ
+# :material-frequently-asked-questions: FAQ
 
 Quick answers to common questions. Jump to the linked pages for implementation
 details.

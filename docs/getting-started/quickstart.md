@@ -1,4 +1,4 @@
-# Quick Start
+# :material-rocket-launch: Quick Start
 
 Build a working WhatsApp bot in 5 minutes. This guide walks through the
 minimal setup, then expands with real functionality.

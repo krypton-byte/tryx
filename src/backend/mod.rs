@@ -1,6 +1,6 @@
 mod store;
 pub mod ffi_bridge;
 
-pub use store::{BackendBase, SqliteStore, };
+pub use store::{BackendBase, SqliteStore, StoredDeviceSummary};
 pub mod python_store;
 pub mod store_types;

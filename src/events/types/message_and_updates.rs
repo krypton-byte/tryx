@@ -41,6 +41,11 @@ impl From<wacore::types::events::TemporaryBan> for EvTemporaryBan {
         EvTemporaryBan::new(event)
     }
 }
+impl From<Box<wacore::types::events::TemporaryBan>> for EvTemporaryBan {
+    fn from(event: Box<wacore::types::events::TemporaryBan>) -> Self {
+        EvTemporaryBan::new(*event)
+    }
+}
 #[pymethods]
 impl EvTemporaryBan {
     #[getter]
@@ -719,6 +724,8 @@ pub enum GroupNotificationAction {
     Subject {
         subject: String,
         subject_owner: Option<Py<JID>>,
+        subject_owner_pn: Option<Py<JID>>,
+        subject_owner_username: Option<String>,
         subject_timestamp: Option<Py<PyDateTime>>,
     },
     Description {
@@ -864,7 +871,7 @@ impl EvGroupUpdate {
                     .collect::<Vec<_>>()
             };
 
-            let action = match &self.inner.action {
+            let action = match &*self.inner.action {
                 wacore::stanza::groups::GroupNotificationAction::Add { participants, reason } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Add { participants: py_participants, reason: reason.clone() }
@@ -885,14 +892,17 @@ impl EvGroupUpdate {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Modify { participants: py_participants }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Subject { subject, subject_owner, subject_time } => {
+                wacore::stanza::groups::GroupNotificationAction::Subject { subject, subject_owner, subject_owner_pn, subject_owner_username, subject_time } => {
                     let py_subject_owner = subject_owner
+                        .as_ref()
+                        .map(|o| Py::new(py, JID::from(o.clone())).unwrap());
+                    let py_subject_owner_pn = subject_owner_pn
                         .as_ref()
                         .map(|o| Py::new(py, JID::from(o.clone())).unwrap());
                     let py_subject_timestamp = subject_time.map(|t| {
                         PyDateTime::from_timestamp(py, t as f64, None).unwrap().into()
                     });
-                    GroupNotificationAction::Subject { subject: subject.clone(), subject_owner: py_subject_owner, subject_timestamp: py_subject_timestamp }
+                    GroupNotificationAction::Subject { subject: subject.clone(), subject_owner: py_subject_owner, subject_owner_pn: py_subject_owner_pn, subject_owner_username: subject_owner_username.clone(), subject_timestamp: py_subject_timestamp }
                 },
                 wacore::stanza::groups::GroupNotificationAction::Description { id, description } => {
                     GroupNotificationAction::Description { id: id.clone(), description: description.clone() }

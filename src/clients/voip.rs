@@ -113,15 +113,20 @@ impl CallHandle {
         self.inner.is_muted()
     }
 
-    fn set_muted(&self, muted: bool) {
-        self.inner.set_muted(muted);
+    fn set_muted<'py>(&self, py: Python<'py>, muted: bool) -> PyResult<Bound<'py, PyAny>> {
+        let call = self.inner.clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let _ = call.set_muted(muted).await;
+            Ok(())
+        })
     }
 
     fn hangup<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let call = self.inner.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
-            call.hangup().await;
+            call.hangup_local().await;
             Ok(())
         })
     }
@@ -154,6 +159,47 @@ impl CallHandle {
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
             call.stop_video().await.map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn resume_video<'py>(&self, py: Python<'py>, video_source: Py<PyAny>, video_sink: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
+        let bridge = crate::voip::bridge_from_python(py, None, None, Some(video_source), Some(video_sink))?;
+        let source = bridge.video_source.ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("video source adapter is missing"))?;
+        let sink = bridge.video_sink.ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("video sink adapter is missing"))?;
+        let tasks = bridge.tasks;
+        self.bridge_tasks.lock().map_err(|_| pyo3::exceptions::PyRuntimeError::new_err("call task lock poisoned"))?.extend(tasks);
+        let call = self.inner.clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            call.resume_video(source, sink).await.map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn re_request_video_upgrade<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let call = self.inner.clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            call.re_request_video_upgrade().await.map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn announce_video_enabled<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let call = self.inner.clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            call.announce_video_enabled().await.map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    fn set_video_orientation<'py>(&self, py: Python<'py>, orientation: u8) -> PyResult<Bound<'py, PyAny>> {
+        let call = self.inner.clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            call.set_video_orientation(orientation).await.map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
             Ok(())
         })
     }

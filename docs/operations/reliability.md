@@ -1,4 +1,4 @@
-# Reliability Playbook
+# :material-shield-check: Reliability Playbook
 
 This page focuses on idempotency, retry strategy, and safe handler design.
 

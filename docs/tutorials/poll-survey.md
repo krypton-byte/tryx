@@ -1,4 +1,4 @@
-# Tutorial: Poll Survey Workflow
+# :material-poll: Tutorial: Poll Survey Workflow
 
 Create poll surveys, collect encrypted votes, and aggregate results.
 

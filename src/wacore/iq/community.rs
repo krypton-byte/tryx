@@ -214,7 +214,7 @@ pub struct GroupMetadata {
     #[pyo3(get)]
     pub id: Py<JID>,
     #[pyo3(get)]
-    pub subject: String,
+    pub subject: Option<String>,
     #[pyo3(get)]
     pub participants: Vec<Py<GroupParticipant>>,
     #[pyo3(get)]

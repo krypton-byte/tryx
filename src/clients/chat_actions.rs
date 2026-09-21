@@ -437,6 +437,7 @@ impl ChatActionsClient {
             client
                 .edit_message(chat_jid_value, original_id, message_value)
                 .await
+                .map(|result| result.message_id)
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }

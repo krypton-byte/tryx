@@ -1,3 +1,6 @@
+<div align="center">
+<img src="assets/mascot.png" width="20%" alt="Tryx">
+
 # Tryx
 
 [![PyPI version](https://img.shields.io/pypi/v/tryx?color=blue)](https://pypi.org/project/tryx/)
@@ -6,6 +9,8 @@
 [![Docs](https://img.shields.io/badge/docs-online-brightgreen)](https://krypton-byte.github.io/tryx/)
 
 **Language:** English | [简体中文](README.zh.md) | [Bahasa Indonesia](README.id.md)
+
+</div>
 
 Tryx is a Python automation library powered by Rust and PyO3. It provides a Python-friendly API on top of the `whatsapp-rust` crate, with async support, persistent sessions, and access to advanced WhatsApp Web protocol features.
 

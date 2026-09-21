@@ -300,7 +300,7 @@ pub struct GroupInfo {
 }
 
 impl GroupInfo {
-    pub fn from_inner(py: Python<'_>, value: &wacore::client::context::GroupInfo) -> PyResult<Self> {
+    pub fn from_inner(py: Python<'_>, value: &wacore::client::context::GroupRoutingInfo) -> PyResult<Self> {
         let lid_to_pn_map = Vec::new();
 
         let participants = value
@@ -318,6 +318,40 @@ impl GroupInfo {
             participants,
             addressing_mode,
             lid_to_pn_map,
+        })
+    }
+}
+
+#[pyclass]
+pub struct GroupOverview {
+    #[pyo3(get)]
+    pub id: Py<JID>,
+    #[pyo3(get)]
+    pub subject: Option<String>,
+    #[pyo3(get)]
+    pub hierarchy: String,
+    #[pyo3(get)]
+    pub parent_jid: Option<Py<JID>>,
+    #[pyo3(get)]
+    pub participant_count: Option<u32>,
+}
+
+impl GroupOverview {
+    pub fn from_inner(py: Python<'_>, value: whatsapp_rust::GroupOverview) -> PyResult<Self> {
+        let (hierarchy, parent_jid) = match value.hierarchy {
+            whatsapp_rust::GroupHierarchy::Standalone => ("standalone".to_string(), None),
+            whatsapp_rust::GroupHierarchy::Community => ("community".to_string(), None),
+            whatsapp_rust::GroupHierarchy::Subgroup { parent, .. } => {
+                ("subgroup".to_string(), Some(Py::new(py, JID::from(parent))?))
+            }
+            _ => ("unknown".to_string(), None),
+        };
+        Ok(Self {
+            id: Py::new(py, JID::from(value.id))?,
+            subject: value.subject,
+            hierarchy,
+            parent_jid,
+            participant_count: value.participant_count,
         })
     }
 }

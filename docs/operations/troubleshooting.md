@@ -1,4 +1,4 @@
-# Troubleshooting
+# :material-wrench: Troubleshooting
 
 Use this page as a decision tree first, checklist second.
 

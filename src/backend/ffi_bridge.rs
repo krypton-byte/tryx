@@ -326,13 +326,22 @@ impl AppSyncStore for FfiBridgeStore {
         if res == 0 { Ok(()) } else { Err(make_err("set_sync_key failed")) }
     }
 
-    async fn get_version(&self, name: &str) -> StoreResult<HashState> {
+    async fn get_version(&self, name: &str) -> StoreResult<Option<HashState>> {
         let cname = CString::new(name).unwrap();
         let mut out = TryxBuffer { data: ptr::null_mut(), len: 0 };
         let res = unsafe { (self.ffi.get_version)(self.ffi.handle, cname.as_ptr(), &mut out) };
         if res == 0 {
-            Ok(bincode::deserialize(&self.take_buffer(out)).unwrap_or_default())
-        } else { Ok(HashState::default()) }
+            let buf = self.take_buffer(out);
+            if buf.is_empty() {
+                Ok(None)
+            } else {
+                Ok(bincode::deserialize(&buf).ok())
+            }
+        } else { Ok(None) }
+    }
+
+    async fn delete_version(&self, _name: &str) -> StoreResult<()> {
+        Ok(())
     }
 
     async fn set_version(&self, name: &str, state: HashState) -> StoreResult<()> {
