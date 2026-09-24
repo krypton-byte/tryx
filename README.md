@@ -1,7 +1,6 @@
 <div align="center">
-<img src="assets/mascot.png" width="20%" alt="Tryx">
+<img alt="tryx" src="https://github.com/user-attachments/assets/43867982-1b67-4043-a45f-45feadd2dfdb" />
 
-# Tryx
 
 [![PyPI version](https://img.shields.io/pypi/v/tryx?color=blue)](https://pypi.org/project/tryx/)
 [![Python](https://img.shields.io/pypi/pyversions/tryx.svg)](https://pypi.org/project/tryx/)
