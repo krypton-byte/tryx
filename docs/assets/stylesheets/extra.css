@@ -292,18 +292,15 @@ summary:focus-visible {
   border-color: rgba(13, 148, 136, 0.25);
 }
 
-/* ── Theme-aware Banner Artwork ──────────────────────────────────────── */
+/* ── Theme-aware Hero Banner ─────────────────────────────────────────── */
 /* README files swap artwork with <picture> + prefers-color-scheme. The docs
    site has a manual palette toggle, so there the swap keys off the active
-   data-md-color-scheme instead. */
-[data-md-color-scheme="default"] .md-header__button.md-logo img.tryx-art-dark,
-[data-md-color-scheme="default"] .md-nav__button.md-logo img.tryx-art-dark,
+   data-md-color-scheme instead. The navbar logo is a single mark that works
+   on both schemes, so it needs no swapping. */
 [data-md-color-scheme="default"] .tryx-hero-logo img.tryx-art-dark {
   display: none;
 }
 
-[data-md-color-scheme="slate"] .md-header__button.md-logo img.tryx-art-light,
-[data-md-color-scheme="slate"] .md-nav__button.md-logo img.tryx-art-light,
 [data-md-color-scheme="slate"] .tryx-hero-logo img.tryx-art-light {
   display: none;
 }
