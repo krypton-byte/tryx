@@ -2,12 +2,9 @@
 icon: material/home
 ---
 
-<div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/banner_dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/banner_light.png">
-  <img src="assets/banner_light.png" width="60%" alt="Tryx">
-</picture>
+<div align="center" class="tryx-hero-logo">
+<img class="tryx-art-light" src="assets/banner_light.png" width="60%" alt="Tryx">
+<img class="tryx-art-dark" src="assets/banner_dark.png" width="60%" alt="Tryx">
 </div>
 
 # Tryx

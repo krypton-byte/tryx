@@ -292,6 +292,22 @@ summary:focus-visible {
   border-color: rgba(13, 148, 136, 0.25);
 }
 
+/* ── Theme-aware Banner Artwork ──────────────────────────────────────── */
+/* README files swap artwork with <picture> + prefers-color-scheme. The docs
+   site has a manual palette toggle, so there the swap keys off the active
+   data-md-color-scheme instead. */
+[data-md-color-scheme="default"] .md-header__button.md-logo img.tryx-art-dark,
+[data-md-color-scheme="default"] .md-nav__button.md-logo img.tryx-art-dark,
+[data-md-color-scheme="default"] .tryx-hero-logo img.tryx-art-dark {
+  display: none;
+}
+
+[data-md-color-scheme="slate"] .md-header__button.md-logo img.tryx-art-light,
+[data-md-color-scheme="slate"] .md-nav__button.md-logo img.tryx-art-light,
+[data-md-color-scheme="slate"] .tryx-hero-logo img.tryx-art-light {
+  display: none;
+}
+
 /* ── Print ───────────────────────────────────────────────────────────── */
 @media print {
   .md-sidebar,
