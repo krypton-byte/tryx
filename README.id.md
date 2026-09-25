@@ -1,8 +1,8 @@
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/banner_dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/banner_light.png">
-  <img src="assets/banner_light.png" width="70%" alt="Tryx">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner_light.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/banner_dark.png">
+  <img src="assets/banner_dark.png" width="70%" alt="Tryx">
 </picture>
 
 [![PyPI version](https://img.shields.io/pypi/v/tryx?color=blue)](https://pypi.org/project/tryx/)
