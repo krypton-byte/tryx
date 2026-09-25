@@ -292,21 +292,11 @@ summary:focus-visible {
   border-color: rgba(13, 148, 136, 0.25);
 }
 
-/* ── Theme-aware Banner Artwork ──────────────────────────────────────── */
-/* README files swap artwork with <picture> + prefers-color-scheme. The docs
-   site has a manual palette toggle, so there the swap keys off the active
-   data-md-color-scheme instead. */
-[data-md-color-scheme="default"] .md-header__button.md-logo img.tryx-art-dark,
-[data-md-color-scheme="default"] .md-nav__button.md-logo img.tryx-art-dark,
-[data-md-color-scheme="default"] .tryx-hero-logo img.tryx-art-dark {
-  display: none;
-}
-
-[data-md-color-scheme="slate"] .md-header__button.md-logo img.tryx-art-light,
-[data-md-color-scheme="slate"] .md-nav__button.md-logo img.tryx-art-light,
-[data-md-color-scheme="slate"] .tryx-hero-logo img.tryx-art-light {
-  display: none;
-}
+/* ── Theme-aware Hero Banner ─────────────────────────────────────────── */
+/* The hero artwork swaps with the active color scheme via Zensical's built-in
+   #only-light / #only-dark image fragments (see docs/index.md), which keys off
+   data-md-color-scheme and therefore works with the manual palette toggle.
+   The navbar logo is a single mark that works on both schemes. */
 
 /* ── Print ───────────────────────────────────────────────────────────── */
 @media print {
