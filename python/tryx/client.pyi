@@ -760,6 +760,15 @@ class IncomingCallEvent:
 class VoipClient:
     """VoIP client for making and receiving voice/video calls."""
 
+    def is_call_answered(self, call_id: str) -> bool:
+        """Return True after the remote WhatsApp device accepts an outgoing call.
+
+        Creating a CallHandle does not mean that the callee answered.
+        Returns False for ringing, unknown, and ended calls.
+        Raises RuntimeError if the WhatsApp client is disconnected.
+        """
+        ...
+
     async def call(
         self, peer: JID, audio_source: AudioSource, audio_sink: AudioSink
     ) -> CallHandle:
