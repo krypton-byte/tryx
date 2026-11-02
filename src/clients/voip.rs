@@ -126,7 +126,8 @@ impl CallHandle {
         let call = self.inner.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
-            call.hangup_local().await;
+            // Notify the remote WhatsApp participant before closing local media.
+            let _ = call.terminate().await;
             Ok(())
         })
     }
@@ -249,6 +250,20 @@ impl CallHandle {
 
 #[pymethods]
 impl VoipClient {
+    /// Whether the remote device has actually answered an outbound call.
+    ///
+    /// A returned CallHandle only means the offer was started. The
+    /// generation check prevents an old handle from reading a replacement
+    /// call with the same ID. Unknown or ended calls return false.
+    fn is_call_answered(&self, call_id: &str) -> PyResult<bool> {
+        let client = self.get_client()?;
+        let registry = client.call_registry();
+        let Some(generation) = registry.generation_of(call_id) else {
+            return Ok(false);
+        };
+        Ok(registry.answering_device_if_current(call_id, generation).is_some())
+    }
+
     /// Start an outgoing 1:1 PCM audio call. `audio_source` must expose
     /// `frames() -> async iterator[bytes]`; `audio_sink` must expose
     /// `write(bytes) -> awaitable`. Each audio frame is 960 little-endian
