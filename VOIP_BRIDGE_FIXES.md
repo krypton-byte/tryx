@@ -26,13 +26,21 @@ is not modified.
    signaling message, while the latter stops only local media and leaves
    the peer's call active.
 
-4. **Actual outgoing answer state** (`src/clients/voip.rs` and
-   `python/tryx/client.pyi`): `VoipClient.is_call_answered(call_id)`
-   returns true only when the underlying call registry records an
-   answering device after the peer's `<accept>`. It is a read-only,
-   generation-aware check; a returned `CallHandle` alone does not
-   mean the remote user answered. Unknown/ended calls return false;
-   disconnected Tryx clients raise a runtime error.
+4. **Actual outgoing answer state** (`src/clients/voip.rs`,
+   `src/clients/tryx.rs`, and `python/tryx/client.pyi`):
+   `VoipClient.is_call_answered(call_id)` reads a small, per-client
+   set of call IDs updated by the **existing public WhatsApp call-event
+   stream** when the peer sends `<accept>`. This avoids
+   `Client::call_registry()`, which is `pub(crate)` inside the
+   dependency and inaccessible to Tryx (Rust E0624). Terminal remote
+   events and disconnect clear the relevant state, with the set capped
+   at 64 entries. Use the getter for active calls; a returned
+   `CallHandle` alone does not mean the remote user answered.
+
+5. **Correct call event dispatch** (`src/clients/tryx.rs`):
+   only real `<offer>` stanzas become Python `IncomingCallEvent`
+   callbacks. Previously, outbound call `<accept>` events could be
+   mistaken for second incoming offers and rejected.
 
 ## Testing
 
