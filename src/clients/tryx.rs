@@ -98,7 +98,10 @@ impl Tryx {
                     labels: new_namespace_client!(py, client_rx, LabelsClient),
                     comments: new_namespace_client!(py, client_rx, CommentsClient),
                     events: new_namespace_client!(py, client_rx, EventsClient),
-                    voip: new_namespace_client!(py, client_rx, VoipClient),
+                    voip: Py::new(py, VoipClient {
+                        client_rx: client_rx.clone(),
+                        answered_calls: Default::default(),
+                    })?,
                 }
             )?;
             
@@ -144,7 +147,10 @@ impl Tryx {
                     labels: new_namespace_client!(py, client_rx, LabelsClient),
                     comments: new_namespace_client!(py, client_rx, CommentsClient),
                     events: new_namespace_client!(py, client_rx, EventsClient),
-                    voip: new_namespace_client!(py, client_rx, VoipClient),
+                    voip: Py::new(py, VoipClient {
+                        client_rx: client_rx.clone(),
+                        answered_calls: Default::default(),
+                    })?,
                 }
             )?;
 
@@ -181,7 +187,10 @@ impl Tryx {
                     labels: new_namespace_client!(py, client_rx, LabelsClient),
                     comments: new_namespace_client!(py, client_rx, CommentsClient),
                     events: new_namespace_client!(py, client_rx, EventsClient),
-                    voip: new_namespace_client!(py, client_rx, VoipClient),
+                    voip: Py::new(py, VoipClient {
+                        client_rx: client_rx.clone(),
+                        answered_calls: Default::default(),
+                    })?,
                 }
             )?;
 
@@ -407,6 +416,14 @@ impl Tryx {
             let dispatcher = handlers.bind(py).borrow();
             EventCallbacks::from_dispatcher(py, &dispatcher)
         }));
+        // Inspect normal public call-signaling events instead of accessing
+        // whatsapp-rust's crate-private call_registry(). All Tryx backends
+        // share this small set with their VoipClient namespace.
+        let answered_calls = Python::attach(|py| {
+            let client = tryx_client.bind(py).borrow();
+            let voip = client.voip.bind(py).borrow();
+            voip.answered_calls.clone()
+        });
         info!("building WhatsApp automation client");
         let automation = Bot::builder()
             .with_backend_arc(backend)
@@ -415,19 +432,44 @@ impl Tryx {
             .on_event(move |event, client| {
                 let locals = locals.clone();
                 let callbacks = Arc::clone(&callbacks);
+                let answered_calls = answered_calls.clone();
                 let tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
 
                 async move {
                     match event.as_ref() {
                         Event::IncomingCall(incoming) => {
-                            let incoming = (**incoming).clone();
-                            let client = client.clone();
-                            Self::emit_built_event(&tryx_client, &callbacks.incoming_call, locals.clone(), "IncomingCall", |py| {
-                                Py::new(py, crate::clients::voip::IncomingCallEvent {
-                                    client,
-                                    incoming: std::sync::Mutex::new(Some(incoming)),
-                                }).map(|event| event.into_any())
-                            }).await;
+                            use whatsapp_rust::types::call::CallAction;
+                            match &incoming.action {
+                                CallAction::Accept { call_id, .. } => {
+                                    if let Ok(mut calls) = answered_calls.lock() {
+                                        // Bound retained signaling to one tiny allocation set.
+                                        if calls.len() >= 64 && !calls.contains(call_id) {
+                                            calls.clear();
+                                        }
+                                        calls.insert(call_id.clone());
+                                    }
+                                }
+                                CallAction::Terminate { call_id, .. } => {
+                                    if let Ok(mut calls) = answered_calls.lock() {
+                                        calls.remove(call_id);
+                                    }
+                                }
+                                CallAction::Offer { .. } => {
+                                    // Only offers can be accepted/rejected by the
+                                    // Python IncomingCallEvent API. Previously
+                                    // every <accept> was incorrectly forwarded
+                                    // as a second incoming call.
+                                    let incoming = (**incoming).clone();
+                                    let client = client.clone();
+                                    Self::emit_built_event(&tryx_client, &callbacks.incoming_call, locals.clone(), "IncomingCall", |py| {
+                                        Py::new(py, crate::clients::voip::IncomingCallEvent {
+                                            client,
+                                            incoming: std::sync::Mutex::new(Some(incoming)),
+                                        }).map(|event| event.into_any())
+                                    }).await;
+                                }
+                                _ => {}
+                            }
                         }
                         Event::Connected(_) => {
                             Self::emit_built_event(&tryx_client, &callbacks.connected, locals.clone(), "Connected", |py| {
@@ -435,6 +477,9 @@ impl Tryx {
                             }).await;
                         }
                         Event::Disconnected(_) => {
+                            if let Ok(mut calls) = answered_calls.lock() {
+                                calls.clear();
+                            }
                             Self::emit_built_event(&tryx_client, &callbacks.disconnected, locals.clone(), "Disconnected", |py| {
                                 Py::new(py, EvDisconnected {}).map(|event| event.into_any())
                             }).await;
