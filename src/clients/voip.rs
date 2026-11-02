@@ -1,4 +1,5 @@
-use std::sync::Arc;
+use std::collections::HashSet;
+use std::sync::{Arc, Mutex};
 
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
@@ -13,6 +14,9 @@ use whatsapp_rust::wacore::types::group_call::CallLinkMedia;
 #[pyclass]
 pub struct VoipClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
+    /// Shared with Tryx's normal call-event dispatcher; no private
+    /// whatsapp-rust registry access or extra worker task required.
+    pub(crate) answered_calls: Arc<Mutex<HashSet<String>>>,
 }
 
 impl VoipClient {
@@ -250,18 +254,17 @@ impl CallHandle {
 
 #[pymethods]
 impl VoipClient {
-    /// Whether the remote device has actually answered an outbound call.
+    /// Whether a WhatsApp device sent <accept> for the given outgoing call.
     ///
-    /// A returned CallHandle only means the offer was started. The
-    /// generation check prevents an old handle from reading a replacement
-    /// call with the same ID. Unknown or ended calls return false.
+    /// The normal event dispatcher records accepted call IDs as signaling
+    /// arrives, even before the async call() future returns. The set is
+    /// bounded and cleared on disconnect.
     fn is_call_answered(&self, call_id: &str) -> PyResult<bool> {
-        let client = self.get_client()?;
-        let registry = client.call_registry();
-        let Some(generation) = registry.generation_of(call_id) else {
-            return Ok(false);
-        };
-        Ok(registry.answering_device_if_current(call_id, generation).is_some())
+        self.get_client()?;
+        let calls = self.answered_calls.lock().map_err(|_| {
+            pyo3::exceptions::PyRuntimeError::new_err("WhatsApp call state lock poisoned")
+        })?;
+        Ok(calls.contains(call_id))
     }
 
     /// Start an outgoing 1:1 PCM audio call. `audio_source` must expose
