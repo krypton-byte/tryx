@@ -717,7 +717,7 @@ pub fn audio_source_from_python(
     let locals = get_current_locals(py)?;
     let (sender, receiver): (Sender<Vec<i16>>, Receiver<Vec<i16>>) =
         async_channel::bounded(capacity.max(1));
-    let task = tokio::spawn(async move {
+    let task = pyo3_async_runtimes::tokio::get_runtime().spawn(async move {
         loop {
             let next = Python::attach(|py| {
                 let awaitable = iterator.call_method0(py, "__anext__")?;
@@ -749,7 +749,7 @@ pub fn audio_sink_from_python(
     let locals = get_current_locals(py)?;
     let (sender, receiver): (Sender<Vec<i16>>, Receiver<Vec<i16>>) =
         async_channel::bounded(capacity.max(1));
-    let task = tokio::spawn(async move {
+    let task = pyo3_async_runtimes::tokio::get_runtime().spawn(async move {
         while let Ok(frame) = receiver.recv().await {
             let awaitable = Python::attach(|py| {
                 let bytes = pcm16_to_python(py, &frame);

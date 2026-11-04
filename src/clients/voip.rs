@@ -1,4 +1,5 @@
-use std::sync::Arc;
+use std::collections::HashSet;
+use std::sync::{Arc, Mutex};
 
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
@@ -13,6 +14,9 @@ use whatsapp_rust::wacore::types::group_call::CallLinkMedia;
 #[pyclass]
 pub struct VoipClient {
     pub client_rx: watch::Receiver<Option<Arc<Client>>>,
+    /// Shared with Tryx's normal call-event dispatcher; no private
+    /// whatsapp-rust registry access or extra worker task required.
+    pub(crate) answered_calls: Arc<Mutex<HashSet<String>>>,
 }
 
 impl VoipClient {
@@ -126,7 +130,8 @@ impl CallHandle {
         let call = self.inner.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
-            call.hangup_local().await;
+            // Notify the remote WhatsApp participant before closing local media.
+            let _ = call.terminate().await;
             Ok(())
         })
     }
@@ -249,6 +254,19 @@ impl CallHandle {
 
 #[pymethods]
 impl VoipClient {
+    /// Whether a WhatsApp device sent <accept> for the given outgoing call.
+    ///
+    /// The normal event dispatcher records accepted call IDs as signaling
+    /// arrives, even before the async call() future returns. The set is
+    /// bounded and cleared on disconnect.
+    fn is_call_answered(&self, call_id: &str) -> PyResult<bool> {
+        self.get_client()?;
+        let calls = self.answered_calls.lock().map_err(|_| {
+            pyo3::exceptions::PyRuntimeError::new_err("WhatsApp call state lock poisoned")
+        })?;
+        Ok(calls.contains(call_id))
+    }
+
     /// Start an outgoing 1:1 PCM audio call. `audio_source` must expose
     /// `frames() -> async iterator[bytes]`; `audio_sink` must expose
     /// `write(bytes) -> awaitable`. Each audio frame is 960 little-endian
