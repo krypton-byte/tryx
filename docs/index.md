@@ -3,7 +3,8 @@ icon: material/home
 ---
 
 <div align="center">
-<img src="assets/mascot.png" width="15%" alt="Tryx">
+<img src="assets/banner_dark.png#only-light" width="60%" alt="Tryx">
+<img src="assets/banner_light.png#only-dark" width="60%" alt="Tryx">
 </div>
 
 # Tryx
