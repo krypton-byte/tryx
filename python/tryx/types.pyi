@@ -10,10 +10,33 @@ class JID:
 
     user: str
     server: str
+    device: int
+    agent: int
+    is_group: bool
+    is_lid: bool
+    is_pn: bool
+    is_newsletter: bool
+    is_bot: bool
+    is_broadcast_list: bool
+    is_status_broadcast: bool
 
-    def __init__(self, user: str, server: str) -> None:
-        """Create a JID from user and server parts."""
+    def __init__(self, user: str, server: str | None = None) -> None:
+        """Create a JID from ``(user, server)`` or parse ``"user@server"``."""
         ...
+    @classmethod
+    def parse(cls, s: str) -> JID:
+        """Parse a JID string such as ``"628123@s.whatsapp.net"``."""
+        ...
+    def to_non_ad(self) -> JID:
+        """Return a copy of this JID stripped of any companion device id."""
+        ...
+    def is_same_chat_as(self, other: JID | str) -> bool:
+        """Return True if *other* addresses the same chat."""
+        ...
+    def __str__(self) -> str: ...
+    def __repr__(self) -> str: ...
+    def __eq__(self, other: object) -> bool: ...
+    def __hash__(self) -> int: ...
 
 class MessageSource:
     """Describes where a message came from and who it targets."""

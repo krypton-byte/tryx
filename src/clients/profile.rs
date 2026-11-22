@@ -30,13 +30,17 @@ impl ProfileClient {
 
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
-        future_into_py_with_locals(py, locals, async move {
-            client
+        future_into_py_with_locals::<_, String>(py, locals, async move {
+            let outcome = client
                 .profile()
                 .set_push_name(name.as_str())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            Ok(())
+            Ok(match outcome {
+                whatsapp_rust::PushNameOutcome::Synced => "synced".to_string(),
+                whatsapp_rust::PushNameOutcome::SyncPending { .. } => "sync_pending".to_string(),
+                _ => "unknown".to_string(),
+            })
         })
     }
 

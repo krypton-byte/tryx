@@ -1,4 +1,5 @@
 use pyo3::{Py, PyAny, Python};
+use wacore::types::events::EventKind;
 
 use crate::events::dispatcher::Dispatcher;
 
@@ -50,6 +51,18 @@ pub struct EventCallbacks {
     pub delete_chat_update: CallbackList,
     pub delete_message_for_me_update: CallbackList,
     pub incoming_call: CallbackList,
+    pub identity_change: CallbackList,
+    pub lock_chat_update: CallbackList,
+    pub favorites_update: CallbackList,
+    pub status_privacy_update: CallbackList,
+    pub unarchive_chats_setting_update: CallbackList,
+    pub disable_link_previews_update: CallbackList,
+    pub contact_removed: CallbackList,
+    pub offline_sync_interrupted: CallbackList,
+    pub client_expiration_changed: CallbackList,
+    pub server_ack: CallbackList,
+    pub app_state_sync_failed: CallbackList,
+    pub mex_notification: CallbackList,
 }
 
 impl EventCallbacks {
@@ -99,6 +112,87 @@ impl EventCallbacks {
             incoming_call: dispatcher.incoming_call_handlers(py),
             newsletter_live_update: dispatcher.newsletter_live_update_handlers(py),
             delete_chat_update: dispatcher.delete_chat_update_handlers(py),
+            identity_change: dispatcher.identity_change_handlers(py),
+            lock_chat_update: dispatcher.lock_chat_update_handlers(py),
+            favorites_update: dispatcher.favorites_update_handlers(py),
+            status_privacy_update: dispatcher.status_privacy_update_handlers(py),
+            unarchive_chats_setting_update: dispatcher.unarchive_chats_setting_update_handlers(py),
+            disable_link_previews_update: dispatcher.disable_link_previews_update_handlers(py),
+            contact_removed: dispatcher.contact_removed_handlers(py),
+            offline_sync_interrupted: dispatcher.offline_sync_interrupted_handlers(py),
+            client_expiration_changed: dispatcher.client_expiration_changed_handlers(py),
+            server_ack: dispatcher.server_ack_handlers(py),
+            app_state_sync_failed: dispatcher.app_state_sync_failed_handlers(py),
+            mex_notification: dispatcher.mex_notification_handlers(py),
         }
+    }
+
+    /// Returns the exact set of `EventKind`s that have at least one registered Python handler.
+    /// Passing this to `Bot::builder().on_event_for(...)` avoids dispatching or cloning
+    /// events that Python is not listening to.
+    pub fn event_interests(&self) -> Vec<EventKind> {
+        let mut kinds = Vec::new();
+        macro_rules! push_if {
+            ($field:ident, $kind:expr) => {
+                if !self.$field.is_empty() {
+                    kinds.push($kind);
+                }
+            };
+        }
+        push_if!(connected, EventKind::Connected);
+        push_if!(disconnected, EventKind::Disconnected);
+        push_if!(logout, EventKind::LoggedOut);
+        push_if!(pair_success, EventKind::PairSuccess);
+        push_if!(pair_error, EventKind::PairError);
+        push_if!(pairing_qr, EventKind::PairingQrCode);
+        push_if!(pairing_code, EventKind::PairingCode);
+        push_if!(qr_scanned_without_multidevice, EventKind::QrScannedWithoutMultidevice);
+        push_if!(client_outdated, EventKind::ClientOutdated);
+        push_if!(message, EventKind::Messages);
+        push_if!(receipt, EventKind::Receipt);
+        push_if!(undecryptable_message, EventKind::UndecryptableMessage);
+        push_if!(notification, EventKind::Notification);
+        push_if!(chat_presence, EventKind::ChatPresence);
+        push_if!(presence, EventKind::Presence);
+        push_if!(picture_update, EventKind::PictureUpdate);
+        push_if!(user_about_update, EventKind::UserAboutUpdate);
+        push_if!(group_info_update, EventKind::GroupUpdate);
+        push_if!(contact_update, EventKind::ContactUpdate);
+        push_if!(self_push_name_updated, EventKind::SelfPushNameUpdated);
+        push_if!(pin_update, EventKind::PinUpdate);
+        push_if!(mute_update, EventKind::MuteUpdate);
+        push_if!(archive_update, EventKind::ArchiveUpdate);
+        push_if!(mark_chat_as_read_update, EventKind::MarkChatAsReadUpdate);
+        push_if!(history_sync, EventKind::HistorySync);
+        push_if!(offline_sync_preview, EventKind::OfflineSyncPreview);
+        push_if!(offline_sync_completed, EventKind::OfflineSyncCompleted);
+        push_if!(device_list_update, EventKind::DeviceListUpdate);
+        push_if!(business_status_update, EventKind::BusinessStatusUpdate);
+        push_if!(stream_replaced, EventKind::StreamReplaced);
+        push_if!(temporary_ban, EventKind::TemporaryBan);
+        push_if!(connect_failure, EventKind::ConnectFailure);
+        push_if!(stream_error, EventKind::StreamError);
+        push_if!(disappearing_mode_changed, EventKind::DisappearingModeChanged);
+        push_if!(contact_number_changed, EventKind::ContactNumberChanged);
+        push_if!(contact_sync_requested, EventKind::ContactSyncRequested);
+        push_if!(contact_updated, EventKind::ContactUpdated);
+        push_if!(star_update, EventKind::StarUpdate);
+        push_if!(newsletter_live_update, EventKind::NewsletterLiveUpdate);
+        push_if!(delete_chat_update, EventKind::DeleteChatUpdate);
+        push_if!(delete_message_for_me_update, EventKind::DeleteMessageForMeUpdate);
+        push_if!(incoming_call, EventKind::IncomingCall);
+        push_if!(identity_change, EventKind::IdentityChange);
+        push_if!(lock_chat_update, EventKind::LockChatUpdate);
+        push_if!(favorites_update, EventKind::FavoritesUpdate);
+        push_if!(status_privacy_update, EventKind::StatusPrivacyUpdate);
+        push_if!(unarchive_chats_setting_update, EventKind::UnarchiveChatsSettingUpdate);
+        push_if!(disable_link_previews_update, EventKind::DisableLinkPreviewsUpdate);
+        push_if!(contact_removed, EventKind::ContactRemoved);
+        push_if!(offline_sync_interrupted, EventKind::OfflineSyncInterrupted);
+        push_if!(client_expiration_changed, EventKind::ClientExpirationChanged);
+        push_if!(server_ack, EventKind::ServerAck);
+        push_if!(app_state_sync_failed, EventKind::AppStateSyncFailed);
+        push_if!(mex_notification, EventKind::MexNotification);
+        kinds
     }
 }

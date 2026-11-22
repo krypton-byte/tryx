@@ -58,10 +58,12 @@ Core value objects in `tryx.types` define identity, message metadata, and result
 
 ### `JID`
 
-Canonical WhatsApp identifier:
+Canonical WhatsApp identifier (stored by value in Rust with zero heap indirection):
 
-- `user`: account or group numeric/opaque id
-- `server`: domain segment (`s.whatsapp.net`, `g.us`, etc.)
+- Construct from a full string `JID("628123456789@s.whatsapp.net")`, `JID.parse(...)`, or `JID("628123456789", "s.whatsapp.net")`
+- Fields: `user`, `server`, `device`, `agent`
+- Predicates & helpers: `is_pn`, `is_lid`, `is_group`, `is_broadcast`, `is_newsletter`, `to_non_ad()`, `is_same_chat_as(other)`
+- Hashable and equality-comparable (`__str__`, `__eq__`, `__hash__`) for direct use as dict keys and set members
 
 ### `MessageSource`
 

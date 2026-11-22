@@ -79,14 +79,12 @@ pub struct PinUpdateData {
     from_full_sync: bool,
 }
 impl PinUpdateData {
-    pub fn new(jid: Jid, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::PinAction, from_full_sync: bool) -> Self {
-        Python::attach(|py| {
-            Self {
-                jid: Py::new(py, JID::from(jid)).unwrap(),
-                timestamp: PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into(),
-                pinned: action.pinned,
-                from_full_sync,
-            }
+    pub fn new(py: Python<'_>, jid: Jid, timestamp: whatsapp_rust::Timestamp, action: waproto::whatsapp::sync_action_value::PinAction, from_full_sync: bool) -> PyResult<Self> {
+        Ok(Self {
+            jid: Py::new(py, JID::from(jid))?,
+            timestamp: timestamp_to_py_datetime(py, timestamp)?,
+            pinned: action.pinned,
+            from_full_sync,
         })
     }
 }
@@ -109,12 +107,12 @@ impl From<wacore::types::events::PinUpdate> for EvPinUpdate {
 #[pymethods]
 impl EvPinUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> PyResult<Py<PinUpdateData>> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> PyResult<Py<PinUpdateData>> {
+        if let Some(data) = self.data_cached.get() {
             Ok(data.clone_ref(py))
         } else {
-            let new_data = PinUpdateData::new(self.inner.jid.clone(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
-            let py_data = Py::new(py, new_data).unwrap();
+            let new_data = PinUpdateData::new(py, self.inner.jid.clone(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync)?;
+            let py_data = Py::new(py, new_data)?;
             self.data_cached.set(py_data.clone_ref(py)).ok();
             Ok(py_data)
         }
@@ -136,15 +134,13 @@ pub struct MuteUpdateData {
 }
 
 impl MuteUpdateData {
-    pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MuteAction, from_full_sync: bool) -> Self {
-        Python::attach(|py| {
-            Self {
-                jid: Py::new(py, JID::from(jid)).unwrap(),
-                timestamp: PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into(),
-                action: Box::new(action),
-                action_cached: OnceLock::new(),
-                from_full_sync,
-            }
+    pub fn new(py: Python<'_>, jid: JID, timestamp: whatsapp_rust::Timestamp, action: waproto::whatsapp::sync_action_value::MuteAction, from_full_sync: bool) -> PyResult<Self> {
+        Ok(Self {
+            jid: Py::new(py, jid)?,
+            timestamp: timestamp_to_py_datetime(py, timestamp)?,
+            action: Box::new(action),
+            action_cached: OnceLock::new(),
+            from_full_sync,
         })
     }
 }
@@ -178,12 +174,12 @@ impl EvMuteUpdate {
 #[pymethods]
 impl EvMuteUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> PyResult<Py<MuteUpdateData>> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> PyResult<Py<MuteUpdateData>> {
+        if let Some(data) = self.data_cached.get() {
             Ok(data.clone_ref(py))
         } else {
-            let new_data = MuteUpdateData::new(self.inner.jid.clone().into(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
-            let py_data = Py::new(py, new_data).unwrap();
+            let new_data = MuteUpdateData::new(py, self.inner.jid.clone().into(), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync)?;
+            let py_data = Py::new(py, new_data)?;
             self.data_cached.set(py_data.clone_ref(py)).ok();
             Ok(py_data)
         }
@@ -207,15 +203,13 @@ pub struct MarkChatAsReadUpdateData {
     from_full_sync: bool,
 }
 impl MarkChatAsReadUpdateData {
-    pub fn new(jid: JID, timestamp: DateTime<Utc>, action: waproto::whatsapp::sync_action_value::MarkChatAsReadAction, from_full_sync: bool) -> Self {
-        Python::attach(|py| {
-            Self {
-                jid: Py::new(py, JID::from(jid)).unwrap(),
-                timestamp: PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).unwrap().into(),
-                action: Box::new(action),
-                action_cached: OnceLock::new(),
-                from_full_sync,
-            }
+    pub fn new(py: Python<'_>, jid: JID, timestamp: whatsapp_rust::Timestamp, action: waproto::whatsapp::sync_action_value::MarkChatAsReadAction, from_full_sync: bool) -> PyResult<Self> {
+        Ok(Self {
+            jid: Py::new(py, jid)?,
+            timestamp: timestamp_to_py_datetime(py, timestamp)?,
+            action: Box::new(action),
+            action_cached: OnceLock::new(),
+            from_full_sync,
         })
     }
 }
@@ -252,12 +246,12 @@ impl From<wacore::types::events::MarkChatAsReadUpdate> for EvMarkChatAsReadUpdat
 #[pymethods]
 impl EvMarkChatAsReadUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> PyResult<Py<MarkChatAsReadUpdateData>> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> PyResult<Py<MarkChatAsReadUpdateData>> {
+        if let Some(data) = self.data_cached.get() {
             Ok(data.clone_ref(py))
         } else {
-            let new_data = MarkChatAsReadUpdateData::new(JID::from(self.inner.jid.clone()), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync);
-            let py_data = Py::new(py, new_data).unwrap();
+            let new_data = MarkChatAsReadUpdateData::new(py, JID::from(self.inner.jid.clone()), self.inner.timestamp, (*self.inner.action).clone(), self.inner.from_full_sync)?;
+            let py_data = Py::new(py, new_data)?;
             self.data_cached.set(py_data.clone_ref(py)).ok();
             Ok(py_data)
         }
@@ -267,30 +261,63 @@ impl EvMarkChatAsReadUpdate {
 
 
 #[pyclass]
-pub struct EvHistorySync{
-    inner: Box<waproto::whatsapp::HistorySync>,
+pub struct EvHistorySync {
+    inner: wacore::types::events::LazyHistorySync,
     proto_cached: OnceLock<Py<PyAny>>,
 }
 impl EvHistorySync {
-    pub fn new(inner: waproto::whatsapp::HistorySync) -> Self {
-        Self { inner: Box::new(inner), proto_cached: OnceLock::new() }
-    }
-}
-impl From<waproto::whatsapp::HistorySync> for EvHistorySync {
-    fn from(event: waproto::whatsapp::HistorySync) -> Self {
-        EvHistorySync::new(event)
+    pub fn from_lazy(inner: wacore::types::events::LazyHistorySync) -> Self {
+        Self {
+            inner,
+            proto_cached: OnceLock::new(),
+        }
     }
 }
 #[pymethods]
 impl EvHistorySync {
     #[getter]
-    fn proto(&mut self, py: Python<'_>) -> PyResult<Py<PyAny>> {
-        if let Some(ref proto) = self.proto_cached.get() {
+    fn sync_type(&self) -> i32 {
+        self.inner.sync_type()
+    }
+
+    #[getter]
+    fn chunk_order(&self) -> Option<u32> {
+        self.inner.chunk_order()
+    }
+
+    #[getter]
+    fn progress(&self) -> Option<u32> {
+        self.inner.progress()
+    }
+
+    #[getter]
+    fn peer_data_request_session_id(&self) -> Option<&str> {
+        self.inner.peer_data_request_session_id()
+    }
+
+    #[getter]
+    fn decompressed_size(&self) -> usize {
+        self.inner.decompressed_size()
+    }
+
+    /// Inflate and return the raw protobuf bytes off-GIL without decoding into Rust structs.
+    fn raw_bytes<'py>(&self, py: Python<'py>) -> PyResult<pyo3::Bound<'py, pyo3::types::PyBytes>> {
+        let raw = py
+            .detach(|| self.inner.decompress())
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to decompress HistorySync: {e}")))?;
+        Ok(pyo3::types::PyBytes::new(py, &raw))
+    }
+
+    #[getter]
+    fn proto(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
+        if let Some(proto) = self.proto_cached.get() {
             Ok(proto.clone_ref(py))
         } else {
+            let raw = py
+                .detach(|| self.inner.decompress())
+                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to decompress HistorySync: {e}")))?;
             let proto_type = get_proto_history_sync_proto_type(py)?;
-            let proto_bytes = self.inner.as_ref().encode_to_vec();
-            let parsed_proto = from_string_to_python_proto(py, proto_type, &proto_bytes)?;
+            let parsed_proto = from_string_to_python_proto(py, proto_type, &raw)?;
             self.proto_cached.set(parsed_proto.clone_ref(py)).ok();
             Ok(parsed_proto)
         }
@@ -322,8 +349,8 @@ pub struct EvOfflineSyncPreview {
 #[pymethods]
 impl EvOfflineSyncPreview {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> Py<OfflineSyncData> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> Py<OfflineSyncData> {
+        if let Some(data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
             let new_data = OfflineSyncData::new(self.inner.total, self.inner.app_data_changes, self.inner.messages, self.inner.notifications, self.inner.receipts);
@@ -373,8 +400,8 @@ impl From<wacore::types::events::OfflineSyncCompleted> for EvOfflineSyncComplete
 #[pymethods]
 impl EvOfflineSyncCompleted {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> Py<OfflineSyncCompletedData> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> Py<OfflineSyncCompletedData> {
+        if let Some(data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
             let new_data = OfflineSyncCompletedData::new(self.inner.count);
@@ -432,7 +459,7 @@ impl From<wacore::types::events::DeviceListUpdate> for EvDeviceListUpdate {
 #[pymethods]
 impl EvDeviceListUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> Py<DeviceListUpdateData> {
+    fn data(&self, py: Python<'_>) -> Py<DeviceListUpdateData> {
         if let Some(data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
@@ -489,18 +516,30 @@ pub struct BusinessStatusUpdateData {
     subscriptions: Vec<Py<BusinessSubscription>>,
 }
 impl BusinessStatusUpdateData {
-    pub fn new(jid: JID, update_type: BusinessStatusUpdateType, timestamp: i64, target_jid: Option<JID>, hash: Option<String>, product_ids: Vec<String>, collection_ids: Vec<String>, subscriptions: Vec<BusinessSubscription>) -> Self {
-        Python::attach(|py| {
-            Self {
-                jid: Py::new(py, JID::from(jid)).unwrap(),
-                update_type: Py::new(py, update_type).unwrap(),
-                timestamp: PyDateTime::from_timestamp(py, timestamp as f64, None).unwrap().into(),
-                target_jid: target_jid.map(|j| Py::new(py, JID::from(j)).unwrap()),
-                hash,
-                product_ids,
-                collection_ids,
-                subscriptions: subscriptions.into_iter().map(|s| Py::new(py, s).unwrap()).collect(),
-            }
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        py: Python<'_>,
+        jid: JID,
+        update_type: BusinessStatusUpdateType,
+        timestamp: i64,
+        target_jid: Option<JID>,
+        hash: Option<String>,
+        product_ids: Vec<String>,
+        collection_ids: Vec<String>,
+        subscriptions: Vec<BusinessSubscription>,
+    ) -> PyResult<Self> {
+        Ok(Self {
+            jid: Py::new(py, jid)?,
+            update_type: Py::new(py, update_type)?,
+            timestamp: PyDateTime::from_timestamp(py, timestamp as f64, None)?.into(),
+            target_jid: target_jid.map(|j| Py::new(py, j)).transpose()?,
+            hash,
+            product_ids,
+            collection_ids,
+            subscriptions: subscriptions
+                .into_iter()
+                .map(|s| Py::new(py, s))
+                .collect::<PyResult<Vec<_>>>()?,
         })
     }
 }
@@ -523,9 +562,9 @@ impl From<wacore::types::events::BusinessStatusUpdate> for EvBusinessStatusUpdat
 #[pymethods]
 impl EvBusinessStatusUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> Py<BusinessStatusUpdateData> {
-        if let Some(ref data) = self.data_cached.get() {
-            data.clone_ref(py)
+    fn data(&self, py: Python<'_>) -> PyResult<Py<BusinessStatusUpdateData>> {
+        if let Some(data) = self.data_cached.get() {
+            Ok(data.clone_ref(py))
         } else {
             let update_type = match self.inner.update_type {
                 wacore::types::events::BusinessUpdateType::RemovedAsBusiness => BusinessStatusUpdateType::RemovedAsBusiness,
@@ -536,10 +575,20 @@ impl EvBusinessStatusUpdate {
                 wacore::types::events::BusinessUpdateType::SubscriptionsUpdated => BusinessStatusUpdateType::SubscriptionsUpdated,
                 wacore::types::events::BusinessUpdateType::Unknown => BusinessStatusUpdateType::Unknown,
             };
-            let new_data = BusinessStatusUpdateData::new(self.inner.jid.clone().into(), update_type, self.inner.timestamp.timestamp(), self.inner.target_jid.clone().map(|j| j.into()), self.inner.hash.clone(), self.inner.product_ids.clone(), self.inner.collection_ids.clone(), self.inner.subscriptions.iter().map(|s| s.clone().into()).collect());
-            let py_data = Py::new(py, new_data).unwrap();
+            let new_data = BusinessStatusUpdateData::new(
+                py,
+                self.inner.jid.clone().into(),
+                update_type,
+                self.inner.timestamp.as_secs(),
+                self.inner.target_jid.clone().map(|j| j.into()),
+                self.inner.hash.clone(),
+                self.inner.product_ids.clone(),
+                self.inner.collection_ids.clone(),
+                self.inner.subscriptions.iter().map(|s| s.clone().into()).collect(),
+            )?;
+            let py_data = Py::new(py, new_data)?;
             self.data_cached.set(py_data.clone_ref(py)).ok();
-            py_data
+            Ok(py_data)
         }
     }
 }

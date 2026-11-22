@@ -62,20 +62,18 @@ impl NodeValue {
     }
 
     #[setter]
-    pub fn set_value(&mut self, value: Py<PyAny>) -> PyResult<()> {
-        Python::attach(|py| {
-            if let Ok(s) = value.extract::<String>(py) {
-                self.inner = NodeValueEnum::String(s);
-                Ok(())
-            } else if let Ok(jid) = value.extract::<pyo3::Py<JID>>(py) {
-                self.inner = NodeValueEnum::Jid(jid);
-                Ok(())
-            } else {
-                Err(pyo3::exceptions::PyTypeError::new_err(
-                    "Invalid type for NodeValue. Expected String or JID.",
-                ))
-            }
-        })
+    pub fn set_value(&mut self, value: &Bound<'_, PyAny>) -> PyResult<()> {
+        if let Ok(s) = value.extract::<String>() {
+            self.inner = NodeValueEnum::String(s);
+            Ok(())
+        } else if let Ok(jid) = value.extract::<pyo3::Py<JID>>() {
+            self.inner = NodeValueEnum::Jid(jid);
+            Ok(())
+        } else {
+            Err(pyo3::exceptions::PyTypeError::new_err(
+                "Invalid type for NodeValue. Expected String or JID.",
+            ))
+        }
     }
 
     pub fn __repr__(&self, py: Python<'_>) -> String {
@@ -213,40 +211,36 @@ impl Node {
         builder
     }
 
-    pub fn from_node(node: &wacore_binary::node::Node) -> Self {
-        let (attrs, content) = Python::attach(|py| -> (Vec<Py<Attrs>>, Option<Py<NodeContent>>) {
-            let attrs = node
-                .attrs
-                .iter()
-                .filter_map(|(k, v)| {
-                    let value = match v {
-                        wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.to_string()),
-                        wacore_binary::node::NodeValue::Jid(jid) => {
-                            NodeValue::jid(Py::new(py, JID::from(jid.clone())).ok()?)
-                        }
-                    };
-                    let py_value = Py::new(py, value).ok()?;
-                    Py::new(py, Attrs::new(k.to_string(), py_value)).ok()
-                })
-                .collect::<Vec<_>>();
-
-            let content = node.content.as_ref().and_then(|c| {
-                let content_enum = match c {
-                    wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b.clone()),
-                    wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.to_string()),
-                    wacore_binary::node::NodeContent::Nodes(n) => {
-                        let nodes = n
-                            .iter()
-                            .map(Self::from_node)
-                            .filter_map(|node| Py::new(py, node).ok())
-                            .collect();
-                        NodeContentEnum::Nodes(nodes)
+    pub fn from_node(py: Python<'_>, node: &wacore_binary::node::Node) -> Self {
+        let attrs = node
+            .attrs
+            .iter()
+            .filter_map(|(k, v)| {
+                let value = match v {
+                    wacore_binary::node::NodeValue::String(s) => NodeValue::new_string(s.to_string()),
+                    wacore_binary::node::NodeValue::Jid(jid) => {
+                        NodeValue::jid(Py::new(py, JID::from(jid.clone())).ok()?)
                     }
                 };
-                Py::new(py, NodeContent { inner: content_enum }).ok()
-            });
+                let py_value = Py::new(py, value).ok()?;
+                Py::new(py, Attrs::new(k.to_string(), py_value)).ok()
+            })
+            .collect::<Vec<_>>();
 
-            (attrs, content)
+        let content = node.content.as_ref().and_then(|c| {
+            let content_enum = match c {
+                wacore_binary::node::NodeContent::Bytes(b) => NodeContentEnum::Bytes(b.clone()),
+                wacore_binary::node::NodeContent::String(s) => NodeContentEnum::String(s.to_string()),
+                wacore_binary::node::NodeContent::Nodes(n) => {
+                    let nodes = n
+                        .iter()
+                        .map(|child| Self::from_node(py, child))
+                        .filter_map(|node| Py::new(py, node).ok())
+                        .collect();
+                    NodeContentEnum::Nodes(nodes)
+                }
+            };
+            Py::new(py, NodeContent { inner: content_enum }).ok()
         });
 
         Self {

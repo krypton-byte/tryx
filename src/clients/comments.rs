@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use buffa::Message;
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -25,17 +24,16 @@ impl CommentsClient {
 
     fn parent_key(parent: &EvMessage) -> wa::MessageKey {
         let info = parent.inner_message_info.as_ref();
-        wa::MessageKey {
-            remote_jid: Some(info.source.chat.to_string()),
-            from_me: Some(info.source.is_from_me),
-            id: Some(info.id.to_string()),
-            participant: if info.source.is_group {
-                Some(info.source.sender.to_string())
-            } else {
-                None
-            },
-            ..Default::default()
-        }
+        let mut key = wa::MessageKey::default();
+        key.remote_jid = Some(info.source.chat.to_string());
+        key.from_me = Some(info.source.is_from_me);
+        key.id = Some(info.id.to_string());
+        key.participant = if info.source.is_group {
+            Some(info.source.sender.to_string())
+        } else {
+            None
+        };
+        key
     }
 }
 
@@ -50,9 +48,9 @@ impl CommentsClient {
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .comments()
-                .send_text(chat, parent_key, text.as_str())
+                .send_text_raw(chat, parent_key, text.as_str())
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -62,19 +60,14 @@ impl CommentsClient {
         let parent_ref = parent.bind(py).borrow();
         let chat = parent_ref.inner_message_info.source.chat.clone();
         let parent_key = Self::parent_key(&parent_ref);
-        let serialized: Vec<u8> = message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Failed to decode WhatsAppMessage proto: {}", e),
-            )
-        })?;
+        let message_value: WhatsappMessage = crate::events::proto_cache::decode_py_proto(py, &message)?;
         let locals = get_current_locals(py)?;
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .comments()
-                .send_message(chat, parent_key, message_value)
+                .send_message_raw(chat, parent_key, message_value)
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }

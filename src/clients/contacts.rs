@@ -138,11 +138,21 @@ impl ContactClient {
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals(py, locals, async move {
+            let pic_type = if preview {
+                whatsapp_rust::ProfilePictureType::Preview
+            } else {
+                whatsapp_rust::ProfilePictureType::Full
+            };
+            let req = whatsapp_rust::ProfilePictureRequest::new(
+                whatsapp_rust::ProfilePictureTarget::Contact(&jid_obj),
+                pic_type,
+            );
             let pic = client
-                .contacts()
-                .get_profile_picture(&jid_obj, preview)
+                .pictures()
+                .lookup(req)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?
+                .into_found()
                 .ok_or(PyErr::new::<pyo3::exceptions::PyValueError, _>(
                     "Profile picture not found",
                 ))?;

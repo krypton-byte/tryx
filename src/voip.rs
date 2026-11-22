@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use pyo3::prelude::*;
-use pyo3::types::PyAny;
+use pyo3::types::{PyAny, PyBytes};
 use pyo3_async_runtimes::into_future_with_locals;
 use pyo3_async_runtimes::tokio::get_current_locals;
 use tokio::io::AsyncReadExt;
@@ -65,6 +65,19 @@ pub struct VideoPlayer {
     stride: u32,
 }
 
+static FFMPEG_AVAILABLE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
+fn is_ffmpeg_available() -> bool {
+    *FFMPEG_AVAILABLE.get_or_init(|| {
+        std::process::Command::new("ffmpeg")
+            .arg("-version")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success())
+    })
+}
+
 #[pymethods]
 impl VideoPlayer {
     #[new]
@@ -84,27 +97,25 @@ impl VideoPlayer {
     }
 
     /// Use the Rust FFmpeg process bridge to demux MP4/MOV into H.264 Annex-B.
-    fn play(&self, path: String) -> PyResult<()> {
+    fn play(&self, py: Python<'_>, path: String) -> PyResult<()> {
         self.stop();
         if !std::path::Path::new(&path).is_file() {
             return Err(pyo3::exceptions::PyFileNotFoundError::new_err(format!(
                 "video file not found: {path}"
             )));
         }
-        std::process::Command::new("ffmpeg")
-            .arg("-version")
-            .output()
-            .map_err(|_| {
-                pyo3::exceptions::PyEnvironmentError::new_err(
-                    "ffmpeg is not installed or is not available in PATH",
-                )
-            })?;
+        let available = py.detach(is_ffmpeg_available);
+        if !available {
+            return Err(pyo3::exceptions::PyEnvironmentError::new_err(
+                "ffmpeg is not installed or is not available in PATH",
+            ));
+        }
         let (sender, receiver) = async_channel::bounded(DEFAULT_VIDEO_CAPACITY);
         let (stop_tx, mut stop_rx) = oneshot::channel();
         *self.receiver.lock().map_err(|_| {
             pyo3::exceptions::PyRuntimeError::new_err("video player lock poisoned")
         })? = Some(receiver);
-        let task = tokio::spawn(async move {
+        let task = pyo3_async_runtimes::tokio::get_runtime().spawn(async move {
             let mut child = match Command::new("ffmpeg")
                 .args([
                     "-hide_banner",
@@ -133,14 +144,14 @@ impl VideoPlayer {
             };
             let mut buffer = vec![0u8; 64 * 1024];
             let mut splitter = wacore::voip::AnnexBAuSplitter::default();
+            let mut frames = Vec::new();
             loop {
                 let count = tokio::select! {
                     _ = &mut stop_rx => { let _ = child.kill().await; return; },
                     result = stdout.read(&mut buffer) => match result { Ok(0) | Err(_) => break, Ok(n) => n },
                 };
-                let mut frames = Vec::new();
                 splitter.push(&buffer[..count], &mut frames);
-                for frame in frames {
+                for frame in frames.drain(..) {
                     tokio::select! {
                         _ = &mut stop_rx => { let _ = child.kill().await; return; },
                         result = sender.send(frame) => if result.is_err() { let _ = child.kill().await; return; },
@@ -165,10 +176,10 @@ impl VideoPlayer {
     }
 
     fn stop(&self) {
-        if let Ok(mut stop) = self.stop.lock() {
-            if let Some(stop) = stop.take() {
-                let _ = stop.send(());
-            }
+        if let Ok(mut stop) = self.stop.lock()
+            && let Some(stop) = stop.take()
+        {
+            let _ = stop.send(());
         }
         // The task owns the child. Signal it first and let the select! branch
         // kill/reap FFmpeg; aborting here would drop the child without cleanup.
@@ -214,7 +225,7 @@ impl AudioPlayer {
         let (output_tx, receiver) = async_channel::bounded(capacity);
         let state = Arc::new(AtomicU8::new(PLAYER_IDLE));
         let manager_state = Arc::clone(&state);
-        let task = tokio::spawn(audio_manager(
+        let task = pyo3_async_runtimes::tokio::get_runtime().spawn(audio_manager(
             command_rx,
             commands.clone(),
             output_tx,
@@ -230,7 +241,7 @@ impl AudioPlayer {
     }
 
     /// Stream a WAV/MP3/OGG file through the Rust decoder as normalized PCM.
-    fn play(&self, path: String, mode: Option<String>) -> PyResult<()> {
+    fn play(&self, py: Python<'_>, path: String, mode: Option<String>) -> PyResult<()> {
         let mode = match mode.as_deref().unwrap_or("replace") {
             "replace" => PlayMode::Replace,
             "queue" => PlayMode::Queue,
@@ -241,31 +252,31 @@ impl AudioPlayer {
                 )));
             }
         };
-        self.send_command(|reply| AudioCommand::Play(PathBuf::from(path), mode, reply))
+        self.send_command(py, |reply| AudioCommand::Play(PathBuf::from(path), mode, reply))
     }
 
-    fn stop(&self) {
-        let _ = self.send_command(|reply| AudioCommand::Stop(reply));
+    fn stop(&self, py: Python<'_>) {
+        let _ = self.send_command(py, AudioCommand::Stop);
     }
 
-    fn pause(&self) {
-        let _ = self.send_command(|reply| AudioCommand::Pause(reply));
+    fn pause(&self, py: Python<'_>) {
+        let _ = self.send_command(py, AudioCommand::Pause);
     }
 
-    fn resume(&self) {
-        let _ = self.send_command(|reply| AudioCommand::Resume(reply));
+    fn resume(&self, py: Python<'_>) {
+        let _ = self.send_command(py, AudioCommand::Resume);
     }
 
-    fn enqueue(&self, path: String) -> PyResult<()> {
-        self.send_command(|reply| AudioCommand::Enqueue(PathBuf::from(path), reply))
+    fn enqueue(&self, py: Python<'_>, path: String) -> PyResult<()> {
+        self.send_command(py, |reply| AudioCommand::Enqueue(PathBuf::from(path), reply))
     }
 
-    fn skip(&self) -> PyResult<()> {
-        self.send_command(|reply| AudioCommand::Skip(reply))
+    fn skip(&self, py: Python<'_>) -> PyResult<()> {
+        self.send_command(py, AudioCommand::Skip)
     }
 
-    fn clear_queue(&self) -> PyResult<()> {
-        self.send_command(|reply| AudioCommand::Clear(reply))
+    fn clear_queue(&self, py: Python<'_>) -> PyResult<()> {
+        self.send_command(py, AudioCommand::Clear)
     }
 
     #[getter]
@@ -279,7 +290,7 @@ impl AudioPlayer {
 }
 
 impl AudioPlayer {
-    fn send_command<F>(&self, make: F) -> PyResult<()>
+    fn send_command<F>(&self, py: Python<'_>, make: F) -> PyResult<()>
     where
         F: FnOnce(oneshot::Sender<Result<(), String>>) -> AudioCommand,
     {
@@ -287,7 +298,7 @@ impl AudioPlayer {
         self.commands.try_send(make(reply_tx)).map_err(|_| {
             pyo3::exceptions::PyRuntimeError::new_err("player command queue is closed")
         })?;
-        match reply_rx.blocking_recv() {
+        match py.detach(|| reply_rx.blocking_recv()) {
             Ok(Ok(())) => Ok(()),
             Ok(Err(error)) => Err(pyo3::exceptions::PyRuntimeError::new_err(error)),
             Err(_) => Err(pyo3::exceptions::PyRuntimeError::new_err(
@@ -314,10 +325,10 @@ impl AudioPlayer {
 impl Drop for AudioPlayer {
     fn drop(&mut self) {
         let _ = self.commands.send_blocking(AudioCommand::Shutdown);
-        if let Ok(mut task) = self.task.lock() {
-            if let Some(task) = task.take() {
-                task.abort();
-            }
+        if let Ok(mut task) = self.task.lock()
+            && let Some(task) = task.take()
+        {
+            task.abort();
         }
     }
 }
@@ -344,10 +355,10 @@ async fn audio_manager(
                     continue;
                 }
                 let interrupted = matches!(mode, PlayMode::Interrupt);
-                if interrupted {
-                    if let Some(active) = current.clone() {
-                        queue.push_front(active);
-                    }
+                if interrupted
+                    && let Some(active) = current.clone()
+                {
+                    queue.push_front(active);
                 }
                 if let Some(flag) = cancel.take() {
                     flag.store(true, Ordering::Release);
@@ -531,6 +542,7 @@ fn decode_audio_file(
         .make(&track.codec_params, &DecoderOptions::default())
         .map_err(|e| e.to_string())?;
     let mut carry = Vec::with_capacity(AUDIO_FRAME_SAMPLES * 2);
+    let mut samples = Vec::new();
     loop {
         let packet = match probed.format.next_packet() {
             Ok(p) if p.track_id() == track_id => p,
@@ -543,7 +555,7 @@ fn decode_audio_file(
             Err(e) => return Err(e.to_string()),
         };
         let decoded = decoder.decode(&packet).map_err(|e| e.to_string())?;
-        let mut samples = Vec::new();
+        samples.clear();
         match decoded {
             AudioBufferRef::U8(v) => {
                 samples.extend(v.chan(0).iter().map(|x| (*x as i16 - 128) << 8))
@@ -576,8 +588,7 @@ fn decode_audio_file(
                     .map(|x| (x.clamp(-1.0, 1.0) * 32767.0) as i16),
             ),
         }
-        let normalized = resample_linear(&samples, rate, 16000);
-        carry.extend(normalized);
+        resample_linear_into(&samples, rate, 16_000, &mut carry);
         while carry.len() >= AUDIO_FRAME_SAMPLES {
             let frame: Vec<i16> = carry.drain(..AUDIO_FRAME_SAMPLES).collect();
             while paused.load(Ordering::Acquire) {
@@ -593,34 +604,48 @@ fn decode_audio_file(
     }
     if !carry.is_empty() {
         carry.resize(AUDIO_FRAME_SAMPLES, 0);
-        while !stopped.load(Ordering::Acquire) && !paused.load(Ordering::Acquire) {
-            if sender.send_blocking(std::mem::take(&mut carry)).is_err() {
-                break;
+        while paused.load(Ordering::Acquire) {
+            if stopped.load(Ordering::Acquire) {
+                return Ok(());
             }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        if !stopped.load(Ordering::Acquire) {
+            let _ = sender.send_blocking(carry);
         }
     }
     Ok(())
 }
 
-/// Resample mono PCM with linear interpolation. Keeping this local avoids a
-/// heavyweight resampler state per decoded packet while removing the severe
-/// aliasing and stepping artifacts of nearest-neighbour sampling.
-fn resample_linear(input: &[i16], input_rate: usize, output_rate: usize) -> Vec<i16> {
-    if input.is_empty() || input_rate == output_rate {
-        return input.to_vec();
+/// Resample mono PCM with linear interpolation directly into `output`. Keeping
+/// this local avoids a heavyweight resampler state per decoded packet while
+/// removing the severe aliasing and stepping artifacts of nearest-neighbour sampling.
+fn resample_linear_into(input: &[i16], input_rate: usize, output_rate: usize, output: &mut Vec<i16>) {
+    if input.is_empty() {
+        return;
     }
-    let output_len = ((input.len() as u64 * output_rate as u64 + input_rate as u64 - 1)
-        / input_rate as u64) as usize;
-    let mut output = Vec::with_capacity(output_len);
+    if input_rate == output_rate {
+        output.extend_from_slice(input);
+        return;
+    }
+    let output_len = (input.len() as u64 * output_rate as u64).div_ceil(input_rate as u64) as usize;
+    output.reserve(output_len);
+    let last_idx = input.len() - 1;
+    let ratio = input_rate as f64 / output_rate as f64;
     for index in 0..output_len {
-        let position = index as f64 * input_rate as f64 / output_rate as f64;
-        let left = position.floor() as usize;
-        let right = (left + 1).min(input.len() - 1);
+        let position = index as f64 * ratio;
+        let left = (position.floor() as usize).min(last_idx);
+        let right = (left + 1).min(last_idx);
         let fraction = position - left as f64;
-        let sample = input[left.min(input.len() - 1)] as f64
-            + (input[right] as f64 - input[left.min(input.len() - 1)] as f64) * fraction;
+        let sample = input[left] as f64 + (input[right] as f64 - input[left] as f64) * fraction;
         output.push(sample.round().clamp(i16::MIN as f64, i16::MAX as f64) as i16);
     }
+}
+
+#[cfg(test)]
+fn resample_linear(input: &[i16], input_rate: usize, output_rate: usize) -> Vec<i16> {
+    let mut output = Vec::new();
+    resample_linear_into(input, input_rate, output_rate, &mut output);
     output
 }
 
@@ -686,26 +711,38 @@ pub struct PythonMediaBridge {
     pub tasks: Vec<JoinHandle<()>>,
 }
 
-fn pcm16_from_python(value: Bound<'_, PyAny>) -> PyResult<Vec<i16>> {
-    let bytes = value.extract::<Vec<u8>>()?;
+fn pcm16_bytes_to_samples(bytes: &[u8]) -> Result<Vec<i16>, String> {
     if bytes.len() != AUDIO_FRAME_BYTES {
-        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+        return Err(format!(
             "audio frame must be exactly {AUDIO_FRAME_BYTES} bytes (960 PCM16 samples), got {}",
             bytes.len()
-        )));
+        ));
     }
     Ok(bytes
-        .chunks_exact(2)
-        .map(|v| i16::from_le_bytes([v[0], v[1]]))
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|&v| i16::from_le_bytes(v))
         .collect())
 }
 
-fn pcm16_to_python(py: Python<'_>, frame: &[i16]) -> Py<PyAny> {
-    let mut bytes = Vec::with_capacity(frame.len() * 2);
-    for sample in frame {
-        bytes.extend_from_slice(&sample.to_le_bytes());
+fn pcm16_from_python(value: &Bound<'_, PyAny>) -> PyResult<Vec<i16>> {
+    if let Ok(py_bytes) = value.cast::<PyBytes>() {
+        return pcm16_bytes_to_samples(py_bytes.as_bytes())
+            .map_err(pyo3::exceptions::PyValueError::new_err);
     }
-    pyo3::types::PyBytes::new(py, &bytes).unbind().into_any()
+    let bytes = value.extract::<Vec<u8>>()?;
+    pcm16_bytes_to_samples(&bytes).map_err(pyo3::exceptions::PyValueError::new_err)
+}
+
+fn pcm16_to_python(py: Python<'_>, frame: &[i16]) -> PyResult<Py<PyAny>> {
+    let bytes = PyBytes::new_with(py, frame.len() * 2, |buf| {
+        for (dst, &sample) in buf.as_chunks_mut::<2>().0.iter_mut().zip(frame.iter()) {
+            *dst = sample.to_le_bytes();
+        }
+        Ok(())
+    })?;
+    Ok(bytes.unbind().into_any())
 }
 
 pub fn audio_source_from_python(
@@ -717,7 +754,7 @@ pub fn audio_source_from_python(
     let locals = get_current_locals(py)?;
     let (sender, receiver): (Sender<Vec<i16>>, Receiver<Vec<i16>>) =
         async_channel::bounded(capacity.max(1));
-    let task = tokio::spawn(async move {
+    let task = pyo3_async_runtimes::tokio::get_runtime().spawn(async move {
         loop {
             let next = Python::attach(|py| {
                 let awaitable = iterator.call_method0(py, "__anext__")?;
@@ -725,7 +762,7 @@ pub fn audio_source_from_python(
             });
             let Ok(next) = next else { break };
             let Ok(value) = next.await else { break };
-            let frame = Python::attach(|py| pcm16_from_python(value.bind(py).clone()));
+            let frame = Python::attach(|py| pcm16_from_python(value.bind(py)));
             let Ok(frame) = frame else { break };
             if sender.send(frame).await.is_err() {
                 break;
@@ -749,20 +786,25 @@ pub fn audio_sink_from_python(
     let locals = get_current_locals(py)?;
     let (sender, receiver): (Sender<Vec<i16>>, Receiver<Vec<i16>>) =
         async_channel::bounded(capacity.max(1));
-    let task = tokio::spawn(async move {
+    let task = pyo3_async_runtimes::tokio::get_runtime().spawn(async move {
         while let Ok(frame) = receiver.recv().await {
-            let awaitable = Python::attach(|py| {
-                let bytes = pcm16_to_python(py, &frame);
-                sink.call_method1(py, "write", (bytes,))
+            let maybe_future = Python::attach(|py| -> PyResult<_> {
+                let bytes = pcm16_to_python(py, &frame)?;
+                let result = sink.bind(py).call_method1("write", (bytes,))?;
+                if result.hasattr("__await__")? {
+                    Ok(Some(into_future_with_locals(&locals, result)?))
+                } else {
+                    Ok(None)
+                }
             });
-            let Ok(awaitable) = awaitable else { break };
-            let Ok(future) =
-                Python::attach(|py| into_future_with_locals(&locals, awaitable.into_bound(py)))
-            else {
-                break;
-            };
-            if future.await.is_err() {
-                break;
+            match maybe_future {
+                Ok(Some(future)) => {
+                    if future.await.is_err() {
+                        break;
+                    }
+                }
+                Ok(None) => {}
+                Err(_) => break,
             }
         }
     });
@@ -779,7 +821,7 @@ pub fn video_source_from_python(
     let locals = get_current_locals(py)?;
     let (sender, receiver): (Sender<Vec<u8>>, Receiver<Vec<u8>>) =
         async_channel::bounded(capacity.max(1));
-    let task = tokio::spawn(async move {
+    let task = pyo3_async_runtimes::tokio::get_runtime().spawn(async move {
         loop {
             let next = Python::attach(|py| {
                 let awaitable = match iterator.call_method0(py, "__anext__") {
@@ -795,7 +837,12 @@ pub fn video_source_from_python(
             let Ok(next) = next else { break };
             let Ok(value) = next.await else { break };
             let frame = Python::attach(|py| {
-                let data: Vec<u8> = value.bind(py).getattr("data")?.extract()?;
+                let data_attr = value.bind(py).getattr("data")?;
+                let data: Vec<u8> = if let Ok(py_bytes) = data_attr.cast::<PyBytes>() {
+                    py_bytes.as_bytes().to_vec()
+                } else {
+                    data_attr.extract()?
+                };
                 if data.is_empty() {
                     return Err(pyo3::exceptions::PyValueError::new_err(
                         "video frame cannot be empty",
@@ -824,15 +871,15 @@ pub fn video_sink_from_python(
     capacity: usize,
 ) -> PyResult<(PythonVideoSink, JoinHandle<()>)> {
     let locals = get_current_locals(py)?;
+    let frame_type = py.import("tryx.media")?.getattr("VideoFrame")?.unbind();
     let (sender, receiver): (Sender<VideoFrame>, Receiver<VideoFrame>) =
         async_channel::bounded(capacity.max(1));
-    let task = tokio::spawn(async move {
+    let task = pyo3_async_runtimes::tokio::get_runtime().spawn(async move {
         while let Ok(frame) = receiver.recv().await {
-            let result = Python::attach(|py| {
-                let media = py.import("tryx.media")?;
-                let frame_type = media.getattr("VideoFrame")?;
-                let value = frame_type.call1((
-                    frame.data,
+            let maybe_future = Python::attach(|py| -> PyResult<_> {
+                let data = PyBytes::new(py, &frame.data);
+                let value = frame_type.bind(py).call1((
+                    data,
                     py.None(),
                     66_666_i64,
                     frame.keyframe,
@@ -840,12 +887,21 @@ pub fn video_sink_from_python(
                     py.None(),
                     frame.orientation,
                 ))?;
-                let awaitable = sink.call_method1(py, "write", (value,))?;
-                into_future_with_locals(&locals, awaitable.into_bound(py))
+                let result = sink.bind(py).call_method1("write", (value,))?;
+                if result.hasattr("__await__")? {
+                    Ok(Some(into_future_with_locals(&locals, result)?))
+                } else {
+                    Ok(None)
+                }
             });
-            let Ok(future) = result else { break };
-            if future.await.is_err() {
-                break;
+            match maybe_future {
+                Ok(Some(future)) => {
+                    if future.await.is_err() {
+                        break;
+                    }
+                }
+                Ok(None) => {}
+                Err(_) => break,
             }
         }
     });
@@ -930,12 +986,15 @@ pub fn bridge_from_python(
     if let Some(source) = video_source {
         let native = source.extract::<Py<VideoPlayer>>(py);
         let (adapter, task) = if let Ok(player) = native {
-            (player.borrow(py).source()?, tokio::spawn(async {}))
+            (player.borrow(py).source()?, None)
         } else {
-            video_source_from_python(py, source, 3, 90_000 / 15)?
+            let (adapter, task) = video_source_from_python(py, source, 3, 90_000 / 15)?;
+            (adapter, Some(task))
         };
         bridge.video_source = Some(adapter);
-        bridge.tasks.push(task);
+        if let Some(task) = task {
+            bridge.tasks.push(task);
+        }
     }
     if let Some(sink) = video_sink {
         let (adapter, task) = video_sink_from_python(py, sink, 3)?;
@@ -974,5 +1033,17 @@ mod tests {
     #[test]
     fn linear_resampler_handles_empty_input() {
         assert!(resample_linear(&[], 44_100, 16_000).is_empty());
+    }
+
+    #[test]
+    fn pcm16_bytes_to_samples_validates_length_and_endianness() {
+        let mut raw = vec![0u8; AUDIO_FRAME_BYTES];
+        raw[0..2].copy_from_slice(&(-1234i16).to_le_bytes());
+        raw[2..4].copy_from_slice(&(32767i16).to_le_bytes());
+        let samples = pcm16_bytes_to_samples(&raw).unwrap();
+        assert_eq!(samples.len(), AUDIO_FRAME_SAMPLES);
+        assert_eq!(samples[0], -1234);
+        assert_eq!(samples[1], 32767);
+        assert!(pcm16_bytes_to_samples(&[0u8; 4]).is_err());
     }
 }

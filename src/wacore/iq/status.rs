@@ -50,9 +50,8 @@ impl StatusSendOptions {
 
 impl StatusSendOptions {
     pub fn to_rust_options(&self) -> WaStatusSendOptions {
-        WaStatusSendOptions {
-            privacy: self.privacy.into(),
-            ..Default::default()
-        }
+        let mut opts = WaStatusSendOptions::default();
+        opts.privacy = self.privacy.into();
+        opts
     }
 }

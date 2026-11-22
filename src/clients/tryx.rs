@@ -5,11 +5,10 @@ use pyo3::{Bound, PyAny, pyclass, pymethods};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::{TaskLocals, into_future_with_locals};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals, into_future};
-use tokio::runtime;
 use tokio::sync::watch;
 use tokio::time::{Duration, interval};
 use wacore::types::events::Event;
-use whatsapp_rust::{Client, TokioRuntime};
+use whatsapp_rust::{CacheConfig, Client, TokioRuntime};
 use whatsapp_rust::bot::Bot;
 use whatsapp_rust::store::Backend;
 use whatsapp_rust_tokio_transport::TokioWebSocketTransportFactory;
@@ -36,7 +35,7 @@ use crate::clients::chat_actions::ChatActionsClient;
 use crate::log::init_logging;
 use crate::backend::SqliteStore;
 use crate::events::types::{
-    EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeleteChatUpdate, EvDeleteMessageForMeUpdate, EvDeviceListUpdate, EvDisappearingModeChanged, EvDisconnected, EvGroupUpdate, EvHistorySync, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvStarUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUndecryptableMessage, EvUserAboutUpdate
+    EvAppStateSyncFailed, EvArchiveUpdate, EvBusinessStatusUpdate, EvChatPresence, EvClientExpirationChanged, EvClientOutDated, EvConnectFailure, EvConnected, EvContactNumberChanged, EvContactRemoved, EvContactSyncRequested, EvContactUpdate, EvContactUpdated, EvDeleteChatUpdate, EvDeleteMessageForMeUpdate, EvDeviceListUpdate, EvDisableLinkPreviewsUpdate, EvDisappearingModeChanged, EvDisconnected, EvFavoritesUpdate, EvGroupUpdate, EvHistorySync, EvIdentityChange, EvLockChatUpdate, EvLoggedOut, EvMarkChatAsReadUpdate, EvMessage, EvMexNotification, EvMuteUpdate, EvNewsletterLiveUpdate, EvNotification, EvOfflineSyncCompleted, EvOfflineSyncInterrupted, EvOfflineSyncPreview, EvPairError, EvPairSuccess, EvPairingCode, EvPairingQrCode, EvPictureUpdate, EvPinUpdate, EvPresence, EvPushNameUpdate, EvQrScannedWithoutMultidevice, EvReceipt, EvSelfPushNameUpdated, EvServerAck, EvStarUpdate, EvStatusPrivacyUpdate, EvStreamError, EvStreamReplaced, EvTemporaryBan, EvUnarchiveChatsSettingUpdate, EvUndecryptableMessage, EvUserAboutUpdate
 };
 use crate::exceptions::{EventDispatchError, FailedBuildClient, UnsupportedBackend};
 use crate::events::dispatcher::Dispatcher;
@@ -60,54 +59,64 @@ pub struct Tryx {
     handlers: Py<Dispatcher>,
     tryx_client: Py<TryxClient>,
     client_tx: watch::Sender<Option<Arc<Client>>>,
+    signal_cache_max_entries: Option<usize>,
 }
 
+impl Tryx {
+    fn build_tryx_client(
+        py: Python<'_>,
+        client_rx: watch::Receiver<Option<Arc<Client>>>,
+    ) -> PyResult<Py<TryxClient>> {
+        Py::new(
+            py,
+            TryxClient {
+                client_rx: client_rx.clone(),
+                contact: new_namespace_client!(py, client_rx, ContactClient),
+                chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
+                community: new_namespace_client!(py, client_rx, CommunityClient),
+                newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
+                groups: new_namespace_client!(py, client_rx, GroupsClient),
+                status: new_namespace_client!(py, client_rx, StatusClient),
+                chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
+                blocking: new_namespace_client!(py, client_rx, BlockingClient),
+                polls: new_namespace_client!(py, client_rx, PollsClient),
+                presence: new_namespace_client!(py, client_rx, PresenceClient),
+                privacy: new_namespace_client!(py, client_rx, PrivacyClient),
+                profile: new_namespace_client!(py, client_rx, ProfileClient),
+                advanced: new_namespace_client!(py, client_rx, AdvancedClient),
+                labels: new_namespace_client!(py, client_rx, LabelsClient),
+                comments: new_namespace_client!(py, client_rx, CommentsClient),
+                events: new_namespace_client!(py, client_rx, EventsClient),
+                voip: new_namespace_client!(py, client_rx, VoipClient),
+            },
+        )
+    }
+}
 
 #[pymethods]
 impl Tryx {
     #[new]
-    fn new(py: Python, backend: Py<PyAny>) -> PyResult<Self> {
+    #[pyo3(signature = (backend, signal_cache_max_entries=None))]
+    fn new(py: Python, backend: Py<PyAny>, signal_cache_max_entries: Option<usize>) -> PyResult<Self> {
         init_logging();
         info!("initializing Tryx client");
         if let Ok(sqlite) = backend.extract::<Py<SqliteStore>>(py) {
             debug!("detected sqlite backend from Python");
-            let backends = sqlite.borrow(py);
-            let rt = runtime::Runtime::new()
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            let store = rt
-                .block_on(backends.connect())
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))?;
+            let fut = sqlite.borrow(py).connect_future();
+            let rt = pyo3_async_runtimes::tokio::get_runtime();
+            let store = py
+                .detach(|| rt.block_on(fut))
+                .map_err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>)?;
             let (client_tx, client_rx) = watch::channel(None);
-            let tryx_client = Py::new(
-                py,
-                TryxClient {
-                    client_rx: client_rx.clone(),
-                    contact: new_namespace_client!(py, client_rx, ContactClient),
-                    chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
-                    community: new_namespace_client!(py, client_rx, CommunityClient),
-                    newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
-                    groups: new_namespace_client!(py, client_rx, GroupsClient),
-                    status: new_namespace_client!(py, client_rx, StatusClient),
-                    chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
-                    blocking: new_namespace_client!(py, client_rx, BlockingClient),
-                    polls: new_namespace_client!(py, client_rx, PollsClient),
-                    presence: new_namespace_client!(py, client_rx, PresenceClient),
-                    privacy: new_namespace_client!(py, client_rx, PrivacyClient),
-                    profile: new_namespace_client!(py, client_rx, ProfileClient),
-                    advanced: new_namespace_client!(py, client_rx, AdvancedClient),
-                    labels: new_namespace_client!(py, client_rx, LabelsClient),
-                    comments: new_namespace_client!(py, client_rx, CommentsClient),
-                    events: new_namespace_client!(py, client_rx, EventsClient),
-                    voip: new_namespace_client!(py, client_rx, VoipClient),
-                }
-            )?;
-            
+            let tryx_client = Self::build_tryx_client(py, client_rx)?;
+
             info!("backend connected and dispatcher initialized");
             Ok(Tryx {
                 backend: Arc::new(store),
                 handlers: Py::new(py, Dispatcher::empty())?,
                 tryx_client,
                 client_tx,
+                signal_cache_max_entries,
             })
         } else if let (Ok(lib_path), Ok(config_json)) = (
             backend.getattr(py, "lib_path").and_then(|v| v.extract::<String>(py)),
@@ -115,38 +124,18 @@ impl Tryx {
         ) {
             debug!("detected FFI backend from Python via duck-typing");
 
-            let rt = runtime::Runtime::new()
-                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            let ffi_store = rt
-                .block_on(crate::backend::ffi_bridge::FfiBridgeStore::connect(
-                    &lib_path, &config_json,
-                ))
+            let rt = pyo3_async_runtimes::tokio::get_runtime();
+            let ffi_store = py
+                .detach(|| {
+                    rt.block_on(crate::backend::ffi_bridge::FfiBridgeStore::connect(
+                        &lib_path,
+                        &config_json,
+                    ))
+                })
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
             let (client_tx, client_rx) = watch::channel(None);
-            let tryx_client = Py::new(
-                py,
-                TryxClient {
-                    client_rx: client_rx.clone(),
-                    contact: new_namespace_client!(py, client_rx, ContactClient),
-                    chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
-                    community: new_namespace_client!(py, client_rx, CommunityClient),
-                    newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
-                    groups: new_namespace_client!(py, client_rx, GroupsClient),
-                    status: new_namespace_client!(py, client_rx, StatusClient),
-                    chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
-                    blocking: new_namespace_client!(py, client_rx, BlockingClient),
-                    polls: new_namespace_client!(py, client_rx, PollsClient),
-                    presence: new_namespace_client!(py, client_rx, PresenceClient),
-                    privacy: new_namespace_client!(py, client_rx, PrivacyClient),
-                    profile: new_namespace_client!(py, client_rx, ProfileClient),
-                    advanced: new_namespace_client!(py, client_rx, AdvancedClient),
-                    labels: new_namespace_client!(py, client_rx, LabelsClient),
-                    comments: new_namespace_client!(py, client_rx, CommentsClient),
-                    events: new_namespace_client!(py, client_rx, EventsClient),
-                    voip: new_namespace_client!(py, client_rx, VoipClient),
-                }
-            )?;
+            let tryx_client = Self::build_tryx_client(py, client_rx)?;
 
             info!("ffi backend connected and dispatcher initialized");
             Ok(Tryx {
@@ -154,36 +143,15 @@ impl Tryx {
                 handlers: Py::new(py, Dispatcher::empty())?,
                 tryx_client,
                 client_tx,
+                signal_cache_max_entries,
             })
         } else if backend.getattr(py, "put_identity").is_ok() {
             debug!("detected python store backend via duck-typing");
-            
+
             let python_store = crate::backend::python_store::PythonStore::new(backend.clone_ref(py));
 
             let (client_tx, client_rx) = watch::channel(None);
-            let tryx_client = Py::new(
-                py,
-                TryxClient {
-                    client_rx: client_rx.clone(),
-                    contact: new_namespace_client!(py, client_rx, ContactClient),
-                    chat_actions: new_namespace_client!(py, client_rx, ChatActionsClient),
-                    community: new_namespace_client!(py, client_rx, CommunityClient),
-                    newsletter: new_namespace_client!(py, client_rx, NewsletterClient),
-                    groups: new_namespace_client!(py, client_rx, GroupsClient),
-                    status: new_namespace_client!(py, client_rx, StatusClient),
-                    chatstate: new_namespace_client!(py, client_rx, ChatstateClient),
-                    blocking: new_namespace_client!(py, client_rx, BlockingClient),
-                    polls: new_namespace_client!(py, client_rx, PollsClient),
-                    presence: new_namespace_client!(py, client_rx, PresenceClient),
-                    privacy: new_namespace_client!(py, client_rx, PrivacyClient),
-                    profile: new_namespace_client!(py, client_rx, ProfileClient),
-                    advanced: new_namespace_client!(py, client_rx, AdvancedClient),
-                    labels: new_namespace_client!(py, client_rx, LabelsClient),
-                    comments: new_namespace_client!(py, client_rx, CommentsClient),
-                    events: new_namespace_client!(py, client_rx, EventsClient),
-                    voip: new_namespace_client!(py, client_rx, VoipClient),
-                }
-            )?;
+            let tryx_client = Self::build_tryx_client(py, client_rx)?;
 
             info!("python backend connected and dispatcher initialized");
             Ok(Tryx {
@@ -191,6 +159,7 @@ impl Tryx {
                 handlers: Py::new(py, Dispatcher::empty())?,
                 tryx_client,
                 client_tx,
+                signal_cache_max_entries,
             })
         } else {
             error!("unsupported backend type passed to Tryx");
@@ -200,7 +169,7 @@ impl Tryx {
     fn get_client(&self, py: Python<'_>) -> Py<TryxClient> {
         self.tryx_client.clone_ref(py)
     }
-    /// Returns a decorator compatible with:
+    /// Returns a stateless decorator compatible with:
     /// @client.on(EvMessage)
     /// async def on_message(client, event): ...
     fn on(&self, py: Python, event_type: &Bound<PyAny>) -> PyResult<Py<PyAny>> {
@@ -212,6 +181,17 @@ impl Tryx {
         Ok(decorator.unbind())
     }
 
+    fn shutdown<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let client_opt = self.client_tx.borrow().clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            if let Some(client) = client_opt {
+                let _ = client.shutdown().await;
+            }
+            Ok(())
+        })
+    }
+
     fn run<'py>(&'py self, py: Python<'py>) -> Result<Bound<'py, PyAny>, PyErr> {
         init_logging();
         info!("starting client in async mode via Tryx.run");
@@ -219,11 +199,19 @@ impl Tryx {
         let handlers = self.handlers.clone_ref(py);
         let tryx_client = self.tryx_client.clone_ref(py);
         let client_tx = self.client_tx.clone();
+        let signal_cache_max_entries = self.signal_cache_max_entries;
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals.clone(), async move {
-            Self::run_automation(backend, handlers, Some(locals), tryx_client, client_tx).await
+            Self::run_automation(
+                backend,
+                handlers,
+                Some(locals),
+                tryx_client,
+                client_tx,
+                signal_cache_max_entries,
+            )
+            .await
         })
-    
     }
 
     /// Starts the client and blocks until it exits.
@@ -237,22 +225,26 @@ impl Tryx {
         let handlers = self.handlers.clone_ref(py);
         let tryx_client = self.tryx_client.clone_ref(py);
         let client_tx = self.client_tx.clone();
+        let client_rx = self.client_tx.subscribe();
+        let signal_cache_max_entries = self.signal_cache_max_entries;
         py.detach(move || {
-            let rt = runtime::Runtime::new()
-                .map_err(|e| {
-                    error!(error = %e, "failed to create tokio runtime for blocking mode");
-                    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string())
-                })?;
-
+            let rt = pyo3_async_runtimes::tokio::get_runtime();
             rt.block_on(async {
-                let mut task = tokio::spawn(Self::run_automation(backend, handlers, None, tryx_client, client_tx));
+                let mut task = tokio::spawn(Self::run_automation(
+                    backend,
+                    handlers,
+                    None,
+                    tryx_client,
+                    client_tx,
+                    signal_cache_max_entries,
+                ));
                 let mut signal_tick = interval(Duration::from_millis(200));
+                let mut non_kb_err: Option<PyErr> = None;
 
                 loop {
                     tokio::select! {
                         _ = signal::ctrl_c() => {
-                            warn!("SIGINT received via tokio::signal, stopping task");
-                            task.abort();
+                            warn!("SIGINT received via tokio::signal, initiating graceful shutdown");
                             break;
                         }
                         _ = signal_tick.tick() => {
@@ -267,14 +259,13 @@ impl Tryx {
                             });
                             if let Err((err, is_keyboard_interrupt)) = signal_result {
                                 if is_keyboard_interrupt {
-                                    warn!("KeyboardInterrupt detected from Python, stopping task");
-                                    task.abort();
+                                    warn!("KeyboardInterrupt detected from Python, initiating graceful shutdown");
                                     break;
                                 }
 
                                 error!(error = %err, "non-keyboard Python signal error while polling");
-                                task.abort();
-                                return Err(err);
+                                non_kb_err = Some(err);
+                                break;
                             }
                         }
                         result = &mut task => {
@@ -297,14 +288,33 @@ impl Tryx {
                     }
                 }
 
-                match task.await {
-                    Ok(Ok(())) => info!("client finished after interrupt"),
-                    Ok(Err(err)) => return Err(err),
-                    Err(join_err) if join_err.is_cancelled() => info!("task cancelled successfully"),
-                    Err(join_err) => {
+                // Gracefully shut down the WhatsApp client so Signal ratchet state flushes cleanly.
+                let active_client = client_rx.borrow().clone();
+                if let Some(client) = active_client {
+                    let _ = tokio::time::timeout(Duration::from_secs(5), client.shutdown()).await;
+                }
+                match tokio::time::timeout(Duration::from_secs(5), &mut task).await {
+                    Ok(Ok(Ok(()))) => info!("client finished gracefully after interrupt"),
+                    Ok(Ok(Err(err))) => {
+                        if let Some(py_err) = non_kb_err {
+                            return Err(py_err);
+                        }
+                        return Err(err);
+                    }
+                    Ok(Err(join_err)) if join_err.is_cancelled() => info!("task cancelled successfully"),
+                    Ok(Err(join_err)) => {
                         error!(error = %join_err, "task join failed after interrupt");
                         return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(join_err.to_string()));
                     }
+                    Err(_) => {
+                        warn!("graceful shutdown timed out, aborting run task");
+                        task.abort();
+                        let _ = task.await;
+                    }
+                }
+
+                if let Some(py_err) = non_kb_err {
+                    return Err(py_err);
                 }
 
                 info!("blocking run interrupted and finished");
@@ -316,72 +326,10 @@ impl Tryx {
     
 
 impl Tryx {
-            async fn call_event(callbacks: &[Py<PyAny>], tryx_client: &Py<TryxClient>, payload: Py<PyAny>, locals: Option<TaskLocals>) -> PyResult<()> {
-            let py_futures = Python::attach(|py| -> PyResult<Vec<PyCallbackFuture>> {
-                callbacks
-                    .iter()
-                    .map(|callback| {
-                        debug!("scheduling event Python callback");
-                            let awaitable = callback
-                                .bind(py)
-                                .call1((tryx_client.clone_ref(py), payload.clone_ref(py)))?;
-                        let fut: PyCallbackFuture = match locals.as_ref() {
-                            Some(locals) => {
-                                let fut = into_future_with_locals(locals, awaitable)?;
-                                Box::pin(async move { fut.await })
-                            }
-                            None => {
-                                let fut = into_future(awaitable)?;
-                                Box::pin(async move { fut.await })
-                            }
-                        };
-                        Ok(fut)
-                    })
-                    .collect()
-            });
-
-            match py_futures {
-                Ok(futures) => {
-                    for py_future in futures {
-                        if let Err(err) = py_future.await {
-                            error!(error = %err, "event callback failed");
-                            Python::attach(|py| err.print(py));
-                        } else {
-                            debug!("event callback finished");
-                        }
-                }
-                }
-                Err(err) => {
-                    error!(error = %err, "failed to schedule event callback");
-                    Python::attach(|py| err.print(py));
-            }
-        }
-        Ok(())
-    }
-
-        async fn emit_event(
-        callbacks: &[Py<PyAny>],
-        tryx_client: &Py<TryxClient>,
-            payload: PyResult<Py<PyAny>>,
-        locals: Option<TaskLocals>,
-        event_name: &str,
-    ) {
-        match payload {
-            Ok(py_payload) => {
-                if let Err(err) = Self::call_event(callbacks, tryx_client, py_payload, locals).await {
-                    error!(event = event_name, error = %err, "failed to call python event callbacks");
-                    Python::attach(|py| err.print(py));
-                }
-            }
-            Err(err) => {
-                error!(event = event_name, error = %err, "failed to build python event payload");
-                Python::attach(|py| err.print(py));
-            }
-        }
-    }
-
+    /// Build the Python event payload and invoke/schedule all callbacks within a single
+    /// Python GIL acquisition. Supports both `async def` and synchronous `def` handlers.
     async fn emit_built_event<F>(
-        tryx_client: &Py<TryxClient>,
+        tryx_client: &Arc<Py<TryxClient>>,
         callbacks: &[Py<PyAny>],
         locals: Option<TaskLocals>,
         event_name: &str,
@@ -392,8 +340,40 @@ impl Tryx {
         if callbacks.is_empty() {
             return;
         }
-        let payload = Python::attach(build_payload);
-        Self::emit_event(callbacks, tryx_client, payload, locals, event_name).await;
+        let scheduled = Python::attach(|py| -> PyResult<Vec<PyCallbackFuture>> {
+            let payload = build_payload(py)?;
+            let client_ref = tryx_client.clone_ref(py);
+            let mut futures = Vec::new();
+            for callback in callbacks {
+                debug!(event = event_name, "calling Python event callback");
+                let result = callback
+                    .bind(py)
+                    .call1((client_ref.clone_ref(py), payload.clone_ref(py)))?;
+                if result.hasattr("__await__")? {
+                    let fut: PyCallbackFuture = match locals.as_ref() {
+                        Some(locals) => Box::pin(into_future_with_locals(locals, result)?),
+                        None => Box::pin(into_future(result)?),
+                    };
+                    futures.push(fut);
+                }
+            }
+            Ok(futures)
+        });
+
+        match scheduled {
+            Ok(futures) => {
+                for py_future in futures {
+                    if let Err(err) = py_future.await {
+                        error!(event = event_name, error = %err, "event callback failed");
+                        Python::attach(|py| err.print(py));
+                    }
+                }
+            }
+            Err(err) => {
+                error!(event = event_name, error = %err, "failed to dispatch python event");
+                Python::attach(|py| err.print(py));
+            }
+        }
     }
 
     async fn run_automation(
@@ -402,32 +382,45 @@ impl Tryx {
         locals: Option<TaskLocals>,
         tryx_client: Py<TryxClient>,
         client_tx: watch::Sender<Option<Arc<Client>>>,
+        signal_cache_max_entries: Option<usize>,
     ) -> PyResult<()> {
         let callbacks = Arc::new(Python::attach(|py| {
             let dispatcher = handlers.bind(py).borrow();
             EventCallbacks::from_dispatcher(py, &dispatcher)
         }));
-        info!("building WhatsApp automation client");
-        let automation = Bot::builder()
+        let interests = callbacks.event_interests();
+        let tryx_client = Arc::new(tryx_client);
+        info!(subscribed_events = interests.len(), "building WhatsApp automation client");
+        let mut builder = Bot::builder()
             .with_backend_arc(backend)
             .with_transport_factory(TokioWebSocketTransportFactory::new())
-            .with_http_client(UreqHttpClient::new())
-            .on_event(move |event, client| {
+            .with_http_client(UreqHttpClient::new());
+        if let Some(cap) = signal_cache_max_entries {
+            let mut cache_cfg = CacheConfig::default();
+            cache_cfg.signal_cache_max_entries = Some(cap);
+            builder = builder.with_cache_config(cache_cfg);
+        }
+        let automation = builder
+            .on_event_for(&interests, move |event, client| {
                 let locals = locals.clone();
                 let callbacks = Arc::clone(&callbacks);
-                let tryx_client = Python::attach(|py| tryx_client.clone_ref(py));
+                let tryx_client = Arc::clone(&tryx_client);
 
                 async move {
                     match event.as_ref() {
                         Event::IncomingCall(incoming) => {
-                            let incoming = (**incoming).clone();
-                            let client = client.clone();
-                            Self::emit_built_event(&tryx_client, &callbacks.incoming_call, locals.clone(), "IncomingCall", |py| {
-                                Py::new(py, crate::clients::voip::IncomingCallEvent {
-                                    client,
-                                    incoming: std::sync::Mutex::new(Some(incoming)),
-                                }).map(|event| event.into_any())
-                            }).await;
+                            if !callbacks.incoming_call.is_empty()
+                                && matches!(incoming.action, whatsapp_rust::types::call::CallAction::Offer { .. })
+                            {
+                                let incoming = (**incoming).clone();
+                                let client = client.clone();
+                                Self::emit_built_event(&tryx_client, &callbacks.incoming_call, locals.clone(), "IncomingCall", |py| {
+                                    Py::new(py, crate::clients::voip::IncomingCallEvent {
+                                        client,
+                                        incoming: std::sync::Mutex::new(Some(incoming)),
+                                    }).map(|event| event.into_any())
+                                }).await;
+                            }
                         }
                         Event::Connected(_) => {
                             Self::emit_built_event(&tryx_client, &callbacks.connected, locals.clone(), "Connected", |py| {
@@ -440,58 +433,48 @@ impl Tryx {
                             }).await;
                         }
                         Event::LoggedOut(logout) => {
-                            let logout = (**logout).clone();
                             Self::emit_built_event(&tryx_client, &callbacks.logout, locals.clone(), "LoggedOut", |py| {
-                                Py::new(py, EvLoggedOut::new(logout)).map(|event| event.into_any())
+                                Py::new(py, EvLoggedOut::new((**logout).clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::PairSuccess(pair_success) => {
-                            let pair_success = pair_success.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.pair_success, locals.clone(), "PairSuccess", |py| {
-                                Py::new(py, EvPairSuccess::from(pair_success)).map(|event| event.into_any())
+                                Py::new(py, EvPairSuccess::from(pair_success.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::PairError(pair_error) => {
-                            let pair_error = pair_error.clone();
                             Self::emit_built_event(
                                 &tryx_client,
                                 &callbacks.pair_error,
                                 locals.clone(),
                                 "PairError",
                                 |py| {
-                                    Py::new(
+                                    let ev = EvPairError::new(
                                         py,
-                                        EvPairError::new(
-                                            pair_error.id.into(),
-                                            pair_error.lid.into(),
-                                            pair_error.business_name,
-                                            pair_error.platform,
-                                            pair_error.error,
-                                        ),
-                                    )
-                                    .map(|event| event.into_any())
+                                        pair_error.id.clone().into(),
+                                        pair_error.lid.clone().into(),
+                                        pair_error.business_name.clone(),
+                                        pair_error.platform.clone(),
+                                        pair_error.error.clone(),
+                                    )?;
+                                    Py::new(py, ev).map(|event| event.into_any())
                                 },
                             )
                             .await;
                         }
                         Event::PairingQrCode(qr) => {
-                            let code = qr.code.clone();
-                            let timeout_secs = qr.timeout.as_secs();
                             Self::emit_built_event(&tryx_client, &callbacks.pairing_qr, locals.clone(), "PairingQrCode", |py| {
-                                Py::new(py, EvPairingQrCode::new(code, timeout_secs)).map(|event| event.into_any())
+                                Py::new(py, EvPairingQrCode::new(qr.code.clone(), qr.timeout.as_secs())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::PairingCode(pairing_code) => {
-                            let code = pairing_code.code.clone();
-                            let timeout_secs = pairing_code.timeout.as_secs();
                             Self::emit_built_event(&tryx_client, &callbacks.pairing_code, locals.clone(), "PairingCode", |py| {
-                                Py::new(py, EvPairingCode::new(code, timeout_secs)).map(|event| event.into_any())
+                                Py::new(py, EvPairingCode::new(pairing_code.code.clone(), pairing_code.timeout.as_secs())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::QrScannedWithoutMultidevice(scanned) => {
-                            let scanned = scanned.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.qr_scanned_without_multidevice, locals.clone(), "QrScannedWithoutMultidevice", |py| {
-                                Py::new(py, EvQrScannedWithoutMultidevice::from(scanned)).map(|event| event.into_any())
+                                Py::new(py, EvQrScannedWithoutMultidevice::from(scanned.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ClientOutdated(_) => {
@@ -500,156 +483,136 @@ impl Tryx {
                             }).await;
                         }
                         Event::Messages(batch) => {
-                            // Upstream now delivers messages in arrival-ordered
-                            // batches (Baileys `messages.upsert` shape); emit one
-                            // "Message" event per inbound message, preserving order.
+                            if callbacks.message.is_empty() {
+                                return;
+                            }
                             for inbound in batch.messages.iter() {
-                                let msg = (*inbound.message).clone();
-                                let info = (*inbound.info).clone();
                                 Self::emit_built_event(&tryx_client, &callbacks.message, locals.clone(), "Message", |py| {
-                                    Py::new(py, EvMessage::new(msg, info)).map(|event| event.into_any())
+                                    Py::new(py, EvMessage::from_arcs(Arc::clone(&inbound.message), Arc::clone(&inbound.info)))
+                                        .map(|event| event.into_any())
                                 }).await;
                             }
                         }
                         Event::Receipt(receipt) => {
-                            let receipt = receipt.clone();
                             Self::emit_built_event(
                                 &tryx_client,
                                 &callbacks.receipt,
                                 locals.clone(),
                                 "Receipt",
-                                |_py| {
+                                |py| {
                                     Ok(EvReceipt::new(
-                                        receipt.source,
-                                        receipt.message_ids.into_iter().map(|id| id.to_string()).collect(),
+                                        py,
+                                        receipt.source.clone(),
+                                        receipt.message_ids.iter().map(|id| id.to_string()).collect(),
                                         receipt.timestamp,
-                                        receipt.r#type,
-                                    )
+                                        receipt.r#type.clone(),
+                                    )?
                                     .into_any())
                                 },
                             )
                             .await;
                         }
                         Event::UndecryptableMessage(undecryptable_message) => {
-                            let info = (*undecryptable_message.info).clone();
-                            let is_unavailable = undecryptable_message.is_unavailable;
-                            let unavailable_type = undecryptable_message.unavailable_type.clone();
-                            let decrypt_fail_mode = undecryptable_message.decrypt_fail_mode.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.undecryptable_message, locals.clone(), "UndecryptableMessage", |py| {
-                                Py::new(py, EvUndecryptableMessage::new(info, is_unavailable, unavailable_type, decrypt_fail_mode)).map(|event| event.into_any())
+                                let ev = EvUndecryptableMessage::new(
+                                    py,
+                                    (*undecryptable_message.info).clone(),
+                                    undecryptable_message.is_unavailable,
+                                    undecryptable_message.unavailable_type,
+                                    undecryptable_message.decrypt_fail_mode,
+                                )?;
+                                Py::new(py, ev).map(|event| event.into_any())
                             }).await;
                         }
                         Event::Notification(notification) => {
-                            let notification = notification.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.notification, locals.clone(), "Notification", |py| {
                                 Py::new(py, EvNotification::new(notification.to_owned_node())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ChatPresence(chat_presence) => {
-                            let chat_presence = chat_presence.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.chat_presence, locals.clone(), "ChatPresence", |py| {
-                                Py::new(py, EvChatPresence::from(chat_presence)).map(|event| event.into_any())
+                                Py::new(py, EvChatPresence::from(chat_presence.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::Presence(presence) => {
-                            let presence = presence.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.presence, locals.clone(), "Presence", |py| {
-                                Py::new(py, EvPresence::from(presence)).map(|event| event.into_any())
+                                Py::new(py, EvPresence::from_event(py, presence)?).map(|event| event.into_any())
                             }).await;
                         }
                         Event::PictureUpdate(picture_update) => {
-                            let picture_update = picture_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.picture_update, locals.clone(), "PictureUpdate", |py| {
-                                Py::new(py, EvPictureUpdate::new(picture_update)).map(|event| event.into_any())
+                                Py::new(py, EvPictureUpdate::new(picture_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::UserAboutUpdate(user_about) => {
-                            let user_about = user_about.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.user_about_update, locals.clone(), "UserAboutUpdate", |py| {
-                                Py::new(py, EvUserAboutUpdate::new(user_about)).map(|event| event.into_any())
+                                Py::new(py, EvUserAboutUpdate::new(user_about.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         // JoinedGroup is not a current Event variant; reserved for future use.
                         Event::GroupUpdate(group_info) => {
-                            let group_info = group_info.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.group_info_update, locals.clone(), "GroupUpdate", |py| {
-                                Py::new(py, EvGroupUpdate::new(group_info)).map(|event| event.into_any())
+                                Py::new(py, EvGroupUpdate::new(group_info.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ContactUpdate(contact_update) => {
-                            let contact_update = contact_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.contact_update, locals.clone(), "ContactUpdate", |py| {
-                                Py::new(py, EvContactUpdate::new(contact_update)).map(|event| event.into_any())
+                                Py::new(py, EvContactUpdate::new(contact_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::RetiredPushNameUpdate(pushname) => {
-                            let pushname = pushname.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.push_name_update, locals.clone(), "RetiredPushNameUpdate", |py| {
-                                Py::new(py, EvPushNameUpdate::from(pushname)).map(|event| event.into_any())
+                                Py::new(py, EvPushNameUpdate::from(pushname.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::SelfPushNameUpdated(self_push_name_update) => {
-                            let self_push_name_update = self_push_name_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.self_push_name_updated, locals.clone(), "SelfPushNameUpdated", |py| {
-                                Py::new(py, EvSelfPushNameUpdated::from(self_push_name_update)).map(|event| event.into_any())
+                                Py::new(py, EvSelfPushNameUpdated::from(self_push_name_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::PinUpdate(pin_update) => {
-                            let pin_update = pin_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.pin_update, locals.clone(), "PinUpdate", |py| {
-                                Py::new(py, EvPinUpdate::new(pin_update)).map(|event| event.into_any())
+                                Py::new(py, EvPinUpdate::new(pin_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::MuteUpdate(mute_update) => {
-                            let mute_update = mute_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.mute_update, locals.clone(), "MuteUpdate", |py| {
-                                Py::new(py, EvMuteUpdate::from(mute_update)).map(|event| event.into_any())
+                                Py::new(py, EvMuteUpdate::from(mute_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ArchiveUpdate(archived) => {
-                            let archived = archived.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.archive_update, locals.clone(), "ArchiveUpdate", |py| {
-                                Py::new(py, EvArchiveUpdate::from(archived)).map(|event| event.into_any())
+                                Py::new(py, EvArchiveUpdate::from(archived.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::MarkChatAsReadUpdate(mark_chat_as_read_update) => {
-                            let mark_chat_as_read_update = mark_chat_as_read_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.mark_chat_as_read_update, locals.clone(), "MarkChatAsReadUpdate", |py| {
-                                Py::new(py, EvMarkChatAsReadUpdate::from(mark_chat_as_read_update)).map(|event| event.into_any())
+                                Py::new(py, EvMarkChatAsReadUpdate::from(mark_chat_as_read_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::HistorySync(history_sync) => {
-                            let history_sync = history_sync.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.history_sync, locals.clone(), "HistorySync", |py| {
-                                if let Some(decoded) = history_sync.get() {
-                                    Py::new(py, EvHistorySync::from(decoded.clone())).map(|event| event.into_any())
-                                } else {
-                                    Err(pyo3::exceptions::PyRuntimeError::new_err("Failed to decode HistorySync"))
-                                }
+                                Py::new(py, EvHistorySync::from_lazy((**history_sync).clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::OfflineSyncPreview(offline_sync_preview) => {
-                            let offline_sync_preview = offline_sync_preview.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.offline_sync_preview, locals.clone(), "OfflineSyncPreview", |py| {
-                                Py::new(py, EvOfflineSyncPreview::from(offline_sync_preview)).map(|event| event.into_any())
+                                Py::new(py, EvOfflineSyncPreview::from(offline_sync_preview.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::OfflineSyncCompleted(offline_sync_complete) => {
-                            let offline_sync_complete = offline_sync_complete.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.offline_sync_completed, locals.clone(), "OfflineSyncCompleted", |py| {
-                                Py::new(py, EvOfflineSyncCompleted::from(offline_sync_complete)).map(|event| event.into_any())
+                                Py::new(py, EvOfflineSyncCompleted::from(offline_sync_complete.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::DeviceListUpdate(device_list_update) => {
-                            let device_list_update = device_list_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.device_list_update, locals.clone(), "DeviceListUpdate", |py| {
-                                Py::new(py, EvDeviceListUpdate::from(device_list_update)).map(|event| event.into_any())
+                                Py::new(py, EvDeviceListUpdate::from(device_list_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::BusinessStatusUpdate(business_status_update) => {
-                            let business_status_update = business_status_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.business_status_update, locals.clone(), "BusinessStatusUpdate", |py| {
-                                Py::new(py, EvBusinessStatusUpdate::from(business_status_update)).map(|event| event.into_any())
+                                Py::new(py, EvBusinessStatusUpdate::from(business_status_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::StreamReplaced(_) => {
@@ -658,69 +621,118 @@ impl Tryx {
                             }).await;
                         }
                         Event::TemporaryBan(temporary_ban) => {
-                            let temporary_ban = temporary_ban.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.temporary_ban, locals.clone(), "TemporaryBan", |py| {
-                                Py::new(py, EvTemporaryBan::from(temporary_ban)).map(|event| event.into_any())
+                                Py::new(py, EvTemporaryBan::from(temporary_ban.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ConnectFailure(connect_failure) => {
-                            let connect_failure = connect_failure.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.connect_failure, locals.clone(), "ConnectFailure", |py| {
-                                Py::new(py, EvConnectFailure::new(connect_failure.reason, connect_failure.message, connect_failure.raw)).map(|event| event.into_any())
+                                Py::new(py, EvConnectFailure::new(connect_failure.reason.clone(), connect_failure.message.clone(), connect_failure.raw.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::StreamError(stream_error) => {
-                            let stream_error = stream_error.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.stream_error, locals.clone(), "StreamError", |py| {
-                                Py::new(py, EvStreamError::new(stream_error.code, stream_error.raw)).map(|event| event.into_any())
+                                Py::new(py, EvStreamError::new(stream_error.code.clone(), stream_error.raw.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ContactNumberChanged(contact_number_changed) => {
-                            let contact_number_changed = contact_number_changed.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.contact_number_changed, locals.clone(), "ContactNumberChanged", |py| {
-                                Py::new(py, EvContactNumberChanged::from(contact_number_changed)).map(|event| event.into_any())
+                                Py::new(py, EvContactNumberChanged::from(contact_number_changed.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ContactSyncRequested(contact_sync_requested) => {
-                            let contact_sync_requested = contact_sync_requested.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.contact_sync_requested, locals.clone(), "ContactSyncRequested", |py| {
-                                Py::new(py, EvContactSyncRequested::from(contact_sync_requested)).map(|event| event.into_any())
+                                Py::new(py, EvContactSyncRequested::from(contact_sync_requested.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::ContactUpdated(contact_updated) => {
-                            let contact_updated = contact_updated.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.contact_updated, locals.clone(), "ContactUpdated", |py| {
-                                Py::new(py, EvContactUpdated::from(contact_updated)).map(|event| event.into_any())
+                                Py::new(py, EvContactUpdated::from(contact_updated.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::StarUpdate(star_update) => {
-                            let star_update = star_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.star_update, locals.clone(), "StarUpdate", |py| {
-                                Py::new(py, EvStarUpdate::from(star_update)).map(|event| event.into_any())
+                                Py::new(py, EvStarUpdate::from(star_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::DisappearingModeChanged(disappearing_mode_changed) => {
-                            let disappearing_mode_changed = disappearing_mode_changed.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.disappearing_mode_changed, locals.clone(), "DisappearingModeChanged", |py| {
-                                Py::new(py, EvDisappearingModeChanged::from(disappearing_mode_changed)).map(|event| event.into_any())
+                                Py::new(py, EvDisappearingModeChanged::from(disappearing_mode_changed.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::NewsletterLiveUpdate(newsletter_live_update) => {
-                            let newsletter_live_update = newsletter_live_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.newsletter_live_update, locals.clone(), "NewsletterLiveUpdate", |py| {
-                                Py::new(py, EvNewsletterLiveUpdate::from(newsletter_live_update)).map(|event| event.into_any())
+                                Py::new(py, EvNewsletterLiveUpdate::from(newsletter_live_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::DeleteChatUpdate(delete_chat_update) => {
-                            let delete_chat_update = delete_chat_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.delete_chat_update, locals.clone(), "DeleteChatUpdate", |py| {
-                                Py::new(py, EvDeleteChatUpdate::from(delete_chat_update)).map(|event| event.into_any())
+                                Py::new(py, EvDeleteChatUpdate::from(delete_chat_update.clone())).map(|event| event.into_any())
                             }).await;
                         }
                         Event::DeleteMessageForMeUpdate(delete_message_for_me_update) => {
-                            let delete_message_for_me_update = delete_message_for_me_update.clone();
                             Self::emit_built_event(&tryx_client, &callbacks.delete_message_for_me_update, locals.clone(), "DeleteMessageForMeUpdate", |py| {
-                                Py::new(py, EvDeleteMessageForMeUpdate::from(delete_message_for_me_update)).map(|event| event.into_any())
+                                Py::new(py, EvDeleteMessageForMeUpdate::from(delete_message_for_me_update.clone())).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::IdentityChange(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.identity_change, locals.clone(), "IdentityChange", |py| {
+                                Py::new(py, EvIdentityChange::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::LockChatUpdate(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.lock_chat_update, locals.clone(), "LockChatUpdate", |py| {
+                                Py::new(py, EvLockChatUpdate::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::FavoritesUpdate(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.favorites_update, locals.clone(), "FavoritesUpdate", |py| {
+                                Py::new(py, EvFavoritesUpdate::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::StatusPrivacyUpdate(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.status_privacy_update, locals.clone(), "StatusPrivacyUpdate", |py| {
+                                Py::new(py, EvStatusPrivacyUpdate::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::UnarchiveChatsSettingUpdate(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.unarchive_chats_setting_update, locals.clone(), "UnarchiveChatsSettingUpdate", |py| {
+                                Py::new(py, EvUnarchiveChatsSettingUpdate::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::DisableLinkPreviewsUpdate(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.disable_link_previews_update, locals.clone(), "DisableLinkPreviewsUpdate", |py| {
+                                Py::new(py, EvDisableLinkPreviewsUpdate::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::ContactRemoved(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.contact_removed, locals.clone(), "ContactRemoved", |py| {
+                                Py::new(py, EvContactRemoved::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::OfflineSyncInterrupted(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.offline_sync_interrupted, locals.clone(), "OfflineSyncInterrupted", |py| {
+                                Py::new(py, EvOfflineSyncInterrupted::from(ev)).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::ClientExpirationChanged(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.client_expiration_changed, locals.clone(), "ClientExpirationChanged", |py| {
+                                Py::new(py, EvClientExpirationChanged::from(ev)).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::ServerAck(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.server_ack, locals.clone(), "ServerAck", |py| {
+                                Py::new(py, EvServerAck::from_event(py, ev)?).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::AppStateSyncFailed(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.app_state_sync_failed, locals.clone(), "AppStateSyncFailed", |py| {
+                                Py::new(py, EvAppStateSyncFailed::from(ev)).map(|event| event.into_any())
+                            }).await;
+                        }
+                        Event::MexNotification(ev) => {
+                            Self::emit_built_event(&tryx_client, &callbacks.mex_notification, locals.clone(), "MexNotification", |py| {
+                                Py::new(py, EvMexNotification::from_event(py, ev)?).map(|event| event.into_any())
                             }).await;
                         }
                         _ => {

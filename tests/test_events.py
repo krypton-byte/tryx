@@ -53,6 +53,18 @@ class TestEventClassesExist:
         "EvNewsletterLiveUpdate",
         "EvDeleteChatUpdate",
         "EvDeleteMessageForMeUpdate",
+        "EvIdentityChange",
+        "EvLockChatUpdate",
+        "EvFavoritesUpdate",
+        "EvStatusPrivacyUpdate",
+        "EvUnarchiveChatsSettingUpdate",
+        "EvDisableLinkPreviewsUpdate",
+        "EvContactRemoved",
+        "EvOfflineSyncInterrupted",
+        "EvClientExpirationChanged",
+        "EvServerAck",
+        "EvAppStateSyncFailed",
+        "EvMexNotification",
     ]
 
     def test_all_event_classes_importable(self) -> None:
@@ -110,3 +122,67 @@ class TestTryxInitialization:
             pass
 
         assert handler is not None
+
+    def test_stateless_decorator_composition_and_sync_api(
+        self, tmp_path: object
+    ) -> None:
+        import pathlib
+
+        db = str(pathlib.Path(str(tmp_path)) / "test4.db")
+        backend = SqliteStore(db)
+        app = Tryx(backend, signal_cache_max_entries=256)
+
+        d_msg = app.on(events.EvMessage)
+        d_conn = app.on(events.EvConnected)
+
+        def on_msg(client: object, event: object) -> None:
+            pass
+
+        def on_conn(client: object, event: object) -> None:
+            pass
+
+        # Composing decorators out of order must register each to its own event
+        d_msg(on_msg)
+        d_conn(on_conn)
+
+        client = app.get_client()
+        for method in (
+            "reply_text",
+            "react",
+            "download_media_to_file",
+            "download_media",
+        ):
+            assert hasattr(client, method), f"Missing TryxClient.{method}"
+        for method in (
+            "wait_for_socket_ready",
+            "wait_for_session_ready",
+            "auto_reconnect_enabled",
+            "set_auto_reconnect",
+            "reconnect_immediately",
+            "pair_with_code",
+            "logout",
+            "shutdown",
+        ):
+            assert hasattr(client.advanced, method), f"Missing AdvancedClient.{method}"
+        assert hasattr(app, "shutdown")
+        assert hasattr(client.polls, "create_quiz")
+
+    def test_voip_call_handle_and_player_spawn_safety(self) -> None:
+        from tryx.client import CallHandle
+        from tryx.media import AudioPlayer, VideoPlayer
+
+        for attr in (
+            "phase",
+            "media_connected",
+            "is_answered",
+            "hangup",
+            "hangup_local",
+        ):
+            assert hasattr(CallHandle, attr), f"Missing CallHandle.{attr}"
+
+        # Instantiating AudioPlayer / VideoPlayer outside an active Tokio task
+        # must use pyo3-async-runtimes' managed runtime without panicking.
+        audio_player = AudioPlayer()
+        audio_player.stop()
+        video_player = VideoPlayer(fps=15)
+        video_player.stop()

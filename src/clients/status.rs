@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use buffa::Message;
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -68,7 +67,7 @@ impl StatusClient {
                     options_value,
                 )
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -115,7 +114,7 @@ impl StatusClient {
                     options_value,
                 )
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -164,7 +163,7 @@ impl StatusClient {
                     options_value,
                 )
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -183,12 +182,7 @@ impl StatusClient {
             ));
         }
 
-        let serialized: Vec<u8> = message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Failed to decode WhatsAppMessage proto: {}", e),
-            )
-        })?;
+        let message_value: WhatsappMessage = crate::events::proto_cache::decode_py_proto(py, &message)?;
 
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
@@ -206,7 +200,7 @@ impl StatusClient {
                 .status()
                 .send_raw(message_value, recipient_values.as_slice(), options_value)
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -236,12 +230,14 @@ impl StatusClient {
             .map(|v| v.bind(py).borrow().to_rust_options())
             .unwrap_or_default();
 
+        let msg_id = whatsapp_rust::MessageId::new(&message_id)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .status()
-                .revoke(message_id, recipient_values.as_slice(), options_value)
+                .revoke(msg_id, recipient_values.as_slice(), options_value)
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }

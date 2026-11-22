@@ -92,6 +92,18 @@ use self::events::types::{
     EvTemporaryBan,
     EvUndecryptableMessage,
     EvUserAboutUpdate,
+    EvIdentityChange,
+    EvLockChatUpdate,
+    EvFavoritesUpdate,
+    EvStatusPrivacyUpdate,
+    EvUnarchiveChatsSettingUpdate,
+    EvDisableLinkPreviewsUpdate,
+    EvContactRemoved,
+    EvOfflineSyncInterrupted,
+    EvClientExpirationChanged,
+    EvServerAck,
+    EvAppStateSyncFailed,
+    EvMexNotification,
     GroupUpdateData,
     GroupNotificationAction,
     GroupParticipant as EventGroupParticipant,
@@ -329,6 +341,18 @@ fn _tryx(_py: &Bound<PyModule>) -> PyResult<()> {
     events_module.add_class::<DeleteChatUpdateData>()?;
     events_module.add_class::<EvDeleteChatUpdate>()?;
     events_module.add_class::<EvContactUpdate>()?;
+    events_module.add_class::<EvIdentityChange>()?;
+    events_module.add_class::<EvLockChatUpdate>()?;
+    events_module.add_class::<EvFavoritesUpdate>()?;
+    events_module.add_class::<EvStatusPrivacyUpdate>()?;
+    events_module.add_class::<EvUnarchiveChatsSettingUpdate>()?;
+    events_module.add_class::<EvDisableLinkPreviewsUpdate>()?;
+    events_module.add_class::<EvContactRemoved>()?;
+    events_module.add_class::<EvOfflineSyncInterrupted>()?;
+    events_module.add_class::<EvClientExpirationChanged>()?;
+    events_module.add_class::<EvServerAck>()?;
+    events_module.add_class::<EvAppStateSyncFailed>()?;
+    events_module.add_class::<EvMexNotification>()?;
     _py.add_submodule(&events_module)?;
 
     let backend_module = PyModule::new(_py.py(), "backend")?;

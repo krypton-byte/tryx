@@ -6,7 +6,6 @@ use whatsapp_rust::{
     CreateCommunityResult as WaCreateCommunityResult,
     GroupMetadata as WaGroupMetadata,
     GroupParticipant as WaGroupParticipant,
-    GroupType as WaGroupType,
     LinkSubgroupsResult as WaLinkSubgroupsResult,
     UnlinkSubgroupsResult as WaUnlinkSubgroupsResult,
 };
@@ -21,19 +20,6 @@ pub enum GroupType {
     LinkedSubgroup = 2,
     LinkedAnnouncementGroup = 3,
     LinkedGeneralGroup = 4,
-}
-
-impl From<WaGroupType> for GroupType {
-    fn from(value: WaGroupType) -> Self {
-        match value {
-            WaGroupType::Default => Self::Default,
-            WaGroupType::Community => Self::Community,
-            WaGroupType::LinkedSubgroup => Self::LinkedSubgroup,
-            WaGroupType::LinkedAnnouncementGroup => Self::LinkedAnnouncementGroup,
-            WaGroupType::LinkedGeneralGroup => Self::LinkedGeneralGroup,
-            _ => Self::Default,
-        }
-    }
 }
 
 #[pyclass]
@@ -51,14 +37,18 @@ pub struct CreateCommunityOptions {
 }
 
 impl CreateCommunityOptions {
-    pub fn to_rust_options(&self) -> WaCreateCommunityOptions {
-        WaCreateCommunityOptions {
-            name: self.name.clone(),
-            description: self.description.clone(),
-            closed: self.closed,
-            allow_non_admin_sub_group_creation: self.allow_non_admin_sub_group_creation,
-            create_general_chat: self.create_general_chat,
+    pub fn to_rust_options(&self) -> Result<WaCreateCommunityOptions, String> {
+        let mut opts = WaCreateCommunityOptions::new(self.name.clone())
+            .map_err(|e| e.to_string())?;
+        if let Some(desc) = &self.description {
+            opts.description = Some(
+                whatsapp_rust::GroupDescription::new(desc.clone()).map_err(|e| e.to_string())?,
+            );
         }
+        opts.closed = self.closed;
+        opts.allow_non_admin_sub_group_creation = self.allow_non_admin_sub_group_creation;
+        opts.create_general_chat = self.create_general_chat;
+        Ok(opts)
     }
 }
 
@@ -149,7 +139,7 @@ impl LinkSubgroupsResult {
         let failed_groups = value
             .failed_groups
             .into_iter()
-            .map(|(jid, code)| Ok((Py::new(py, JID::from(jid))?, code)))
+            .map(|f| Ok((Py::new(py, JID::from(f.jid))?, f.code)))
             .collect::<PyResult<Vec<_>>>()?;
         Ok(Self {
             linked_jids,
@@ -176,7 +166,7 @@ impl UnlinkSubgroupsResult {
         let failed_groups = value
             .failed_groups
             .into_iter()
-            .map(|(jid, code)| Ok((Py::new(py, JID::from(jid))?, code)))
+            .map(|f| Ok((Py::new(py, JID::from(f.jid))?, f.code)))
             .collect::<PyResult<Vec<_>>>()?;
         Ok(Self {
             unlinked_jids,
@@ -244,7 +234,7 @@ pub struct GroupMetadata {
     #[pyo3(get)]
     pub member_link_mode: Option<String>,
     #[pyo3(get)]
-    pub size: Option<u32>,
+    pub participant_count: Option<u32>,
     #[pyo3(get)]
     pub is_parent_group: bool,
     #[pyo3(get)]
@@ -293,7 +283,7 @@ impl GroupMetadata {
             membership_approval: value.membership_approval,
             member_add_mode: value.member_add_mode.map(|mode| format!("{mode:?}")),
             member_link_mode: value.member_link_mode.map(|mode| format!("{mode:?}")),
-            size: value.size,
+            participant_count: value.participant_count,
             is_parent_group: value.is_parent_group,
             parent_group_jid: value
                 .parent_group_jid

@@ -81,7 +81,11 @@ class Tryx:
 
     handlers: Dispatcher
 
-    def __init__(self, backend: BackendBase | FfiStoreProtocol | StoreBase) -> None:
+    def __init__(
+        self,
+        backend: BackendBase | FfiStoreProtocol | StoreBase,
+        signal_cache_max_entries: int | None = None,
+    ) -> None:
         """Create a Tryx runtime with the given storage backend.
 
         Args:
@@ -110,8 +114,8 @@ class Tryx:
     def on(
         self, event_type: type[EventT]
     ) -> Callable[
-        [Callable[[TryxClient, EventT], Awaitable[None]]],
-        Callable[[TryxClient, EventT], Awaitable[None]],
+        [Callable[[TryxClient, EventT], Awaitable[None] | None]],
+        Callable[[TryxClient, EventT], Awaitable[None] | None],
     ]:
         """Decorator to register an async event handler.
 
@@ -132,6 +136,10 @@ class Tryx:
             asyncio.run(app.run())
         """
         ...
+    async def shutdown(self) -> None:
+        """Gracefully shut down the active WhatsApp client."""
+        ...
+
     def run_blocking(self) -> None:
         """Start the client and block until it exits.
 
@@ -165,18 +173,22 @@ class TryxClient:
     def is_connected(self) -> bool:
         """Return True if the underlying WebSocket is connected."""
         ...
-    async def download_media(self, message: DownloadableMedia) -> bytes:
-        """Download media content from a WhatsApp message.
+    async def download_media(
+        self, target: DownloadableMedia | EvMessage, max_bytes: int | None = None
+    ) -> bytes:
+        """Download media content from a WhatsApp message or ``EvMessage``.
 
-        Accepts any protobuf media type (Image, Video, Audio, Document, Sticker).
-
-        Returns:
-            Raw media bytes.
-
-        Example::
-
-            data = await client.download_media(event.data.raw_proto.image_message)
+        Accepts ``EvMessage`` directly (zero protobuf round-trip) or any protobuf
+        media type (Image, Video, Audio, Document, Sticker).
         """
+        ...
+    async def download_media_to_file(
+        self,
+        target: DownloadableMedia | EvMessage,
+        path: str,
+        max_bytes: int | None = None,
+    ) -> None:
+        """Stream-download and decrypt media directly to a file on disk."""
         ...
     async def upload_file(self, path: str, media_type: MediaType) -> UploadResponse:
         """Upload a file from disk to WhatsApp servers.
@@ -204,7 +216,7 @@ class TryxClient:
             Upload metadata.
         """
         ...
-    async def send_message(self, to: JID, message: MessageProto) -> SendResult:
+    async def send_message(self, to: JID | str, message: MessageProto) -> SendResult:
         """Send a pre-built protobuf message directly.
 
         Use this for raw protocol-level sends when the helper methods
@@ -232,12 +244,12 @@ class TryxClient:
         """
         ...
     async def send_text(
-        self, to: JID, text: str, quoted: EvMessage | None = None
+        self, to: JID | str, text: str, quoted: EvMessage | None = None
     ) -> SendResult:
         """Send a plain text message.
 
         Args:
-            to: Recipient JID.
+            to: Recipient JID or string.
             text: Message body.
             quoted: Optional message to quote-reply.
 
@@ -253,9 +265,15 @@ class TryxClient:
             print(result.message_id)
         """
         ...
+    async def reply_text(self, event: EvMessage, text: str) -> SendResult:
+        """Reply directly to an incoming ``EvMessage`` with text, quoting it."""
+        ...
+    async def react(self, event: EvMessage, emoji: str) -> SendResult:
+        """React directly to an incoming ``EvMessage`` with an emoji."""
+        ...
     async def send_photo(
         self,
-        to: JID,
+        to: JID | str,
         photo_data: bytes,
         mimetype: str | None = None,
         caption: str | None = None,
@@ -293,7 +311,7 @@ class TryxClient:
         ...
     async def send_document(
         self,
-        to: JID,
+        to: JID | str,
         document_data: bytes,
         mimetype: str | None = None,
         file_name: str | None = None,
@@ -334,7 +352,7 @@ class TryxClient:
         ...
     async def send_audio(
         self,
-        to: JID,
+        to: JID | str,
         audio_data: bytes,
         mimetype: str | None = None,
         ptt: bool = False,
@@ -375,7 +393,7 @@ class TryxClient:
         ...
     async def send_video(
         self,
-        to: JID,
+        to: JID | str,
         video_data: bytes,
         mimetype: str | None = None,
         caption: str | None = None,
@@ -418,7 +436,7 @@ class TryxClient:
         ...
     async def send_gif(
         self,
-        to: JID,
+        to: JID | str,
         gif_data: bytes,
         caption: str | None = None,
         seconds: int | None = None,
@@ -455,7 +473,7 @@ class TryxClient:
         ...
     async def send_sticker(
         self,
-        to: JID,
+        to: JID | str,
         sticker_data: bytes,
         is_animated: bool = False,
         quoted: EvMessage | None = None,
@@ -550,8 +568,30 @@ class CallHandle:
         """
         ...
 
+    @property
+    def phase(self) -> str | None:
+        """Current generation-scoped call phase.
+
+        One of ``idle``, ``calling``, ``ringing``, ``waiting_room``,
+        ``connecting``, ``active``, ``ended``, or ``None``.
+        """
+        ...
+
+    @property
+    def media_connected(self) -> bool:
+        """Return True once the call's media plane and relay are connected."""
+        ...
+
+    @property
+    def is_answered(self) -> bool:
+        """Return True once the peer has accepted the call.
+
+        Checks whether ``phase`` is ``connecting`` or ``active``.
+        """
+        ...
+
     async def hangup(self) -> None:
-        """End the call.
+        """End the call via remote ``<terminate>`` and tear down local media.
 
         Raises:
             RuntimeError: If the call has already ended.
@@ -560,6 +600,10 @@ class CallHandle:
 
             await handle.hangup()
         """
+        ...
+
+    async def hangup_local(self) -> None:
+        """Tear down local media without sending a remote ``<terminate>``."""
         ...
 
     async def wait_ended(self) -> None:
@@ -899,7 +943,7 @@ class AdvancedClient:
         """Return a human-readable resource usage report."""
         ...
 
-    async def wait_for_socket(self, timeout_seconds: float) -> None:
+    async def wait_for_socket_ready(self, timeout_seconds: float) -> None:
         """Block until the WebSocket connection is established.
 
         Args:
@@ -910,8 +954,8 @@ class AdvancedClient:
         """
         ...
 
-    async def wait_for_connected(self, timeout_seconds: float) -> None:
-        """Block until the client is fully connected.
+    async def wait_for_session_ready(self, timeout_seconds: float) -> None:
+        """Block until the client session is ready.
 
         Args:
             timeout_seconds: Maximum seconds to wait before timing out.
@@ -921,8 +965,20 @@ class AdvancedClient:
 
         Example::
 
-            await client.advanced.wait_for_connected(30.0)
+            await client.advanced.wait_for_session_ready(30.0)
         """
+        ...
+
+    def auto_reconnect_enabled(self) -> bool:
+        """Return whether auto-reconnect is currently enabled."""
+        ...
+
+    def set_auto_reconnect(self, enabled: bool) -> None:
+        """Enable or disable automatic reconnection."""
+        ...
+
+    async def reconnect_immediately(self) -> None:
+        """Wake a parked reconnect backoff and reconnect immediately."""
         ...
 
     async def wait_for_startup_sync(self, timeout_seconds: float) -> None:
@@ -976,6 +1032,24 @@ class AdvancedClient:
         Args:
             active: ``True`` to force active delivery receipts.
         """
+        ...
+
+    async def pair_with_code(
+        self,
+        phone_number: str,
+        custom_code: str | None = None,
+        show_push_notification: bool = True,
+        display_os: str | None = None,
+    ) -> str:
+        """Request a phone-number pairing code for companion linking."""
+        ...
+
+    async def logout(self) -> None:
+        """Log out and unlink the current device session."""
+        ...
+
+    async def shutdown(self) -> None:
+        """Gracefully shut down the underlying WhatsApp client."""
         ...
 
 class LabelsClient:
@@ -1756,7 +1830,7 @@ class GroupMetadata:
     membership_approval: bool
     member_add_mode: str | None
     member_link_mode: str | None
-    size: int | None
+    participant_count: int | None
     is_parent_group: bool
     parent_group_jid: JID | None
     is_default_sub_group: bool
@@ -3490,6 +3564,16 @@ class PollsClient:
 
     All async methods raise ``RuntimeError`` if the client is not running.
     """
+
+    async def create_quiz(
+        self,
+        to: JID,
+        name: str,
+        options: list[str],
+        correct_index: int,
+    ) -> tuple[str, bytes]:
+        """Create a single-select quiz poll with one correct option."""
+        ...
 
     async def create(
         self,

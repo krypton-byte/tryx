@@ -28,7 +28,7 @@ impl VoipClient {
 #[pyclass]
 pub struct CallHandle {
     inner: Arc<whatsapp_rust::voip::CallHandle>,
-    bridge_tasks: std::sync::Mutex<Vec<tokio::task::JoinHandle<()>>>,
+    bridge_tasks: Arc<std::sync::Mutex<Vec<tokio::task::JoinHandle<()>>>>,
 }
 
 #[pyclass]
@@ -82,7 +82,7 @@ impl IncomingCallEvent {
                 Ok(handle) => handle,
                 Err(error) => { for task in tasks { task.abort(); } return Err(pyo3::exceptions::PyRuntimeError::new_err(error.to_string())); }
             };
-            Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: std::sync::Mutex::new(tasks) }))
+            Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: Arc::new(std::sync::Mutex::new(tasks)) }))
         })
     }
 }
@@ -100,8 +100,8 @@ impl Drop for CallHandle {
 #[pymethods]
 impl CallHandle {
     #[getter]
-    fn call_id(&self) -> String {
-        self.inner.call_id().to_string()
+    fn call_id(&self) -> &str {
+        self.inner.call_id()
     }
 
     #[getter]
@@ -122,7 +122,42 @@ impl CallHandle {
         })
     }
 
+    #[getter]
+    fn phase(&self) -> Option<&'static str> {
+        use whatsapp_rust::wacore::voip_control::CallPhase;
+        self.inner.phase().map(|p| match p {
+            CallPhase::Idle => "idle",
+            CallPhase::Calling => "calling",
+            CallPhase::Ringing => "ringing",
+            CallPhase::WaitingRoom => "waiting_room",
+            CallPhase::Connecting => "connecting",
+            CallPhase::Active => "active",
+            CallPhase::Ended => "ended",
+            _ => "unknown",
+        })
+    }
+
+    #[getter]
+    fn media_connected(&self) -> bool {
+        self.inner.media_connected()
+    }
+
+    #[getter]
+    fn is_answered(&self) -> bool {
+        use whatsapp_rust::wacore::voip_control::CallPhase;
+        matches!(self.inner.phase(), Some(CallPhase::Connecting | CallPhase::Active))
+    }
+
     fn hangup<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let call = self.inner.clone();
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let _ = call.terminate().await;
+            Ok(())
+        })
+    }
+
+    fn hangup_local<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let call = self.inner.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
@@ -145,11 +180,19 @@ impl CallHandle {
         let source = bridge.video_source.ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("video source adapter is missing"))?;
         let sink = bridge.video_sink.ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("video sink adapter is missing"))?;
         let tasks = bridge.tasks;
-        self.bridge_tasks.lock().map_err(|_| pyo3::exceptions::PyRuntimeError::new_err("call task lock poisoned"))?.extend(tasks);
+        let bridge_tasks = Arc::clone(&self.bridge_tasks);
         let call = self.inner.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
-            call.start_video(source, sink).await.map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+            if let Err(e) = call.start_video(source, sink).await {
+                for task in tasks {
+                    task.abort();
+                }
+                return Err(pyo3::exceptions::PyRuntimeError::new_err(e.to_string()));
+            }
+            if let Ok(mut guard) = bridge_tasks.lock() {
+                guard.extend(tasks);
+            }
             Ok(())
         })
     }
@@ -168,11 +211,19 @@ impl CallHandle {
         let source = bridge.video_source.ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("video source adapter is missing"))?;
         let sink = bridge.video_sink.ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("video sink adapter is missing"))?;
         let tasks = bridge.tasks;
-        self.bridge_tasks.lock().map_err(|_| pyo3::exceptions::PyRuntimeError::new_err("call task lock poisoned"))?.extend(tasks);
+        let bridge_tasks = Arc::clone(&self.bridge_tasks);
         let call = self.inner.clone();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
-            call.resume_video(source, sink).await.map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e.to_string()))?;
+            if let Err(e) = call.resume_video(source, sink).await {
+                for task in tasks {
+                    task.abort();
+                }
+                return Err(pyo3::exceptions::PyRuntimeError::new_err(e.to_string()));
+            }
+            if let Ok(mut guard) = bridge_tasks.lock() {
+                guard.extend(tasks);
+            }
             Ok(())
         })
     }
@@ -292,7 +343,7 @@ impl VoipClient {
                     py,
                     CallHandle {
                         inner: Arc::new(handle),
-                        bridge_tasks: std::sync::Mutex::new(tasks),
+                        bridge_tasks: Arc::new(std::sync::Mutex::new(tasks)),
                     },
                 )
             })
@@ -319,7 +370,7 @@ impl VoipClient {
                 Ok(handle) => handle,
                 Err(error) => { for task in tasks.drain(..) { task.abort(); } return Err(pyo3::exceptions::PyRuntimeError::new_err(error.to_string())); }
             };
-            Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: std::sync::Mutex::new(tasks) }))
+            Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: Arc::new(std::sync::Mutex::new(tasks)) }))
         })
     }
 
@@ -336,7 +387,7 @@ impl VoipClient {
             if let Some((vs, vk)) = video { builder = builder.video(vs, vk); }
             let result = builder.start().await;
             let handle = match result { Ok(v) => v, Err(e) => { for task in tasks.drain(..) { task.abort(); } return Err(pyo3::exceptions::PyRuntimeError::new_err(e.to_string())); } };
-            Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: std::sync::Mutex::new(tasks) }))
+            Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: Arc::new(std::sync::Mutex::new(tasks)) }))
         })
     }
 
@@ -347,7 +398,7 @@ impl VoipClient {
         future_into_py_with_locals::<_, Py<CallHandle>>(py, locals, async move {
             let voip = client.voip();
             let mut builder = voip.call_link(&token_or_url, media).audio(source, sink); if let Some((vs, vk)) = video { builder = builder.video(vs, vk); } let result = builder.start().await;
-            let handle = match result { Ok(v) => v, Err(e) => { for task in tasks.drain(..) { task.abort(); } return Err(pyo3::exceptions::PyRuntimeError::new_err(e.to_string())); } }; Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: std::sync::Mutex::new(tasks) }))
+            let handle = match result { Ok(v) => v, Err(e) => { for task in tasks.drain(..) { task.abort(); } return Err(pyo3::exceptions::PyRuntimeError::new_err(e.to_string())); } }; Python::attach(|py| Py::new(py, CallHandle { inner: Arc::new(handle), bridge_tasks: Arc::new(std::sync::Mutex::new(tasks)) }))
         })
     }
 }

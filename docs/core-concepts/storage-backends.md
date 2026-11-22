@@ -355,9 +355,9 @@ Complex types are passed as JSON bytes. Here are the key schemas:
 
 | Criteria | SqliteStore | FFI Store | PythonStore |
 |----------|:-----------:|:---------:|:-----------:|
-| Setup complexity | ⭐ Zero | ⭐⭐⭐ Requires compilation | ⭐⭐ Moderate |
-| Throughput | ⭐⭐ Good | ⭐⭐⭐ Maximum | ⭐⭐ Good |
-| Multi-instance | ❌ Single file | ✅ Shared DB | ✅ Shared DB |
+| Setup complexity | :material-star: Zero | :material-star::material-star::material-star: Requires compilation | :material-star::material-star: Moderate |
+| Throughput | :material-star::material-star: Good | :material-star::material-star::material-star: Maximum | :material-star::material-star: Good |
+| Multi-instance | :material-close: Single file | :material-check: Shared DB | :material-check: Shared DB |
 | Language | Rust (built-in) | C/Rust | Python |
-| Development speed | ⭐⭐⭐ Instant | ⭐ Slow | ⭐⭐⭐ Fast |
-| Package decoupling | Built-in | ✅ Fully independent | ✅ Fully independent |
+| Development speed | :material-star::material-star::material-star: Instant | :material-star: Slow | :material-star::material-star::material-star: Fast |
+| Package decoupling | Built-in | :material-check: Fully independent | :material-check: Fully independent |

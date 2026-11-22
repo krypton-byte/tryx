@@ -4,11 +4,10 @@ use std::sync::OnceLock;
 use buffa::Message as ProstMessage;
 use pyo3::{Py, PyAny, PyResult, Python, pyclass, pymethods};
 use pyo3::types::{PyDateTime};
-use chrono::{DateTime, Utc};
 use wacore::types::events::QrScannedWithoutMultidevice;
 use whatsapp_rust::{Jid, types::events::{ConnectFailureReason, LoggedOut as WhatsAppLoggedOut }};
 use whatsapp_rust::types::message::{MessageInfo as WhatsappMessageInfo};
-use crate::types::{JID, MessageInfo, MessageSource};
+use crate::types::{JID, MessageInfo, MessageSource, timestamp_to_py_datetime};
 use crate::events::proto_cache::{
     parse_message_proto,
     parse_proto_bytes as from_string_to_python_proto,
@@ -70,8 +69,8 @@ impl EvPairSuccess {
 #[pymethods]
 impl EvPairSuccess {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> Py<PairSuccessData> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> Py<PairSuccessData> {
+        if let Some(data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
             let new_data = PairSuccessData { id: Py::new(py, JID::from(self.inner.id.clone())).unwrap(), lid: Py::new(py, JID::from(self.inner.lid.clone())).unwrap(), business_name: self.inner.business_name.clone(), platform: self.inner.platform.clone() };
@@ -79,7 +78,7 @@ impl EvPairSuccess {
             self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data
         }
-     }
+    }
 }
 impl From<wacore::types::events::PairSuccess> for EvPairSuccess {
     fn from(event: wacore::types::events::PairSuccess) -> Self {
@@ -100,10 +99,8 @@ pub struct EvPairError {
     error: String,
 }
 impl EvPairError {
-    pub fn new(id: JID, lid: JID, business_name: String, platform: String, error: String) -> Self {
-        Python::attach(|py|{
-            Self { id: Py::new(py, id).unwrap(), lid: Py::new(py, lid).unwrap(), business_name, platform, error }
-        })
+    pub fn new(py: Python<'_>, id: JID, lid: JID, business_name: String, platform: String, error: String) -> PyResult<Self> {
+        Ok(Self { id: Py::new(py, id)?, lid: Py::new(py, lid)?, business_name, platform, error })
     }
 }
 #[pyclass]
@@ -177,7 +174,13 @@ pub struct EvReceipt {
 }
 
 impl EvReceipt {
-    pub fn new(inner: wacore::types::message::MessageSource, message_ids: Vec<String>, timestamp: DateTime<Utc>, r#type: wacore::types::presence::ReceiptType) -> Py<Self> {
+    pub fn new(
+        py: Python<'_>,
+        inner: wacore::types::message::MessageSource,
+        message_ids: Vec<String>,
+        timestamp: whatsapp_rust::Timestamp,
+        r#type: wacore::types::presence::ReceiptType,
+    ) -> PyResult<Py<Self>> {
         let receipt_type = match r#type {
             wacore::types::presence::ReceiptType::Delivered => ReceiptType::Delivered,
             wacore::types::presence::ReceiptType::Sender => ReceiptType::Sender,
@@ -194,16 +197,16 @@ impl EvReceipt {
             wacore::types::presence::ReceiptType::Other(_) => ReceiptType::Other,
             _ => ReceiptType::Other,
         };
-        Python::attach(|py| {
-            pyo3::Py::new(py, Self {
+        pyo3::Py::new(
+            py,
+            Self {
                 inner: Box::new(inner),
                 source: None,
                 message_ids,
-                timestamp: PyDateTime::from_timestamp(py, timestamp.naive_utc().and_utc().timestamp_millis() as f64 / 1000.0, None).unwrap().into(),
-                receipt_type: Py::new(py, receipt_type).unwrap(),
-            })
-        })
-        .unwrap()
+                timestamp: timestamp_to_py_datetime(py, timestamp)?,
+                receipt_type: Py::new(py, receipt_type)?,
+            },
+        )
     }
 }
 
@@ -252,11 +255,12 @@ pub struct EvUndecryptableMessage {
 
 impl EvUndecryptableMessage {
     pub fn new(
+        py: Python<'_>,
         info_inner: wacore::types::message::MessageInfo,
         is_unavailable: bool,
         unavailable_type: wacore::types::events::UnavailableType,
         decrypt_fail_mode: wacore::types::events::DecryptFailMode,
-    ) -> Self {
+    ) -> PyResult<Self> {
         let py_unavailable_type = match unavailable_type {
             wacore::types::events::UnavailableType::Unknown => UnavailableType::Unknown,
             wacore::types::events::UnavailableType::ViewOnce => UnavailableType::ViewOnce,
@@ -268,14 +272,12 @@ impl EvUndecryptableMessage {
             wacore::types::events::DecryptFailMode::Hide => DecryptFailMode::Hide,
         };
 
-        Python::attach(|py| {
-            Self {
-                info_inner: Box::new(info_inner),
-                info: None,
-                is_unavailable,
-                unavailable_type: Py::new(py, py_unavailable_type).unwrap(),
-                decrypt_fail_mode: Py::new(py, py_decrypt_fail_mode).unwrap(),
-            }
+        Ok(Self {
+            info_inner: Box::new(info_inner),
+            info: None,
+            is_unavailable,
+            unavailable_type: Py::new(py, py_unavailable_type)?,
+            decrypt_fail_mode: Py::new(py, py_decrypt_fail_mode)?,
         })
     }
 }
@@ -309,11 +311,11 @@ impl EvNotification {
 #[pymethods]
 impl EvNotification {
     #[getter]
-    fn node(&mut self, py: Python<'_>) -> PyResult<Py<Node>> {
+    fn node(&self, py: Python<'_>) -> PyResult<Py<Node>> {
         if let Some(node) = self.node_cache.get() {
             Ok(node.clone_ref(py))
         } else {
-            let node = Node::from_node(&self.inner);
+            let node = Node::from_node(py, &self.inner);
             let py_node = Py::new(py, node)?;
             self.node_cache.set(py_node.clone_ref(py)).ok();
             Ok(py_node)
@@ -368,34 +370,31 @@ pub struct EvChatPresence {
 }
 
 impl EvChatPresence {
-    pub fn new(source: wacore::types::message::MessageSource, state: wacore::types::presence::ChatPresence, media: wacore::types::presence::ChatPresenceMedia) -> Self {
-        let chat_presence_state = match state {
-            wacore::types::presence::ChatPresence::Composing => ChatPresence::Composing,
-            wacore::types::presence::ChatPresence::Paused => ChatPresence::Paused,
-        };
-        let chat_presence_media = match media {
-            wacore::types::presence::ChatPresenceMedia::Text => ChatPresenceMedia::Text,
-            wacore::types::presence::ChatPresenceMedia::Audio => ChatPresenceMedia::Audio,
+    pub fn new(source: wacore::types::message::MessageSource, activity: wacore::types::presence::ChatActivity) -> Self {
+        let (state, media) = match activity {
+            wacore::types::presence::ChatActivity::Typing => (ChatPresence::Composing, ChatPresenceMedia::Text),
+            wacore::types::presence::ChatActivity::RecordingAudio => (ChatPresence::Composing, ChatPresenceMedia::Audio),
+            wacore::types::presence::ChatActivity::Idle | _ => (ChatPresence::Paused, ChatPresenceMedia::Text),
         };
         Self {
             source: Box::new(source),
             source_cache: OnceLock::new(),
-            state: chat_presence_state,
-            media: chat_presence_media,
+            state,
+            media,
         }
     }
 }
 
 impl From<wacore::types::events::ChatPresenceUpdate> for EvChatPresence {
     fn from(event: wacore::types::events::ChatPresenceUpdate) -> Self {
-        EvChatPresence::new(event.source, event.state, event.media)
+        EvChatPresence::new(event.source, event.state)
     }
 }
 
 #[pymethods]
 impl EvChatPresence {
     #[getter]
-    fn source(&mut self, py: Python<'_>) -> Py<MessageSource> {
+    fn source(&self, py: Python<'_>) -> Py<MessageSource> {
         if let Some(cached) = self.source_cache.get() {
             cached.clone_ref(py)
         } else {
@@ -432,17 +431,25 @@ pub struct EvPresence {
     last_seen: Option<Py<PyDateTime>>,
 }
 impl EvPresence {
-    pub fn new(from: Jid, unavailable: bool, last_seen: Option<DateTime<Utc>>) -> Self {
-        Python::attach(|py|{
-            let py_last_seen = last_seen.map(|dt| PyDateTime::from_timestamp(py, dt.timestamp() as f64, None).unwrap().into());
-            Self { from_: Py::new(py, JID::from(from)).unwrap(), unavailable, last_seen: py_last_seen }
+    pub fn new(
+        py: Python<'_>,
+        from: Jid,
+        unavailable: bool,
+        last_seen: Option<whatsapp_rust::Timestamp>,
+    ) -> PyResult<Self> {
+        let py_last_seen = last_seen
+            .map(|dt| timestamp_to_py_datetime(py, dt))
+            .transpose()?;
+        Ok(Self {
+            from_: Py::new(py, JID::from(from))?,
+            unavailable,
+            last_seen: py_last_seen,
         })
     }
-}
 
-impl From<wacore::types::events::PresenceUpdate> for EvPresence {
-    fn from(event: wacore::types::events::PresenceUpdate) -> Self {
-        EvPresence::new(event.from, event.unavailable, event.last_seen)
+    pub fn from_event(py: Python<'_>, event: &wacore::types::events::PresenceUpdate) -> PyResult<Self> {
+        let unavailable = matches!(event.status, wacore::types::presence::PresenceStatus::Unavailable);
+        EvPresence::new(py, event.from.clone(), unavailable, event.last_seen)
     }
 }
 
@@ -478,14 +485,14 @@ impl From<wacore::types::events::PictureUpdate> for EvPictureUpdate {
 #[pymethods]
 impl EvPictureUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> Py<PictureUpdateData> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> Py<PictureUpdateData> {
+        if let Some(data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
             let new_data = PictureUpdateData {
                 jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 author: self.inner.author.clone().map(|a| Py::new(py, JID::from(a)).unwrap()),
-                timestamp: Some(PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind()),
+                timestamp: Some(timestamp_to_py_datetime(py, self.inner.timestamp).unwrap()),
                 removed: self.inner.removed,
                 picture_id: self.inner.picture_id.clone(),
             };
@@ -525,11 +532,11 @@ impl From<wacore::types::events::UserAboutUpdate> for EvUserAboutUpdate {
 #[pymethods]
 impl EvUserAboutUpdate {
     #[getter]
-    fn data(&mut self, py: Python<'_>) -> Py<UserAboutUpdateData> {
-        if let Some(ref data) = self.data_cached.get() {
+    fn data(&self, py: Python<'_>) -> Py<UserAboutUpdateData> {
+        if let Some(data) = self.data_cached.get() {
             data.clone_ref(py)
         } else {
-            let new_data = UserAboutUpdateData { jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(), status: self.inner.status.clone(), timestamp: Some(PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().unbind()) };
+            let new_data = UserAboutUpdateData { jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(), status: self.inner.status.clone(), timestamp: Some(timestamp_to_py_datetime(py, self.inner.timestamp).unwrap()) };
             let py_data = Py::new(py, new_data).unwrap();
             self.data_cached.set(py_data.clone_ref(py)).ok();
             py_data

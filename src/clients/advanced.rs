@@ -85,24 +85,24 @@ impl AdvancedClient {
         })
     }
 
-    fn wait_for_socket<'py>(&self, py: Python<'py>, timeout_seconds: f64) -> PyResult<Bound<'py, PyAny>> {
+    fn wait_for_socket_ready<'py>(&self, py: Python<'py>, timeout_seconds: f64) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
             client
-                .wait_for_socket(Duration::from_secs_f64(timeout_seconds))
+                .wait_for_socket_ready(Duration::from_secs_f64(timeout_seconds))
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyTimeoutError, _>(e.to_string()))?;
             Ok(())
         })
     }
 
-    fn wait_for_connected<'py>(&self, py: Python<'py>, timeout_seconds: f64) -> PyResult<Bound<'py, PyAny>> {
+    fn wait_for_session_ready<'py>(&self, py: Python<'py>, timeout_seconds: f64) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
         future_into_py_with_locals(py, locals, async move {
             client
-                .wait_for_connected(Duration::from_secs_f64(timeout_seconds))
+                .wait_for_session_ready(Duration::from_secs_f64(timeout_seconds))
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyTimeoutError, _>(e.to_string()))?;
             Ok(())
@@ -161,5 +161,67 @@ impl AdvancedClient {
     fn set_force_active_delivery_receipts(&self, active: bool) -> PyResult<()> {
         self.get_client()?.set_force_active_delivery_receipts(active);
         Ok(())
+    }
+
+    fn auto_reconnect_enabled(&self) -> PyResult<bool> {
+        Ok(self.get_client()?.auto_reconnect_enabled())
+    }
+
+    fn set_auto_reconnect(&self, enabled: bool) -> PyResult<()> {
+        self.get_client()?.set_auto_reconnect(enabled);
+        Ok(())
+    }
+
+    fn reconnect_immediately<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            client.reconnect_immediately().await;
+            Ok(())
+        })
+    }
+
+    #[pyo3(signature = (phone_number, custom_code=None, show_push_notification=true, display_os=None))]
+    fn pair_with_code<'py>(
+        &self,
+        py: Python<'py>,
+        phone_number: String,
+        custom_code: Option<String>,
+        show_push_notification: bool,
+        display_os: Option<String>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        let options = whatsapp_rust::pair_code::PairCodeOptions {
+            phone_number,
+            show_push_notification,
+            custom_code,
+            platform_id: None,
+            display_os,
+        };
+        future_into_py_with_locals::<_, String>(py, locals, async move {
+            client
+                .pair_with_code(options)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+        })
+    }
+
+    fn logout<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let _ = client.logout().await;
+            Ok(())
+        })
+    }
+
+    fn shutdown<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.get_client()?;
+        let locals = get_current_locals(py)?;
+        future_into_py_with_locals(py, locals, async move {
+            let _ = client.shutdown().await;
+            Ok(())
+        })
     }
 }

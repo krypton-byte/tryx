@@ -6,7 +6,7 @@ use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals}
 use tokio::sync::watch;
 use waproto::whatsapp as wa;
 use whatsapp_rust::Client;
-use whatsapp_rust::{RevokeType, SyncActionMessageRange, message_key, message_range};
+use whatsapp_rust::{RevokeType, SyncActionMessageRange, message_range};
 
 use crate::events::proto_cache::{
     parse_proto_bytes,
@@ -84,7 +84,11 @@ impl ChatActionsClient {
         let participant_jid = participant
             .as_ref()
             .map(|p| p.bind(py).borrow().as_whatsapp_jid());
-        let key = message_key(id, &remote, from_me, participant_jid.as_ref());
+        let mut key = wa::MessageKey::default();
+        key.remote_jid = Some(remote.to_string());
+        key.id = Some(id);
+        key.from_me = Some(from_me);
+        key.participant = participant_jid.map(|p| p.to_string());
         Ok(Self::encode_message_key(py, key)?.into_bound(py).into_any())
     }
 
@@ -95,14 +99,38 @@ impl ChatActionsClient {
         last_system_message_timestamp: Option<i64>,
         messages: Vec<(Py<PyAny>, i64)>,
     ) -> PyResult<Bound<'py, PyAny>> {
-        let parsed_messages = messages
-            .into_iter()
-            .map(|(key, ts)| Self::decode_message_key(py, key).map(|parsed| (parsed, ts)))
-            .collect::<PyResult<Vec<_>>>()?;
+        let mut owned = Vec::with_capacity(messages.len());
+        for (key, ts) in messages {
+            let parsed = Self::decode_message_key(py, key)?;
+            let remote_str = parsed.remote_jid.as_deref().unwrap_or("");
+            let chat: whatsapp_rust::Jid = remote_str.parse().map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid remote_jid: {e}"))
+            })?;
+            let id = whatsapp_rust::MessageId::new(parsed.id.as_deref().unwrap_or(""))
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+            let from_me = parsed.from_me.unwrap_or(false);
+            let participant = parsed
+                .participant
+                .as_deref()
+                .map(|s| s.parse::<whatsapp_rust::Jid>())
+                .transpose()
+                .map_err(|e| {
+                    PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                        "Invalid participant: {e}"
+                    ))
+                })?;
+            owned.push((chat, id, from_me, participant, ts));
+        }
+        let mut refs = Vec::with_capacity(owned.len());
+        for (chat, id, from_me, participant, ts) in &owned {
+            let mref = whatsapp_rust::MessageRef::new(chat, id.clone(), participant.as_ref(), *from_me)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+            refs.push((mref, *ts));
+        }
         let range = message_range(
             last_message_timestamp,
             last_system_message_timestamp,
-            parsed_messages,
+            refs,
         );
         Ok(Self::encode_sync_action_message_range(py, range)?
             .into_bound(py)
@@ -244,17 +272,21 @@ impl ChatActionsClient {
         let participant_jid_value = participant_jid
             .as_ref()
             .map(|p| p.bind(py).borrow().as_whatsapp_jid());
+        let msg_id = whatsapp_rust::MessageId::new(&message_id)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals(py, locals, async move {
+            let target = whatsapp_rust::MessageRef::new(
+                &chat_jid_value,
+                msg_id,
+                participant_jid_value.as_ref(),
+                from_me,
+            )
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
             client
                 .chat_actions()
-                .star_message(
-                    &chat_jid_value,
-                    participant_jid_value.as_ref(),
-                    message_id.as_str(),
-                    from_me,
-                )
+                .star_message(&target)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
@@ -274,17 +306,21 @@ impl ChatActionsClient {
         let participant_jid_value = participant_jid
             .as_ref()
             .map(|p| p.bind(py).borrow().as_whatsapp_jid());
+        let msg_id = whatsapp_rust::MessageId::new(&message_id)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals(py, locals, async move {
+            let target = whatsapp_rust::MessageRef::new(
+                &chat_jid_value,
+                msg_id,
+                participant_jid_value.as_ref(),
+                from_me,
+            )
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
             client
                 .chat_actions()
-                .unstar_message(
-                    &chat_jid_value,
-                    participant_jid_value.as_ref(),
-                    message_id.as_str(),
-                    from_me,
-                )
+                .unstar_message(&target)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
@@ -350,19 +386,21 @@ impl ChatActionsClient {
         let participant_jid_value = participant_jid
             .as_ref()
             .map(|p| p.bind(py).borrow().as_whatsapp_jid());
+        let msg_id = whatsapp_rust::MessageId::new(&message_id)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals(py, locals, async move {
+            let target = whatsapp_rust::MessageRef::new(
+                &chat_jid_value,
+                msg_id,
+                participant_jid_value.as_ref(),
+                from_me,
+            )
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
             client
                 .chat_actions()
-                .delete_message_for_me(
-                    &chat_jid_value,
-                    participant_jid_value.as_ref(),
-                    message_id.as_str(),
-                    from_me,
-                    delete_media,
-                    message_timestamp,
-                )
+                .delete_message_for_me(&target, delete_media, message_timestamp)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
@@ -384,9 +422,20 @@ impl ChatActionsClient {
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals(py, locals, async move {
+            let mut opts = whatsapp_rust::ClearChatOptions::default();
+            opts.starred_messages = if delete_starred {
+                whatsapp_rust::StarredMessages::Delete
+            } else {
+                whatsapp_rust::StarredMessages::Keep
+            };
+            opts.media = if delete_media {
+                whatsapp_rust::MediaDeletion::Delete
+            } else {
+                whatsapp_rust::MediaDeletion::Keep
+            };
             client
                 .chat_actions()
-                .clear_chat(&jid_value, delete_starred, delete_media, parsed_range)
+                .clear_chat_with_options(&jid_value, opts, parsed_range)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
@@ -425,19 +474,19 @@ impl ChatActionsClient {
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
-        let serialized: Vec<u8> = new_message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = wa::Message::decode(&mut serialized.as_slice()).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Failed to decode WhatsAppMessage proto: {}", e),
-            )
-        })?;
+        let message_value: wa::Message = crate::events::proto_cache::decode_py_proto(py, &new_message)?;
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
-                .edit_message(chat_jid_value, original_id, message_value)
+                .edit_message_raw(
+                    chat_jid_value,
+                    original_id,
+                    message_value,
+                    whatsapp_rust::EditOptions::default(),
+                )
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -462,7 +511,7 @@ impl ChatActionsClient {
 
         future_into_py_with_locals(py, locals, async move {
             client
-                .revoke_message(chat_jid_value, message_id, revoke_type)
+                .revoke_message_raw(chat_jid_value, message_id, revoke_type)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
@@ -484,27 +533,24 @@ impl ChatActionsClient {
         let participant = participant_jid
             .as_ref()
             .map(|jid| jid.bind(py).borrow().as_whatsapp_jid().to_string());
-        let reaction_message = wa::Message {
-            reaction_message: buffa::MessageField::some(wa::message::ReactionMessage {
-                key: buffa::MessageField::some(wa::MessageKey {
-                    remote_jid: Some(chat_jid_value.to_string()),
-                    id: Some(message_id),
-                    from_me: Some(from_me),
-                    participant,
-                }),
-                text: Some(reaction),
-                sender_timestamp_ms: Some(wacore::time::now_millis()),
-                ..Default::default()
-            }),
-            ..Default::default()
-        };
+        let mut key = wa::MessageKey::default();
+        key.remote_jid = Some(chat_jid_value.to_string());
+        key.id = Some(message_id);
+        key.from_me = Some(from_me);
+        key.participant = participant;
+        let mut react = wa::message::ReactionMessage::default();
+        react.key = buffa::MessageField::some(key);
+        react.text = Some(reaction);
+        react.sender_timestamp_ms = Some(wacore::time::now_millis());
+        let mut reaction_message = wa::Message::default();
+        reaction_message.reaction_message = buffa::MessageField::some(react);
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .send_message(chat_jid_value, reaction_message)
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }

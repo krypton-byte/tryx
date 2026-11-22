@@ -26,7 +26,6 @@ pyo3-async-runtimes = { version = "0.28.0", features = ["attributes", "tokio-run
 buffa = { version = "0.9.2", default-features = false, features = ["json"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "fmt"] }
-chrono = "0.4.44"
 infer = { git = "https://github.com/bojand/infer", branch = "master" }
 libloading = "0.8"
 serde_json = "1"
@@ -49,7 +48,7 @@ wacore-appstate = { path = "libs/whatsapp-rust/wacore/appstate", default-feature
 [features]
 default = ["voip-mlow"]
 voip = ["whatsapp-rust/voip"]
-voip-mlow = ["whatsapp-rust/voip-mlow"]
+voip-mlow = ["whatsapp-rust/voip-mlow", "whatsapp-rust/voip-relay-native"]
 
 # ── Release profile ────────────────────────────────────────────────────
 # Optimised for maximum runtime performance. opt-level=3 enables full

@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use buffa::Message;
 use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -231,18 +230,13 @@ impl NewsletterClient {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
         let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
-        let serialized: Vec<u8> = message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Failed to decode WhatsAppMessage proto: {}", e),
-            )
-        })?;
+        let message_value: WhatsappMessage = crate::events::proto_cache::decode_py_proto(py, &message)?;
 
-        future_into_py_with_locals(py, locals, async move {
+        future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .send_message(jid_value, message_value)
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }
@@ -261,7 +255,7 @@ impl NewsletterClient {
         future_into_py_with_locals(py, locals, async move {
             client
                 .newsletter()
-                .send_reaction(&jid_value, server_id, reaction.as_str())
+                .send_reaction_raw(&jid_value, server_id, reaction.as_str())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
@@ -318,17 +312,12 @@ impl NewsletterClient {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
         let jid_value = jid.bind(py).borrow().as_whatsapp_jid();
-        let serialized: Vec<u8> = message.call_method0(py, "SerializeToString")?.extract(py)?;
-        let message_value = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Failed to decode WhatsAppMessage proto: {}", e),
-            )
-        })?;
+        let message_value: WhatsappMessage = crate::events::proto_cache::decode_py_proto(py, &message)?;
 
         future_into_py_with_locals(py, locals, async move {
             client
                 .newsletter()
-                .edit_message(&jid_value, message_id, message_value)
+                .edit_message_raw(&jid_value, message_id, message_value)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
@@ -348,7 +337,7 @@ impl NewsletterClient {
         future_into_py_with_locals(py, locals, async move {
             client
                 .newsletter()
-                .revoke_message(&jid_value, message_id)
+                .revoke_message_raw(&jid_value, message_id)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Ok(())
