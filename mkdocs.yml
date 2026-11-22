@@ -36,6 +36,7 @@ nav:
       - api/presence.md
       - api/privacy.md
       - api/profile.md
+      - api/voip.md
       - api/events.md
       - api/types.md
       - api/exceptions.md

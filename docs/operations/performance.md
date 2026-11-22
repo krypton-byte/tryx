@@ -2,6 +2,16 @@
 
 Optimize for predictable latency and stable memory under burst traffic.
 
+## Built-in Low-Overhead Architecture
+
+Tryx minimizes Python/GIL overhead and memory churn in the Rust layer:
+
+1. **Event-Interest Filtering**: `Tryx` registers only the event types that have Python `@app.on(...)` handlers; unsubscribed events are dropped inside Rust without acquiring the GIL.
+2. **Shortcut Getters & Lazy Parsing**: Read `event.text`, `event.chat`, `event.sender`, `event.id`, and `event.has_media` on `EvMessage` without allocating `MessageData` or `raw_proto`. `EvHistorySync` keeps payloads compressed until `raw_bytes()` or `proto` is requested, and decompresses off-GIL.
+3. **Zero-Roundtrip & Streaming Media**: `client.download_media(event)` and `client.download_media_to_file(event, path)` read media descriptors directly from Rust `Arc<Message>` without serializing protobuf back from Python.
+4. **Bounded Signal Caches**: Pass `signal_cache_max_entries` to `Tryx(backend, signal_cache_max_entries=...)` to cap Signal ratchet memory on high-volume bots.
+5. **Pooled Storage & Shared Tokio Runtime**: `SqliteStore` caches its `SqliteDatabase` pool in a `OnceCell`, and all async Python futures share `pyo3_async_runtimes::tokio::get_runtime()`.
+
 ## Handler Design Rules
 
 1. keep event handlers short and non-blocking

@@ -1,35 +1,88 @@
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
-use pyo3::{PyAny, Py, PyErr, PyResult, Python, exceptions::PyRuntimeError, pyclass, pymethods, types::{PyAnyMethods, PyBytes, PyDateTime}};
-use whatsapp_rust::{Jid as WhatsAppJID};
-use wacore::types::message::{BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo, MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo};
-#[pyclass]
+use pyo3::{
+    Bound, FromPyObject, Py, PyAny, PyErr, PyRef, PyResult, Python,
+    exceptions::{PyRuntimeError, PyValueError},
+    pyclass, pymethods,
+    types::{PyAnyMethods, PyBytes, PyDateTime, PyType},
+};
+use wacore::types::message::{
+    BotEditType, EditAttribute, MessageInfo as WhatsAppMessageInfo,
+    MessageSource as WhatsAppMessageSource, MsgBotInfo as WhatsAppMsgBotInfo,
+};
+use wacore_binary::JidExt;
+use whatsapp_rust::Jid as WhatsAppJID;
+
+/// Convert a `whatsapp_rust::Timestamp` directly to a Python `datetime` without intermediate `chrono` allocations.
+#[inline]
+pub fn timestamp_to_py_datetime(py: Python<'_>, ts: whatsapp_rust::Timestamp) -> PyResult<Py<PyDateTime>> {
+    let date = PyDateTime::from_timestamp(py, ts.as_millis() as f64 / 1000.0, None)
+        .map_err(|_| PyErr::new::<PyRuntimeError, _>("Failed to convert timestamp to datetime"))?;
+    Ok(date.into())
+}
+
+/// Accepts either a `JID` object or a JID string (e.g. `"628123@s.whatsapp.net"` or `"628123"`).
+#[derive(FromPyObject)]
+pub enum PyJidArg<'py> {
+    Jid(PyRef<'py, JID>),
+    Str(String),
+}
+
+impl PyJidArg<'_> {
+    #[inline]
+    pub fn into_whatsapp_jid(self) -> PyResult<WhatsAppJID> {
+        match self {
+            PyJidArg::Jid(j) => Ok(j.inner.clone()),
+            PyJidArg::Str(s) => parse_jid_str(&s),
+        }
+    }
+}
+
+#[inline]
+pub fn parse_jid_str(s: &str) -> PyResult<WhatsAppJID> {
+    if s.contains('@') {
+        s.parse::<WhatsAppJID>()
+            .map_err(|e| PyValueError::new_err(format!("Invalid JID '{s}': {e}")))
+    } else {
+        Ok(WhatsAppJID::pn(s))
+    }
+}
+
+#[pyclass(from_py_object)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct JID {
-    inner: Arc<WhatsAppJID>,
+    inner: WhatsAppJID,
 }
+
 impl From<WhatsAppJID> for JID {
+    #[inline]
     fn from(jid: WhatsAppJID) -> Self {
-        JID { inner: Arc::new(jid) }
-    }
-}
-
-impl From<JID> for WhatsAppJID {
-    fn from(jid: JID) -> Self {
-        (*jid.inner).clone()
-    }
-}
-
-impl From<Arc<WhatsAppJID>> for JID {
-    fn from(jid: Arc<WhatsAppJID>) -> Self {
         JID { inner: jid }
     }
 }
 
+impl From<JID> for WhatsAppJID {
+    #[inline]
+    fn from(jid: JID) -> Self {
+        jid.inner
+    }
+}
+
+impl From<Arc<WhatsAppJID>> for JID {
+    #[inline]
+    fn from(jid: Arc<WhatsAppJID>) -> Self {
+        JID { inner: (*jid).clone() }
+    }
+}
+
 impl JID {
+    #[inline]
     pub fn as_whatsapp_jid(&self) -> WhatsAppJID {
-        (*self.inner).clone()
+        self.inner.clone()
     }
 
+    #[inline]
     pub fn as_whatsapp_jid_ref(&self) -> &WhatsAppJID {
         &self.inner
     }
@@ -38,40 +91,131 @@ impl JID {
 #[pymethods]
 impl JID {
     #[new]
-    fn new(user: String, server: String) -> PyResult<Self> {
-        let server_enum = wacore_binary::jid::Server::try_from(server.as_str())
-            .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("Invalid server: {e}")))?;
-        let inner = WhatsAppJID::new(&user, server_enum);
-        Ok(JID { inner: Arc::new(inner) })
+    #[pyo3(signature = (user, server=None))]
+    fn new(user: String, server: Option<String>) -> PyResult<Self> {
+        match server {
+            Some(s) => {
+                let server_enum = wacore_binary::jid::Server::try_from(s.as_str())
+                    .map_err(|e| PyValueError::new_err(format!("Invalid server: {e}")))?;
+                Ok(JID {
+                    inner: WhatsAppJID::new(&user, server_enum),
+                })
+            }
+            None => Ok(JID {
+                inner: parse_jid_str(&user)?,
+            }),
+        }
     }
+
+    #[classmethod]
+    fn parse(_cls: &Bound<'_, PyType>, s: &str) -> PyResult<Self> {
+        Ok(JID {
+            inner: parse_jid_str(s)?,
+        })
+    }
+
     #[getter]
-    fn user(&self) -> String {
-        self.inner.user.to_string()
+    fn user(&self) -> &str {
+        self.inner.user.as_str()
     }
+
     #[getter]
     fn server(&self) -> String {
         self.inner.server.to_string()
     }
+
+    #[getter]
+    fn device(&self) -> u16 {
+        self.inner.device
+    }
+
+    #[getter]
+    fn agent(&self) -> u8 {
+        self.inner.agent
+    }
+
+    #[getter]
+    fn is_group(&self) -> bool {
+        self.inner.is_group()
+    }
+
+    #[getter]
+    fn is_lid(&self) -> bool {
+        self.inner.is_lid()
+    }
+
+    #[getter]
+    fn is_pn(&self) -> bool {
+        self.inner.is_pn()
+    }
+
+    #[getter]
+    fn is_newsletter(&self) -> bool {
+        self.inner.is_newsletter()
+    }
+
+    #[getter]
+    fn is_bot(&self) -> bool {
+        self.inner.is_bot()
+    }
+
+    #[getter]
+    fn is_broadcast_list(&self) -> bool {
+        self.inner.is_broadcast_list()
+    }
+
+    #[getter]
+    fn is_status_broadcast(&self) -> bool {
+        self.inner.is_status_broadcast()
+    }
+
+    fn to_non_ad(&self) -> Self {
+        JID {
+            inner: self.inner.to_non_ad(),
+        }
+    }
+
+    fn is_same_chat_as(&self, other: PyJidArg<'_>) -> PyResult<bool> {
+        let other_jid = other.into_whatsapp_jid()?;
+        Ok(self.inner.is_same_chat_as(&other_jid))
+    }
+
+    pub fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+
     pub fn __repr__(&self) -> String {
         format!("JID(user='{}', server='{}')", self.inner.user, self.inner.server)
+    }
+
+    fn __eq__(&self, other: &Bound<'_, PyAny>) -> bool {
+        if let Ok(other_jid) = other.extract::<PyRef<'_, JID>>() {
+            self.inner == other_jid.inner
+        } else {
+            false
+        }
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
     }
 }
 
 #[pyclass]
 pub struct MessageSource {
     inner: Arc<WhatsAppMessageSource>,
-    chat: Arc<WhatsAppJID>,
-    sender: Arc<WhatsAppJID>,
 }
 #[pymethods]
 impl MessageSource {
     #[getter]
     fn chat(&self) -> JID {
-        self.chat.clone().into()
+        JID { inner: self.inner.chat.clone() }
     }
     #[getter]
     fn sender(&self) -> JID {
-        self.sender.clone().into()
+        JID { inner: self.inner.sender.clone() }
     }
     #[getter]
     fn is_from_me(&self) -> bool {
@@ -95,32 +239,29 @@ impl MessageSource {
     }
     #[getter]
     fn sender_alt(&self) -> Option<JID> {
-        self.inner.sender_alt.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
+        self.inner.sender_alt.as_ref().map(|jid| JID { inner: jid.clone() })
     }
     #[getter]
     fn recipient_alt(&self) -> Option<JID> {
-        self.inner.recipient_alt.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
+        self.inner.recipient_alt.as_ref().map(|jid| JID { inner: jid.clone() })
     }
     #[getter]
     fn broadcast_list_owner(&self) -> Option<JID> {
-        self.inner.broadcast_list_owner.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
+        self.inner.broadcast_list_owner.as_ref().map(|jid| JID { inner: jid.clone() })
     }
     #[getter]
     fn recipient(&self) -> Option<JID> {
-        self.inner.recipient.as_ref().map(|jid| JID { inner: Arc::new(jid.clone()) })
+        self.inner.recipient.as_ref().map(|jid| JID { inner: jid.clone() })
     }
     fn __repr__(&self) -> String {
-        format!("MessageSource(chat='{}', sender='{}')", self.chat, self.sender)
+        format!("MessageSource(chat='{}', sender='{}')", self.inner.chat, self.inner.sender)
     }
 }
 impl From<WhatsAppMessageSource> for MessageSource {
+    #[inline]
     fn from(source: WhatsAppMessageSource) -> Self {
-        let chat = Arc::new(source.chat.clone());
-        let sender = Arc::new(source.sender.clone());
         MessageSource {
             inner: Arc::new(source),
-            chat,
-            sender,
         }
     }
 }
@@ -145,10 +286,7 @@ impl MsgBotInfo {
     }
     #[getter]
     fn edit_sender_timestamp(&self, py: Python) -> PyResult<Option<pyo3::Py<PyDateTime>>> {
-        self.inner.edit_sender_timestamp_ms.map(|x| {
-            let date = PyDateTime::from_timestamp(py, x.naive_utc().and_utc().timestamp_millis()as f64/1000.0, None).map_err(|_| PyErr::new::<PyRuntimeError, _>("Failed to convert timestamp to datetime"))?;
-            Ok(date.into())
-        }).transpose()
+        self.inner.edit_sender_timestamp_ms.map(|x| timestamp_to_py_datetime(py, x)).transpose()
     }
     fn __repr__(&self, py: Python<'_>) -> String {
         format!("MsgBotInfo(edit_type={:?}, edit_sender_timestamp={:?})", self.edit_type(), self.edit_sender_timestamp(py).unwrap_or(None))
@@ -182,21 +320,20 @@ pub struct MsgMetaInfo {
 #[derive(Clone)]
 pub struct MessageInfo {
     pub inner: Arc<WhatsAppMessageInfo>,
-    #[pyo3(get)]
-    pub id: String,
-    #[pyo3(get)]
-    pub r#type: String,
-    #[pyo3(get)]
-    pub push_name: String,
+}
+
+impl MessageInfo {
+    #[inline]
+    pub fn from_arc(inner: Arc<WhatsAppMessageInfo>) -> Self {
+        MessageInfo { inner }
+    }
 }
 
 impl From<WhatsAppMessageInfo> for MessageInfo {
+    #[inline]
     fn from(info: WhatsAppMessageInfo) -> Self {
         MessageInfo {
-            inner: Arc::new(info.clone()),
-            id: info.id.to_string(),
-            r#type: info.r#type.map(|t| t.to_string()).unwrap_or_default(),
-            push_name: info.push_name.to_string(),
+            inner: Arc::new(info),
         }
     }
 }
@@ -212,11 +349,21 @@ pub struct DeviceSentMeta {
 #[pymethods]
 impl MessageInfo {
     #[getter]
+    fn id(&self) -> &str {
+        self.inner.id.as_str()
+    }
+    #[getter]
+    fn r#type(&self) -> String {
+        self.inner.r#type.as_ref().map(|t| t.to_string()).unwrap_or_default()
+    }
+    #[getter]
+    fn push_name(&self) -> &str {
+        self.inner.push_name.as_str()
+    }
+    #[getter]
     fn source(&self) -> MessageSource {
         MessageSource {
             inner: Arc::new(self.inner.source.clone()),
-            chat: Arc::new(self.inner.source.chat.clone()),
-            sender: Arc::new(self.inner.source.sender.clone()),
         }
     }
     #[getter]
@@ -229,9 +376,7 @@ impl MessageInfo {
     }
     #[getter]
     fn timestamp(&self, py: Python) -> PyResult<pyo3::Py<PyDateTime>> {
-        let timestamp = self.inner.timestamp;
-        let date = PyDateTime::from_timestamp(py, timestamp.timestamp() as f64, None).map_err(|_| PyErr::new::<PyRuntimeError, _>("Failed to convert timestamp to datetime"))?;
-        Ok(date.into())
+        timestamp_to_py_datetime(py, self.inner.timestamp)
     }
     #[getter]
     fn media_type(&self) -> Option<String> {
@@ -308,13 +453,12 @@ impl MessageInfo {
                     return Ok(None);
                 };
 
-                let verified_proto = py.import("tryx.waproto.whatsapp_pb2")?;
-                let proto_type = verified_proto.getattr("VerifiedNameCertificate")?;
-                let proto_instance = proto_type.call0()?;
-                proto_instance.call_method1("ParseFromString", (PyBytes::new(py, &buffer),))?;
-                Ok(Some(proto_instance.into()))
+                let proto_type = crate::events::proto_cache::proto_verified_name_certificate(py)?;
+                let proto_instance = proto_type.bind(py).call0()?;
+                proto_instance.call_method1("ParseFromString", (PyBytes::new(py, buffer),))?;
+                Ok(Some(proto_instance.unbind()))
             }
-            None => Ok(None), // Placeholder, as VerifiedNameCertificate is not yet implemented
+            None => Ok(None),
         }
     }
     #[getter]
@@ -365,7 +509,7 @@ impl MessageInfo {
         self.inner.bcl_participants.iter().map(|jid| pyo3::Py::new(py, JID::from(jid.clone())).unwrap()).collect()
     }
     fn __repr__(&self) -> String {
-        format!("MessageInfo(id='{}', type='{}', push_name='{}')", self.id, self.r#type, self.push_name)
+        format!("MessageInfo(id='{}', type='{}', push_name='{}')", self.id(), self.r#type(), self.push_name())
     }
 }
 
@@ -386,16 +530,16 @@ impl UploadResponse {
         self.inner.direct_path.clone()
     }
     #[getter]
-    pub fn media_key(&self) -> Vec<u8> {
-        self.inner.media_key.to_vec()
+    pub fn media_key(&self, py: Python<'_>) -> Py<PyBytes> {
+        PyBytes::new(py, &self.inner.media_key).unbind()
     }
     #[getter]
-    pub fn file_enc_sha256(&self) -> Vec<u8> {
-        self.inner.file_enc_sha256.to_vec()
+    pub fn file_enc_sha256(&self, py: Python<'_>) -> Py<PyBytes> {
+        PyBytes::new(py, &self.inner.file_enc_sha256).unbind()
     }
     #[getter]
-    pub fn file_sha256(&self) -> Vec<u8> {
-        self.inner.file_sha256.to_vec()
+    pub fn file_sha256(&self, py: Python<'_>) -> Py<PyBytes> {
+        PyBytes::new(py, &self.inner.file_sha256).unbind()
     }
     #[getter]
     pub fn file_length(&self) -> u64 {
@@ -406,8 +550,8 @@ impl UploadResponse {
         self.inner.media_key_timestamp
     }
     #[getter]
-    pub fn streaming_sidecar(&self) -> Option<Vec<u8>> {
-        self.inner.streaming_sidecar.clone()
+    pub fn streaming_sidecar(&self, py: Python<'_>) -> Option<Py<PyBytes>> {
+        self.inner.streaming_sidecar.as_deref().map(|b| PyBytes::new(py, b).unbind())
     }
 }
 

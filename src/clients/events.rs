@@ -57,28 +57,27 @@ impl EventsClient {
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let chat = chat_jid.bind(py).borrow().as_whatsapp_jid();
-        let params = EventCreationParams {
-            name,
-            start_time,
-            end_time,
-            description,
-            join_link,
-            location: None,
-            is_scheduled_call,
-            extra_guests_allowed,
-        };
+        let params = EventCreationParams::builder()
+            .name(name)
+            .maybe_start_time(start_time)
+            .maybe_end_time(end_time)
+            .maybe_description(description)
+            .maybe_join_link(join_link)
+            .maybe_is_scheduled_call(is_scheduled_call)
+            .maybe_extra_guests_allowed(extra_guests_allowed)
+            .build();
         let locals = get_current_locals(py)?;
         future_into_py_with_locals::<_, Py<PyDict>>(py, locals, async move {
-            let (result, secret) = client
+            let created = client
                 .events()
                 .create(&chat, params)
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
             Python::attach(|py| {
                 let dict = PyDict::new(py);
-                dict.set_item("message_id", result.message_id)?;
-                dict.set_item("to", Py::new(py, JID::from(result.to))?)?;
-                dict.set_item("message_secret", secret)?;
+                dict.set_item("message_id", created.send_result().message_id.clone().into_string())?;
+                dict.set_item("to", Py::new(py, JID::from(created.send_result().to.clone()))?)?;
+                dict.set_item("message_secret", created.secret().as_bytes().to_vec())?;
                 Ok(dict.unbind())
             })
         })
@@ -102,8 +101,8 @@ impl EventsClient {
         future_into_py_with_locals::<_, String>(py, locals, async move {
             client
                 .events()
-                .respond(
-                    &chat,
+                .respond_raw(
+                    chat,
                     event_message_id.as_str(),
                     &creator,
                     message_secret.as_slice(),
@@ -111,7 +110,7 @@ impl EventsClient {
                     extra_guest_count,
                 )
                 .await
-                .map(|result| result.message_id)
+                .map(|result| result.message_id.into_string())
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
         })
     }

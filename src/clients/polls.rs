@@ -45,9 +45,37 @@ impl PollsClient {
 		future_into_py_with_locals::<_, (String, Vec<u8>)>(py, locals, async move {
 			client
 				.polls()
-				.create(&to_value, name.as_str(), options.as_slice(), selectable_count)
+				.create(to_value, name.as_str(), options.as_slice(), selectable_count)
 				.await
-				.map(|(result, secret)| (result.message_id, secret))
+				.map(|created| (created.send_result().message_id.clone().into_string(), created.secret().as_bytes().to_vec()))
+				.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+		})
+	}
+
+	fn create_quiz<'py>(
+		&self,
+		py: Python<'py>,
+		to: Py<JID>,
+		name: String,
+		options: Vec<String>,
+		correct_index: usize,
+	) -> PyResult<Bound<'py, PyAny>> {
+		if options.is_empty() {
+			return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+				"options cannot be empty",
+			));
+		}
+
+		let client = self.get_client()?;
+		let to_value = to.bind(py).borrow().as_whatsapp_jid();
+		let locals = get_current_locals(py)?;
+
+		future_into_py_with_locals::<_, (String, Vec<u8>)>(py, locals, async move {
+			client
+				.polls()
+				.create_quiz(to_value, name.as_str(), options.as_slice(), correct_index)
+				.await
+				.map(|created| (created.send_result().message_id.clone().into_string(), created.secret().as_bytes().to_vec()))
 				.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
 		})
 	}
@@ -76,15 +104,15 @@ impl PollsClient {
 		future_into_py_with_locals::<_, String>(py, locals, async move {
 			client
 				.polls()
-				.vote(
-					&chat_jid_value,
+				.vote_raw(
+					chat_jid_value,
 					poll_msg_id.as_str(),
 					&creator_jid_value,
 					message_secret_value.as_slice(),
 					option_names.as_slice(),
 				)
 				.await
-				.map(|result| result.message_id)
+				.map(|result| result.message_id.into_string())
 				.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
 		})
 	}

@@ -74,11 +74,8 @@ async def on_pairing_qr(_client: TryxClient, event: EvPairingQrCode) -> None:
 
 @app.on(EvMessage)
 async def on_message(client: TryxClient, event: EvMessage) -> None:
-    text = (event.data.get_text() or "").strip()
-    if text.lower() == "ping":
-        await client.send_text(
-            event.data.message_info.source.chat, "pong", quoted=event
-        )
+    if (event.text or "").strip().lower() == "ping":
+        await client.reply_text(event, "pong")
 
 
 async def main() -> None:
@@ -164,9 +161,9 @@ from tryx.types import JID
 async def start_audio_call(client, phone_number: str):
     peer = JID(phone_number + "@s.whatsapp.net")
     call = await client.voip.call(peer, Microphone(), Speaker())
-    print("panggilan dimulai:", call.call_id)
-    call.set_muted(True)
-    call.set_muted(False)
+    print("panggilan dimulai:", call.call_id, "phase:", call.phase)
+    await call.set_muted(True)
+    await call.set_muted(False)
     await call.wait_ended()
 ```
 

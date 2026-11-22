@@ -60,8 +60,11 @@ impl EvTemporaryBan {
                 wacore::types::events::TempBanReason::SentTooManySameMessage => TempBanReason::SentTooManySameMessage,
                 wacore::types::events::TempBanReason::BroadcastList | wacore::types::events::TempBanReason::Unknown(_) => TempBanReason::Unknown,
             };
-            let expire = Utc::now() + self.inner.expire;
-            let py_expire = PyDateTime::from_timestamp(py, (expire.timestamp_millis() as f64) / 1000.0, None)?.into();
+            let expire = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                + self.inner.expire;
+            let py_expire = PyDateTime::from_timestamp(py, expire.as_secs_f64(), None)?.into();
             let data = EvTemporaryData::new(Py::new(py, code)?, py_expire);
             let py_data = Py::new(py, data)?;
             self.data_cache.set(py_data.clone_ref(py)).ok();
@@ -110,7 +113,7 @@ impl EvDeleteMessageForMeUpdate {
         if let Some(cached) = self.data_cache.get() {
             Ok(cached.clone_ref(py))
         } else {
-            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)?.into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp)?;
             let action_proto = from_string_to_python_proto(
                 py,
                 get_proto_delete_message_for_me_action_proto_type(py)?,
@@ -189,7 +192,7 @@ impl EvConnectFailure {
         if let Some(ref node) = self.node {
             Ok(Some(node.clone_ref(py)))
         } else if let Some(raw_node) = self.inner.as_ref(){
-            let node_instance = Node::from_node(raw_node);
+            let node_instance = Node::from_node(py, raw_node);
             let py_node = Py::new(py, node_instance)?;
             self.node = Some(py_node.clone_ref(py));
             Ok(Some(py_node))
@@ -219,7 +222,7 @@ impl EvStreamError {
         if let Some(ref node) = self.node {
             Ok(Some(node.clone_ref(py)))
         } else if let Some(raw_node) = self.inner.as_ref(){
-            let node_instance = Node::from_node(raw_node);
+            let node_instance = Node::from_node(py, raw_node);
             let py_node = Py::new(py, node_instance)?;
             self.node = Some(py_node.clone_ref(py));
             Ok(Some(py_node))
@@ -268,22 +271,22 @@ impl MessageData {
         if let Some(info) = self.message_info.get() {
             Ok(info.clone_ref(py))
         } else {
-            let info = MessageInfo::from((*self.inner_message_info).clone());
+            let info = MessageInfo::from_arc(Arc::clone(&self.inner_message_info));
             let py_info = Py::new(py, info)?;
             self.message_info.set(py_info.clone_ref(py)).ok();
             Ok(py_info)
         }
     }
     #[getter]
-    fn raw_proto(&mut self, py: Python) -> PyResult<Py<PyAny>> {
+    fn raw_proto(&self, py: Python) -> PyResult<Py<PyAny>> {
         match self.message_proto.get() {
-            Some(ref proto) => Ok(proto.clone_ref(py)),
+            Some(proto) => Ok(proto.clone_ref(py)),
             None => {
                 let buffer = self.inner.as_ref().encode_to_vec();
 
                 let new_proto = parse_message_proto(py, &buffer)?;
                 let out_proto = new_proto.clone_ref(py);
-                self.message_proto.set(out_proto.clone_ref(py)).unwrap();
+                self.message_proto.set(out_proto.clone_ref(py)).ok();
                 Ok(out_proto)
             },
         }
@@ -304,12 +307,17 @@ impl EvMessage {
     pub fn new(inner: waproto::whatsapp::Message, message_info: WhatsappMessageInfo) -> Self {
         Self { inner: Arc::new(inner), inner_message_info: Arc::new(message_info), data_cache: OnceLock::new() }
     }
+
+    #[inline]
+    pub fn from_arcs(inner: Arc<waproto::whatsapp::Message>, message_info: Arc<WhatsappMessageInfo>) -> Self {
+        Self { inner, inner_message_info: message_info, data_cache: OnceLock::new() }
+    }
 }
 #[pymethods]
 impl EvMessage {
     #[getter]
-    fn data(&mut self, py: Python) -> PyResult<Py<MessageData>> {
-        if let Some(ref data) = self.data_cache.get() {
+    fn data(&self, py: Python) -> PyResult<Py<MessageData>> {
+        if let Some(data) = self.data_cache.get() {
             Ok(data.clone_ref(py))
         } else {
             let new_data = MessageData::new(Arc::clone(&self.inner), Arc::clone(&self.inner_message_info));
@@ -317,6 +325,68 @@ impl EvMessage {
             self.data_cache.set(py_data.clone_ref(py)).ok();
             Ok(py_data)
         }
+    }
+
+    #[getter]
+    fn id(&self) -> &str {
+        self.inner_message_info.id.as_str()
+    }
+
+    #[getter]
+    fn chat(&self) -> JID {
+        JID::from(self.inner_message_info.source.chat.clone())
+    }
+
+    #[getter]
+    fn sender(&self) -> JID {
+        JID::from(self.inner_message_info.source.sender.clone())
+    }
+
+    #[getter]
+    fn is_from_me(&self) -> bool {
+        self.inner_message_info.source.is_from_me
+    }
+
+    #[getter]
+    fn is_group(&self) -> bool {
+        self.inner_message_info.source.is_group
+    }
+
+    #[getter]
+    fn push_name(&self) -> &str {
+        self.inner_message_info.push_name.as_str()
+    }
+
+    #[getter]
+    fn timestamp(&self, py: Python<'_>) -> PyResult<Py<PyDateTime>> {
+        timestamp_to_py_datetime(py, self.inner_message_info.timestamp)
+    }
+
+    #[getter]
+    fn text(&self) -> Option<&str> {
+        self.inner.conversation.as_deref()
+            .or_else(|| self.inner.extended_text_message.as_option().and_then(|etm| etm.text.as_deref()))
+    }
+
+    #[getter]
+    fn caption(&self) -> Option<&str> {
+        self.inner.image_message.as_option().and_then(|img| img.caption.as_deref())
+            .or_else(|| self.inner.video_message.as_option().and_then(|vid| vid.caption.as_deref()))
+            .or_else(|| self.inner.document_message.as_option().and_then(|doc| doc.caption.as_deref()))
+    }
+
+    #[getter]
+    fn media_type(&self) -> Option<String> {
+        self.inner_message_info.media_type.as_ref().map(|m| m.to_string())
+    }
+
+    #[getter]
+    fn has_media(&self) -> bool {
+        self.inner.image_message.is_set()
+            || self.inner.video_message.is_set()
+            || self.inner.document_message.is_set()
+            || self.inner.audio_message.is_set()
+            || self.inner.sticker_message.is_set()
     }
 }
 
@@ -379,8 +449,7 @@ impl EvArchiveUpdate {
         if let Some(cached) = self.data_cache.get() {
             Ok(cached.clone_ref(py))
         } else {
-            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)?
-                .into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp)?;
             let data = EvArchiveUpdateData {
                 jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 timestamp,
@@ -454,7 +523,7 @@ impl EvDisappearingModeChanged {
             let data = EvDisappearingModeChangedData {
                 from_: Py::new(py, JID::from(self.inner.from.clone())).unwrap(),
                 duration: self.inner.duration,
-                setting_timestamp: self.inner.setting_timestamp.timestamp() as u64,
+                setting_timestamp: self.inner.setting_timestamp.as_secs() as u64,
             };
             let py_data = Py::new(py, data)?;
             self.data_cache.set(py_data.clone_ref(py)).ok();
@@ -505,13 +574,7 @@ impl EvContactNumberChanged {
         if let Some(cached) = self.data_cache.get() {
             Ok(cached.clone_ref(py))
         } else {
-            let timestamp = PyDateTime::from_timestamp(
-                py,
-                (self.inner.timestamp.timestamp_millis() as f64) / 1000.0,
-                None,
-            )
-            ?
-            .into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp)?;
             let data = EvContactNumberChangedData {
                 old_jid: Py::new(py, JID::from(self.inner.old_jid.clone())).unwrap(),
                 new_jid: Py::new(py, JID::from(self.inner.new_jid.clone())).unwrap(),
@@ -565,12 +628,9 @@ impl EvContactSyncRequested {
             let after = self
                 .inner
                 .after
-                .map(|dt| PyDateTime::from_timestamp(py, (dt.timestamp_millis() as f64) / 1000.0, None).map(|v| v.into()))
+                .map(|dt| timestamp_to_py_datetime(py, dt))
                 .transpose()?;
-            let timestamp =
-                PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)
-                    ?
-                    .into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp)?;
             let data = EvContactSyncRequestedData { after, timestamp };
             let py_data = Py::new(py, data)?;
             self.data_cache.set(py_data.clone_ref(py)).ok();
@@ -615,9 +675,7 @@ impl EvContactUpdated {
         if let Some(cached) = self.data_cache.get() {
             Ok(cached.clone_ref(py))
         } else {
-            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)
-                ?
-                .into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp)?;
             let data = EvContactUpdatedData {
                 jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 timestamp,
@@ -675,9 +733,7 @@ impl EvStarUpdate {
         if let Some(cached) = self.data_cache.get() {
             Ok(cached.clone_ref(py))
         } else {
-            let timestamp = PyDateTime::from_timestamp(py, (self.inner.timestamp.timestamp_millis() as f64) / 1000.0, None)
-                ?
-                .into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp)?;
             let data = EvStarUpdateData {
                 chat_jid: Py::new(py, JID::from(self.inner.chat_jid.clone())).unwrap(),
                 participant_jid: self.inner.participant_jid.clone().map(|j| Py::new(py, JID::from(j)).unwrap()),
@@ -856,7 +912,7 @@ impl EvGroupUpdate {
         } else {
             let participant = self.inner.participant.as_ref().map(|p| Py::new(py, JID::from(p.clone())).unwrap());
             let participant_pn = self.inner.participant_pn.as_ref().map(|pn| Py::new(py, JID::from(pn.clone())).unwrap());
-            let timestamp = PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp).unwrap();
 
             let py_group_participants = |participants: &[wacore::stanza::groups::GroupParticipantInfo]| {
                 participants
@@ -872,27 +928,27 @@ impl EvGroupUpdate {
             };
 
             let action = match &*self.inner.action {
-                wacore::stanza::groups::GroupNotificationAction::Add { participants, reason } => {
+                wacore::stanza::groups::GroupNotificationAction::Add { participants, reason, .. } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Add { participants: py_participants, reason: reason.clone() }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Remove { participants, reason } => {
+                wacore::stanza::groups::GroupNotificationAction::Remove { participants, reason, .. } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Remove { participants: py_participants, reason: reason.clone() }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Promote { participants } => {
+                wacore::stanza::groups::GroupNotificationAction::Promote { participants, .. } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Promote { participants: py_participants }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Demote { participants } => {
+                wacore::stanza::groups::GroupNotificationAction::Demote { participants, .. } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Demote { participants: py_participants }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Modify { participants } => {
+                wacore::stanza::groups::GroupNotificationAction::Modify { participants, .. } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::Modify { participants: py_participants }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Subject { subject, subject_owner, subject_owner_pn, subject_owner_username, subject_time } => {
+                wacore::stanza::groups::GroupNotificationAction::Subject { subject, subject_owner, subject_owner_pn, subject_owner_username, subject_time, .. } => {
                     let py_subject_owner = subject_owner
                         .as_ref()
                         .map(|o| Py::new(py, JID::from(o.clone())).unwrap());
@@ -904,43 +960,43 @@ impl EvGroupUpdate {
                     });
                     GroupNotificationAction::Subject { subject: subject.clone(), subject_owner: py_subject_owner, subject_owner_pn: py_subject_owner_pn, subject_owner_username: subject_owner_username.clone(), subject_timestamp: py_subject_timestamp }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Description { id, description } => {
+                wacore::stanza::groups::GroupNotificationAction::Description { id, description, .. } => {
                     GroupNotificationAction::Description { id: id.clone(), description: description.clone() }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Locked { threshold } => {
+                wacore::stanza::groups::GroupNotificationAction::Locked { threshold, .. } => {
                     GroupNotificationAction::Locked { threshold: threshold.clone() }
                 },
                 wacore::stanza::groups::GroupNotificationAction::Unlocked => GroupNotificationAction::Unlocked(),
                 wacore::stanza::groups::GroupNotificationAction::Announce => GroupNotificationAction::Announce(),
                 wacore::stanza::groups::GroupNotificationAction::NotAnnounce => GroupNotificationAction::NotAnnounce(),
-                wacore::stanza::groups::GroupNotificationAction::Ephemeral { expiration, trigger } => GroupNotificationAction::Ephemeral { expiration: *expiration, trigger: *trigger },
-                wacore::stanza::groups::GroupNotificationAction::MembershipApprovalMode { enabled } => GroupNotificationAction::MembershipApprovalMode { enabled: *enabled },
-                wacore::stanza::groups::GroupNotificationAction::MemberAddMode { mode } => GroupNotificationAction::MemberAddMode { mode: mode.clone() },
+                wacore::stanza::groups::GroupNotificationAction::Ephemeral { expiration, trigger, .. } => GroupNotificationAction::Ephemeral { expiration: *expiration, trigger: *trigger },
+                wacore::stanza::groups::GroupNotificationAction::MembershipApprovalMode { enabled, .. } => GroupNotificationAction::MembershipApprovalMode { enabled: *enabled },
+                wacore::stanza::groups::GroupNotificationAction::MemberAddMode { mode, .. } => GroupNotificationAction::MemberAddMode { mode: mode.clone() },
                 wacore::stanza::groups::GroupNotificationAction::NoFrequentlyForwarded => GroupNotificationAction::NoFrequentlyForwarded(),
                 wacore::stanza::groups::GroupNotificationAction::FrequentlyForwardedOk => GroupNotificationAction::FrequentlyForwardedOk(),
-                wacore::stanza::groups::GroupNotificationAction::Invite { code } => GroupNotificationAction::Invite { code: code.clone() },
+                wacore::stanza::groups::GroupNotificationAction::Invite { code, .. } => GroupNotificationAction::Invite { code: code.clone() },
                 wacore::stanza::groups::GroupNotificationAction::RevokeInvite => GroupNotificationAction::RevokeInvite(),
-                wacore::stanza::groups::GroupNotificationAction::GrowthLocked { expiration, lock_type } => GroupNotificationAction::GrowthLocked { expiration: *expiration, lock_type: lock_type.clone() },
+                wacore::stanza::groups::GroupNotificationAction::GrowthLocked { expiration, lock_type, .. } => GroupNotificationAction::GrowthLocked { expiration: *expiration, lock_type: lock_type.clone() },
                 wacore::stanza::groups::GroupNotificationAction::GrowthUnlocked => GroupNotificationAction::GrowthUnlocked(),
-                wacore::stanza::groups::GroupNotificationAction::Create { raw } => {
-                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                wacore::stanza::groups::GroupNotificationAction::Create { raw, .. } => {
+                    let py_raw = Py::new(py, Node::from_node(py, raw)).unwrap();
                     GroupNotificationAction::Create { raw: py_raw }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Delete { reason } => GroupNotificationAction::Delete { reason: reason.clone() },
-                wacore::stanza::groups::GroupNotificationAction::Link { link_type, raw } => {
-                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                wacore::stanza::groups::GroupNotificationAction::Delete { reason, .. } => GroupNotificationAction::Delete { reason: reason.clone() },
+                wacore::stanza::groups::GroupNotificationAction::Link { link_type, raw, .. } => {
+                    let py_raw = Py::new(py, Node::from_node(py, raw)).unwrap();
                     GroupNotificationAction::Link { link_type: link_type.clone(), raw: py_raw }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Unlink { unlink_type, unlink_reason, raw } => {
-                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                wacore::stanza::groups::GroupNotificationAction::Unlink { unlink_type, unlink_reason, raw, .. } => {
+                    let py_raw = Py::new(py, Node::from_node(py, raw)).unwrap();
                     GroupNotificationAction::Unlink { unlink_type: unlink_type.clone(), unlink_reason: unlink_reason.clone(), raw: py_raw }
                 },
-                wacore::stanza::groups::GroupNotificationAction::MembershipApprovalRequest { request_method, parent_group_jid } => {
+                wacore::stanza::groups::GroupNotificationAction::MembershipApprovalRequest { request_method, parent_group_jid, .. } => {
                     let method_str = format!("{:?}", request_method);
                     let py_parent = parent_group_jid.as_ref().map(|j| Py::new(py, JID::from(j.clone())).unwrap());
                     GroupNotificationAction::MembershipApprovalRequest { request_method: method_str, parent_group_jid: py_parent }
                 },
-                wacore::stanza::groups::GroupNotificationAction::CreatedMembershipRequests { request_method, parent_group_jid, requests } => {
+                wacore::stanza::groups::GroupNotificationAction::CreatedMembershipRequests { request_method, parent_group_jid, requests, .. } => {
                     let method_str = format!("{:?}", request_method);
                     let py_parent = parent_group_jid.as_ref().map(|j| Py::new(py, JID::from(j.clone())).unwrap());
                     let py_requests = requests.iter().map(|p| {
@@ -952,15 +1008,15 @@ impl EvGroupUpdate {
                     }).collect();
                     GroupNotificationAction::CreatedMembershipRequests { request_method: method_str, parent_group_jid: py_parent, requests: py_requests }
                 },
-                wacore::stanza::groups::GroupNotificationAction::RevokedMembershipRequests { participants } => {
+                wacore::stanza::groups::GroupNotificationAction::RevokedMembershipRequests { participants, .. } => {
                     let py_participants = participants.iter().map(|j| Py::new(py, JID::from(j.clone())).unwrap()).collect();
                     GroupNotificationAction::RevokedMembershipRequests { participants: py_participants }
                 },
-                wacore::stanza::groups::GroupNotificationAction::LinkedGroupPromote { participants } => {
+                wacore::stanza::groups::GroupNotificationAction::LinkedGroupPromote { participants, .. } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::LinkedGroupPromote { participants: py_participants }
                 },
-                wacore::stanza::groups::GroupNotificationAction::LinkedGroupDemote { participants } => {
+                wacore::stanza::groups::GroupNotificationAction::LinkedGroupDemote { participants, .. } => {
                     let py_participants = py_group_participants(participants);
                     GroupNotificationAction::LinkedGroupDemote { participants: py_participants }
                 },
@@ -969,7 +1025,7 @@ impl EvGroupUpdate {
                 wacore::stanza::groups::GroupNotificationAction::AutoAddDisabled => GroupNotificationAction::AutoAddDisabled(),
                 wacore::stanza::groups::GroupNotificationAction::IsCapiHostedGroup => GroupNotificationAction::IsCapiHostedGroup(),
                 wacore::stanza::groups::GroupNotificationAction::GroupSafetyCheck => GroupNotificationAction::GroupSafetyCheck(),
-                wacore::stanza::groups::GroupNotificationAction::LimitSharingEnabled { trigger } => {
+                wacore::stanza::groups::GroupNotificationAction::LimitSharingEnabled { trigger, .. } => {
                     GroupNotificationAction::LimitSharingEnabled { trigger: *trigger }
                 },
                 wacore::stanza::groups::GroupNotificationAction::AllowAdminReports => GroupNotificationAction::AllowAdminReports(),
@@ -977,20 +1033,21 @@ impl EvGroupUpdate {
                 wacore::stanza::groups::GroupNotificationAction::Reports => GroupNotificationAction::Reports(),
                 wacore::stanza::groups::GroupNotificationAction::AllowNonAdminSubGroupCreation => GroupNotificationAction::AllowNonAdminSubGroupCreation(),
                 wacore::stanza::groups::GroupNotificationAction::NotAllowNonAdminSubGroupCreation => GroupNotificationAction::NotAllowNonAdminSubGroupCreation(),
-                wacore::stanza::groups::GroupNotificationAction::CreatedSubGroupSuggestion { raw } => {
-                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                wacore::stanza::groups::GroupNotificationAction::CreatedSubGroupSuggestion { raw, .. } => {
+                    let py_raw = Py::new(py, Node::from_node(py, raw)).unwrap();
                     GroupNotificationAction::CreatedSubGroupSuggestion { raw: py_raw }
                 },
-                wacore::stanza::groups::GroupNotificationAction::RevokedSubGroupSuggestions { raw } => {
-                    let py_raw = Py::new(py, Node::from_node(raw)).unwrap();
+                wacore::stanza::groups::GroupNotificationAction::RevokedSubGroupSuggestions { raw, .. } => {
+                    let py_raw = Py::new(py, Node::from_node(py, raw)).unwrap();
                     GroupNotificationAction::RevokedSubGroupSuggestions { raw: py_raw }
                 },
-                wacore::stanza::groups::GroupNotificationAction::ChangeNumber { new_owner, sub_group_suggestions } => {
+                wacore::stanza::groups::GroupNotificationAction::ChangeNumber { new_owner, sub_group_suggestions, .. } => {
                     let py_new_owner = new_owner.as_ref().map(|j| Py::new(py, JID::from(j.clone())).unwrap());
                     let py_suggestions = sub_group_suggestions.iter().map(|j| Py::new(py, JID::from(j.clone())).unwrap()).collect();
                     GroupNotificationAction::ChangeNumber { new_owner: py_new_owner, sub_group_suggestions: py_suggestions }
                 },
-                wacore::stanza::groups::GroupNotificationAction::Unknown { tag } => GroupNotificationAction::Unknown { tag: tag.clone() },
+                wacore::stanza::groups::GroupNotificationAction::Unknown { tag, .. } => GroupNotificationAction::Unknown { tag: tag.clone() },
+                _ => GroupNotificationAction::Unknown { tag: "unknown".to_string() },
             };
             let action = Py::new(py, action)?;
             let data = GroupUpdateData {
@@ -1057,7 +1114,7 @@ impl EvContactUpdate {
         if let Some(ref cache) = self.contact_cache.get() {
             Ok(cache.clone_ref(py))
         } else {
-            let timestamp = PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None).unwrap().into();
+            let timestamp = timestamp_to_py_datetime(py, self.inner.timestamp).unwrap();
             let data = ContactUpdateData {
                 jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 timestamp,
@@ -1200,7 +1257,7 @@ impl EvDeleteChatUpdate {
         if let Some(ref cache) = self.data_cache.get() {
             Ok(cache.clone_ref(py))
         } else {
-            let dtime = PyDateTime::from_timestamp(py, self.inner.timestamp.timestamp() as f64, None)?.unbind();
+            let dtime = timestamp_to_py_datetime(py, self.inner.timestamp)?;
             let data = DeleteChatUpdateData {
                 jid: Py::new(py, JID::from(self.inner.jid.clone())).unwrap(),
                 delete_media: self.inner.delete_media,

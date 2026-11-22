@@ -46,6 +46,18 @@ use super::types::{
     EvTemporaryBan,
     EvUndecryptableMessage,
     EvUserAboutUpdate,
+    EvIdentityChange,
+    EvLockChatUpdate,
+    EvFavoritesUpdate,
+    EvStatusPrivacyUpdate,
+    EvUnarchiveChatsSettingUpdate,
+    EvDisableLinkPreviewsUpdate,
+    EvContactRemoved,
+    EvOfflineSyncInterrupted,
+    EvClientExpirationChanged,
+    EvServerAck,
+    EvAppStateSyncFailed,
+    EvMexNotification,
 };
 use crate::exceptions::UnsupportedEventType;
 
@@ -63,7 +75,31 @@ macro_rules! define_dispatcher {
         #[pyclass]
         pub struct Dispatcher {
             $( $field: Vec<Py<PyAny>>, )+
-            pending_event: Option<DispatchEvent>,
+        }
+
+        #[pyclass]
+        pub struct EventDecorator {
+            dispatcher: Py<Dispatcher>,
+            event: DispatchEvent,
+        }
+
+        #[pymethods]
+        impl EventDecorator {
+            fn __call__(&self, py: Python<'_>, func: Py<PyAny>) -> PyResult<Py<PyAny>> {
+                let total_handlers = {
+                    let mut dispatcher = self.dispatcher.borrow_mut(py);
+                    match self.event {
+                        $( DispatchEvent::$variant => dispatcher.$field.push(func.clone_ref(py)), )+
+                    }
+                    dispatcher.handlers_for_event(self.event).len()
+                };
+                info!(
+                    event = dispatch_event_name(self.event),
+                    handlers = total_handlers,
+                    "registered Python callback"
+                );
+                Ok(func)
+            }
         }
 
         #[derive(Clone, Copy)]
@@ -79,7 +115,6 @@ macro_rules! define_dispatcher {
             pub fn empty() -> Self {
                 Self {
                     $( $field: Vec::new(), )+
-                    pending_event: None,
                 }
             }
 
@@ -126,41 +161,19 @@ macro_rules! define_dispatcher {
                 Self::empty()
             }
 
-            /// Returns a callable decorator for the given event class.
+            /// Returns a stateless callable decorator for the given event class.
             ///
             /// ```python
             /// @dispatcher.on(EvMessage)
             /// async def handler(client, event): ...
             /// ```
-            fn on(slf: Py<Self>, py: Python, event_type: &Bound<PyAny>) -> PyResult<Py<PyAny>> {
+            fn on(slf: Py<Self>, py: Python, event_type: &Bound<PyAny>) -> PyResult<EventDecorator> {
                 let event = dispatch_event_from_type(py, event_type)?;
-                info!(event = dispatch_event_name(event), "selected event for next callback registration");
-                {
-                    let mut this = slf.borrow_mut(py);
-                    this.pending_event = Some(event);
-                }
-                Ok(slf.into_any())
-            }
-
-            /// Registers the decorated function and returns it unchanged.
-            fn __call__(&mut self, py: Python, func: Py<PyAny>) -> PyResult<Py<PyAny>> {
-                let event = self
-                    .pending_event
-                    .take()
-                    .ok_or_else(|| {
-                        pyo3::exceptions::PyRuntimeError::new_err(
-                            "on(event_type) must be called before registering callback",
-                        )
-                    })?;
-
-                match event {
-                    $( DispatchEvent::$variant => self.$field.push(func.clone_ref(py)), )+
-                }
-
-                let total_handlers = self.handlers_for_event(event).len();
-                info!(event = dispatch_event_name(event), handlers = total_handlers, "registered Python callback");
-
-                Ok(func)
+                info!(event = dispatch_event_name(event), "created event decorator");
+                Ok(EventDecorator {
+                    dispatcher: slf,
+                    event,
+                })
             }
         }
     };
@@ -213,4 +226,16 @@ define_dispatcher! {
     delete_chat_update,              DeleteChatUpdate,              "delete_chat_update",              EvDeleteChatUpdate,              "delete chat update",             delete_chat_update_handlers;
     delete_message_for_me_update,    DeleteMessageForMeUpdate,      "delete_message_for_me_update",    EvDeleteMessageForMeUpdate,      "delete message for me update",   delete_message_for_me_update_handlers;
     incoming_call,                   IncomingCall,                  "incoming_call",                  crate::clients::voip::IncomingCallEvent, "incoming call",                 incoming_call_handlers;
+    identity_change,                 IdentityChange,                "identity_change",                EvIdentityChange,                "identity change",                identity_change_handlers;
+    lock_chat_update,                LockChatUpdate,                "lock_chat_update",               EvLockChatUpdate,                "lock chat update",               lock_chat_update_handlers;
+    favorites_update,                FavoritesUpdate,               "favorites_update",               EvFavoritesUpdate,               "favorites update",               favorites_update_handlers;
+    status_privacy_update,           StatusPrivacyUpdate,           "status_privacy_update",          EvStatusPrivacyUpdate,           "status privacy update",          status_privacy_update_handlers;
+    unarchive_chats_setting_update,  UnarchiveChatsSettingUpdate,   "unarchive_chats_setting_update", EvUnarchiveChatsSettingUpdate,   "unarchive chats setting update", unarchive_chats_setting_update_handlers;
+    disable_link_previews_update,    DisableLinkPreviewsUpdate,     "disable_link_previews_update",   EvDisableLinkPreviewsUpdate,     "disable link previews update",   disable_link_previews_update_handlers;
+    contact_removed,                 ContactRemoved,                "contact_removed",                EvContactRemoved,                "contact removed",                contact_removed_handlers;
+    offline_sync_interrupted,        OfflineSyncInterrupted,        "offline_sync_interrupted",       EvOfflineSyncInterrupted,        "offline sync interrupted",       offline_sync_interrupted_handlers;
+    client_expiration_changed,       ClientExpirationChanged,       "client_expiration_changed",      EvClientExpirationChanged,       "client expiration changed",      client_expiration_changed_handlers;
+    server_ack,                      ServerAck,                     "server_ack",                     EvServerAck,                     "server ack",                     server_ack_handlers;
+    app_state_sync_failed,           AppStateSyncFailed,            "app_state_sync_failed",          EvAppStateSyncFailed,            "app state sync failed",          app_state_sync_failed_handlers;
+    mex_notification,                MexNotification,               "mex_notification",               EvMexNotification,               "mex notification",               mex_notification_handlers;
 }

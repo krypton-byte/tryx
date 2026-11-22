@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use whatsapp_rust::ChatStateType as WaChatStateType;
+use whatsapp_rust::ChatActivity as WaChatActivity;
 
 #[pyclass(eq, eq_int, from_py_object)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -9,23 +9,23 @@ pub enum ChatStateType {
     Paused = 2,
 }
 
-impl From<WaChatStateType> for ChatStateType {
-    fn from(value: WaChatStateType) -> Self {
+impl From<WaChatActivity> for ChatStateType {
+    fn from(value: WaChatActivity) -> Self {
         match value {
-            WaChatStateType::Composing => Self::Composing,
-            WaChatStateType::Recording => Self::Recording,
-            WaChatStateType::Paused => Self::Paused,
-            _ => Self::Paused, // Default case for any unknown state
+            WaChatActivity::Typing => Self::Composing,
+            WaChatActivity::RecordingAudio => Self::Recording,
+            WaChatActivity::Idle => Self::Paused,
+            _ => Self::Paused,
         }
     }
 }
 
-impl From<ChatStateType> for WaChatStateType {
+impl From<ChatStateType> for WaChatActivity {
     fn from(value: ChatStateType) -> Self {
         match value {
-            ChatStateType::Composing => Self::Composing,
-            ChatStateType::Recording => Self::Recording,
-            ChatStateType::Paused => Self::Paused,
+            ChatStateType::Composing => Self::Typing,
+            ChatStateType::Recording => Self::RecordingAudio,
+            ChatStateType::Paused => Self::Idle,
         }
     }
 }

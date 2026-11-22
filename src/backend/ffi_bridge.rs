@@ -366,6 +366,22 @@ impl AppSyncStore for FfiBridgeStore {
         Ok(())
     }
 
+    async fn commit_patch(
+        &self,
+        name: &str,
+        state: HashState,
+        removed_index_macs: &[Vec<u8>],
+        added: &[AppStateMutationMAC],
+    ) -> StoreResult<()> {
+        if !removed_index_macs.is_empty() {
+            self.delete_mutation_macs(name, removed_index_macs).await?;
+        }
+        if !added.is_empty() {
+            self.put_mutation_macs(name, state.version, added).await?;
+        }
+        self.set_version(name, state).await
+    }
+
     async fn get_mutation_mac(&self, name: &str, index_mac: &[u8]) -> StoreResult<Option<Vec<u8>>> {
         let args = serde_json::json!({
             "name": name,
@@ -516,6 +532,14 @@ impl ProtocolStore for FfiBridgeStore {
         Ok(0)
     }
 
+    async fn touch_tc_token_sender_timestamp(&self, _jid: &str, _sender_timestamp: i64) -> StoreResult<()> {
+        Ok(())
+    }
+
+    async fn store_received_tc_token(&self, _jid: &str, _token: &[u8], _token_timestamp: i64) -> StoreResult<()> {
+        Ok(())
+    }
+
     async fn store_sent_message(&self, chat_jid: &str, message_id: &str, payload: &[u8]) -> StoreResult<()> {
         let args = serde_json::json!({
             "chat_jid": chat_jid,
@@ -554,6 +578,18 @@ impl MsgSecretStore for FfiBridgeStore {
     async fn get_msg_secret(&self, chat: &str, sender: &str, msg_id: &str) -> StoreResult<Option<Vec<u8>>> {
         let args = serde_json::json!({"chat": chat, "sender": sender, "msg_id": msg_id});
         self.call(61, args)
+    }
+
+    async fn get_stored_msg_secret(
+        &self,
+        chat: &str,
+        sender: &str,
+        msg_id: &str,
+    ) -> StoreResult<Option<wacore::store::traits::StoredMessageSecret>> {
+        match self.get_msg_secret(chat, sender, msg_id).await? {
+            Some(bytes) => wacore::store::traits::StoredMessageSecret::from_stored_bytes(&bytes, 0).map(Some),
+            None => Ok(None),
+        }
     }
 
     async fn delete_expired_msg_secrets(&self, cutoff: i64) -> StoreResult<u32> {

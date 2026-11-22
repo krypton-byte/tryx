@@ -335,6 +335,28 @@ class EvMessage:
             MessageData with text, caption, and metadata.
         """
         ...
+    @property
+    def id(self) -> str: ...
+    @property
+    def chat(self) -> JID: ...
+    @property
+    def sender(self) -> JID: ...
+    @property
+    def is_from_me(self) -> bool: ...
+    @property
+    def is_group(self) -> bool: ...
+    @property
+    def push_name(self) -> str: ...
+    @property
+    def timestamp(self) -> datetime: ...
+    @property
+    def text(self) -> str | None: ...
+    @property
+    def caption(self) -> str | None: ...
+    @property
+    def media_type(self) -> str | None: ...
+    @property
+    def has_media(self) -> bool: ...
 
 class EvNotification:
     """Raw notification node event."""
@@ -568,12 +590,41 @@ class EvMarkChatAsReadUpdate:
         ...
 
 class EvHistorySync:
-    """Contains protobuf history sync payload."""
+    """Contains lazy-decompressed protobuf history sync payload."""
+
+    @property
+    def sync_type(self) -> int:
+        """History sync type enum value, available without inflating."""
+        ...
+
+    @property
+    def chunk_order(self) -> int | None:
+        """Chunk ordering for multi-chunk transfers, available without inflating."""
+        ...
+
+    @property
+    def progress(self) -> int | None:
+        """Sync progress (0-100), available without inflating."""
+        ...
+
+    @property
+    def peer_data_request_session_id(self) -> str | None:
+        """Session ID for ON_DEMAND syncs, or None for server-pushed syncs."""
+        ...
+
+    @property
+    def decompressed_size(self) -> int:
+        """Exact decompressed protobuf payload size in bytes."""
+        ...
+
+    def raw_bytes(self) -> bytes:
+        """Inflate and return the raw HistorySync protobuf bytes."""
+        ...
 
     @property
     def proto(self) -> HistorySync:
         """
-        Return the raw HistorySync protobuf.
+        Inflate and parse the HistorySync protobuf (cached after first access).
 
         Returns:
             HistorySync proto containing synced messages.
@@ -952,3 +1003,67 @@ class EvDeleteMessageForMeUpdate:
             DeleteMessageForMeUpdateData with message_id and timestamp.
         """
         ...
+
+class EvIdentityChange:
+    user: JID
+    lid_user: JID | None
+    implicit: bool
+
+class EvLockChatUpdate:
+    jid: JID
+    locked: bool | None
+    timestamp: datetime
+    from_full_sync: bool
+
+class EvFavoritesUpdate:
+    favorite_ids: list[str]
+    timestamp: datetime
+    from_full_sync: bool
+
+class EvStatusPrivacyUpdate:
+    mode: int | None
+    timestamp: datetime
+    from_full_sync: bool
+
+class EvUnarchiveChatsSettingUpdate:
+    unarchive_chats: bool
+    timestamp: datetime
+    from_full_sync: bool
+
+class EvDisableLinkPreviewsUpdate:
+    previews_disabled: bool
+    timestamp: datetime
+    from_full_sync: bool
+
+class EvContactRemoved:
+    jid: JID
+    timestamp: datetime
+    from_full_sync: bool
+
+class EvOfflineSyncInterrupted:
+    total: int
+    delivered: int
+
+class EvClientExpirationChanged:
+    expires_at: int | None
+    version: tuple[int, int, int]
+    withdrawn: bool
+
+class EvServerAck:
+    id: str
+    class_: str | None
+    from_: JID | None
+    error: str | None
+
+class EvAppStateSyncFailed:
+    fatal: list[str]
+    retryable: list[str]
+    skipped: list[str]
+    connected: bool
+
+class EvMexNotification:
+    op_name: str
+    from_: JID | None
+    stanza_id: str | None
+    offline: str | None
+    payload_json: str

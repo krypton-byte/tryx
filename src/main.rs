@@ -9,7 +9,7 @@ use wacore::types::events::Event;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize storage backend
-    let backend = Arc::new(SqliteStore::new("whatsapp.db").await?);
+    let backend = Arc::new(SqliteStore::open("whatsapp.db").await?);
 
     // Build the bot
     let app = Bot::builder()

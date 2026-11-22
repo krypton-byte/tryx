@@ -8,7 +8,7 @@
 ---
 
 `TryxClient` is the runtime facade passed to every handler, and it exposes
-a root messaging surface plus 12 namespace clients.
+a root messaging surface plus 17 namespace clients.
 
 !!! tip "How to read this section"
     1. Start with this gateway page.
@@ -20,7 +20,7 @@ a root messaging surface plus 12 namespace clients.
 
 ```mermaid
 flowchart TD
-    A[TryxClient] --> B[Root send/download/upload methods]
+    A[TryxClient] --> B[Root send/download/upload/reply methods]
     A --> C[contact]
     A --> D[chat_actions]
     A --> E[community]
@@ -33,6 +33,11 @@ flowchart TD
     A --> L[presence]
     A --> M[privacy]
     A --> N[profile]
+    A --> O[advanced]
+    A --> P[labels]
+    A --> Q[comments]
+    A --> R[events]
+    A --> S[voip]
 ```
 
 ## Namespace Router
@@ -75,6 +80,9 @@ Privacy settings and disallowed lists
 [**Profile**](profile.md){ .md-link }
 Push name, status text, profile picture
 
+[**VoIP**](voip.md){ .md-link }
+1:1 audio/video calls, group calls, and call links
+
 </div>
 
 ---
@@ -82,16 +90,20 @@ Push name, status text, profile picture
 ## Root Transport Methods
 
 These methods stay on `TryxClient` directly because they are cross-domain
-primitives.
+primitives. All `to` parameters accept either a `JID` object or a JID string
+(such as `"628123456789@s.whatsapp.net"`).
 
 | Method | Purpose | Typical Usage |
 |--------|---------|---------------|
 | `is_connected()` | Connection health check | Guard before sends |
-| `download_media(message)` | Download media blob | Save image/audio/document |
-| `upload_file(path, media_type)` | Upload file for later use | Status media workflows |
+| `download_media(target, max_bytes=None)` | Download media blob from `EvMessage` or media proto | Save image/audio/document |
+| `download_media_to_file(target, path, max_bytes=None)` | Stream media directly to disk | Large media without RAM bloat |
+| `upload_file(path, media_type)` | Upload file off-GIL for later use | Status media workflows |
 | `upload(data, media_type)` | Upload in-memory bytes | Transform pipelines |
 | `send_message(to, message)` | Raw protobuf send | Advanced custom payloads |
 | `send_text(...)` | Text helper | Most command handlers |
+| `reply_text(event, text, ...)` | Quote-reply to an `EvMessage` | Concise command replies |
+| `react(event, emoji)` | React to an `EvMessage` | Quick acknowledgments |
 | `send_photo(...)` | Image helper | Replies with screenshots |
 | `send_document(...)` | File helper | Reports, exports |
 | `send_audio(...)` | Audio helper | Voice notes / TTS |
@@ -99,6 +111,9 @@ primitives.
 | `send_gif(...)` | GIF helper | Motion responses |
 | `send_sticker(...)` | Sticker helper | Lightweight reactions |
 | `request_media_reupload(...)` | Recover stale media | Retry failed downloads |
+
+!!! tip "Bounded Signal Cache & Graceful Shutdown"
+    Pass `signal_cache_max_entries` to `Tryx(backend, signal_cache_max_entries=1024)` to cap in-memory Signal ratchet caches, and call `await app.shutdown()` for clean disconnection.
 
 !!! warning "Reconnect-safe pattern"
     Avoid caching `TryxClient` on global module state across runtime

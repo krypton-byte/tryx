@@ -10,6 +10,7 @@
 | Method | Purpose |
 | --- | --- |
 | `create(to, name, options, selectable_count)` | Create poll and return secret |
+| `create_quiz(to, name, options, correct_option, selectable_count=1)` | Create a quiz poll with a designated correct option |
 | `vote(chat_jid, poll_msg_id, poll_creator_jid, message_secret, option_names)` | Submit encrypted vote |
 | `decrypt_vote(...)` | Decrypt one encrypted vote payload |
 | `aggregate_votes(...)` | Compute per-option tally from encrypted vote rows |

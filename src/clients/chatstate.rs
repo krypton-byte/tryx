@@ -32,7 +32,7 @@ impl ChatstateClient {
 	) -> PyResult<Bound<'py, PyAny>> {
 		let client = self.get_client()?;
 		let to_value = to.bind(py).borrow().as_whatsapp_jid();
-		let state_value: whatsapp_rust::ChatStateType = state.into();
+		let state_value: whatsapp_rust::ChatActivity = state.into();
 		let locals = get_current_locals(py)?;
 
 		future_into_py_with_locals(py, locals, async move {

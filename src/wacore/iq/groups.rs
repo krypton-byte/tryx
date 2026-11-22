@@ -113,14 +113,15 @@ impl GroupParticipantOptions {
 
 impl GroupParticipantOptions {
     pub fn to_rust(&self, py: Python<'_>) -> WaGroupParticipantOptions {
-        WaGroupParticipantOptions {
-            jid: self.jid.bind(py).borrow().as_whatsapp_jid(),
-            phone_number: self
-                .phone_number
-                .as_ref()
-                .map(|v| v.bind(py).borrow().as_whatsapp_jid()),
-            privacy: self.privacy.clone(),
-        }
+        WaGroupParticipantOptions::builder()
+            .jid(self.jid.bind(py).borrow().as_whatsapp_jid())
+            .maybe_phone_number(
+                self.phone_number
+                    .as_ref()
+                    .map(|pn| pn.bind(py).borrow().as_whatsapp_jid()),
+            )
+            .maybe_privacy(self.privacy.clone())
+            .build()
     }
 }
 
@@ -192,24 +193,24 @@ impl CreateGroupOptions {
 
 impl CreateGroupOptions {
     pub fn to_rust_options(&self, py: Python<'_>) -> WaGroupCreateOptions {
-        WaGroupCreateOptions {
-            subject: self.subject.clone(),
-            participants: self
-                .participants
-                .iter()
-                .map(|item| item.bind(py).borrow().to_rust(py))
-                .collect(),
-            member_link_mode: self.member_link_mode.map(Into::into),
-            member_add_mode: self.member_add_mode.map(Into::into),
-            membership_approval_mode: self.membership_approval_mode.map(Into::into),
-            ephemeral_expiration: self.ephemeral_expiration,
-            is_parent: self.is_parent,
-            closed: self.closed,
-            allow_non_admin_sub_group_creation: self.allow_non_admin_sub_group_creation,
-            create_general_chat: self.create_general_chat,
-            linked_parent: None,
-            description: None,
-        }
+        let mut opts: WaGroupCreateOptions = WaGroupCreateOptions::builder()
+            .subject(self.subject.clone())
+            .participants(
+                self.participants
+                    .iter()
+                    .map(|item| item.bind(py).borrow().to_rust(py))
+                    .collect(),
+            )
+            .is_parent(self.is_parent)
+            .closed(self.closed)
+            .allow_non_admin_sub_group_creation(self.allow_non_admin_sub_group_creation)
+            .create_general_chat(self.create_general_chat)
+            .build();
+        opts.member_link_mode = self.member_link_mode.map(Into::into);
+        opts.member_add_mode = self.member_add_mode.map(Into::into);
+        opts.membership_approval_mode = self.membership_approval_mode.map(Into::into);
+        opts.ephemeral_expiration = self.ephemeral_expiration;
+        opts
     }
 }
 

@@ -45,12 +45,11 @@ impl CommunityClient {
     ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.get_client()?;
         let locals = get_current_locals(py)?;
-        let options_value = options.bind(py).borrow().to_rust_options();
-        if options_value.name.trim().is_empty() {
-            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                "Community name cannot be empty",
-            ));
-        }
+        let options_value = options
+            .bind(py)
+            .borrow()
+            .to_rust_options()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
 
         future_into_py_with_locals::<_, Py<CreateCommunityResult>>(py, locals, async move {
             let result = client

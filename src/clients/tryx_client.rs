@@ -1,5 +1,5 @@
 use std::sync::{Arc};
-use pyo3::{Bound, PyAny, pyclass, pymethods};
+use pyo3::{Bound, PyAny, pyclass, pymethods, types::PyBytes};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::{future_into_py_with_locals, get_current_locals};
 use tokio::sync::watch;
@@ -7,7 +7,7 @@ use waproto::whatsapp::Message as WhatsappMessage;
 use waproto::whatsapp::message::{self as wa};
 use wacore::proto_helpers::build_quote_context;
 use buffa::Message;
-use whatsapp_rust::{Client, UploadOptions};
+use whatsapp_rust::{Client, UploadOptions, download::DownloadLimits};
 use crate::clients::advanced::AdvancedClient;
 use crate::clients::chat_actions::ChatActionsClient;
 use crate::clients::chatstate::ChatstateClient;
@@ -25,8 +25,9 @@ use crate::clients::presence::PresenceClient;
 use crate::clients::privacy::PrivacyClient;
 use crate::clients::profile::ProfileClient;
 use crate::clients::status::StatusClient;
+use crate::events::proto_cache::decode_py_proto;
 use crate::events::types::{EvMessage};
-use crate::types::{JID, MediaReuploadResult, SendResult, UploadResponse};
+use crate::types::{JID, MediaReuploadResult, PyJidArg, SendResult, UploadResponse};
 use crate::wacore::download::MediaType;
 
 /// Guess the MIME type from the raw data bytes using magic number signatures.
@@ -35,15 +36,75 @@ fn guess_mimetype(data: &[u8]) -> Option<String> {
     infer::get(data).map(|kind| kind.mime_type().to_string())
 }
 
+/// Helper to download an `Arc<wa::Message>` directly without Python protobuf round-trip.
+async fn download_from_wa_message(
+    client: &Client,
+    msg: &WhatsappMessage,
+    limits: DownloadLimits,
+) -> Result<Vec<u8>, PyErr> {
+    if let Some(img) = msg.image_message.as_option() {
+        client.download(img, limits).await
+    } else if let Some(vid) = msg.video_message.as_option() {
+        client.download(vid, limits).await
+    } else if let Some(doc) = msg.document_message.as_option() {
+        client.download(doc, limits).await
+    } else if let Some(aud) = msg.audio_message.as_option() {
+        client.download(aud, limits).await
+    } else if let Some(stk) = msg.sticker_message.as_option() {
+        client.download(stk, limits).await
+    } else {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Message does not contain downloadable media (image, video, document, audio, or sticker)",
+        ));
+    }
+    .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+}
+
+/// Helper to stream an `Arc<wa::Message>` directly into a file without buffering in RAM.
+async fn download_wa_message_to_file(
+    client: &Client,
+    msg: &WhatsappMessage,
+    writer: std::io::BufWriter<std::fs::File>,
+    limits: DownloadLimits,
+) -> Result<(), PyErr> {
+    let res = if let Some(img) = msg.image_message.as_option() {
+        client.download_to_writer(img, writer, limits).await
+    } else if let Some(vid) = msg.video_message.as_option() {
+        client.download_to_writer(vid, writer, limits).await
+    } else if let Some(doc) = msg.document_message.as_option() {
+        client.download_to_writer(doc, writer, limits).await
+    } else if let Some(aud) = msg.audio_message.as_option() {
+        client.download_to_writer(aud, writer, limits).await
+    } else if let Some(stk) = msg.sticker_message.as_option() {
+        client.download_to_writer(stk, writer, limits).await
+    } else {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Message does not contain downloadable media (image, video, document, audio, or sticker)",
+        ));
+    };
+    res.map(|_| ()).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+}
+
 /// Reduces the repeated decode-then-download pattern for each media type.
 macro_rules! decode_and_download {
-    ($client:expr, $data:expr, $msg_type:ty, $label:expr) => {{
+    ($client:expr, $data:expr, $msg_type:ty, $label:expr, $limits:expr) => {{
         let media = <$msg_type>::decode(&mut $data).map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 format!("Failed to decode {}: {}", $label, e),
             )
         })?;
-        $client.download(&media).await
+        $client.download(&media, $limits).await
+    }};
+}
+
+macro_rules! decode_and_download_to_writer {
+    ($client:expr, $data:expr, $msg_type:ty, $label:expr, $writer:expr, $limits:expr) => {{
+        let media = <$msg_type>::decode(&mut $data).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Failed to decode {}: {}", $label, e),
+            )
+        })?;
+        $client.download_to_writer(&media, $writer, $limits).await
     }};
 }
 #[pyclass]
@@ -103,10 +164,49 @@ impl TryxClient {
         Py::new(
             py,
             SendResult {
-                message_id: result.message_id,
+                message_id: result.message_id.into_string(),
                 to,
             },
         )
+    }
+
+    fn send_text_inner<'py>(
+        &self,
+        py: Python<'py>,
+        jid: whatsapp_rust::Jid,
+        text: String,
+        quoted: Option<Py<EvMessage>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
+        })?;
+        let locals = get_current_locals(py)?;
+        let context_info = Self::quote_context(py, quoted.as_ref());
+        future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
+            match quoted {
+                Some(_) => {
+                    let mut ext = wa::ExtendedTextMessage::default();
+                    ext.text = Some(text);
+                    ext.context_info = context_info.into();
+                    let mut message = WhatsappMessage::default();
+                    message.extended_text_message = buffa::MessageField::some(ext);
+                    let send_result = client
+                        .send_message(jid, message)
+                        .await
+                        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+                    Python::attach(|py| Self::into_send_result(py, send_result))
+                }
+                None => {
+                    let mut message = WhatsappMessage::default();
+                    message.conversation = Some(text);
+                    let send_result = client
+                        .send_message(jid, message)
+                        .await
+                        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+                    Python::attach(|py| Self::into_send_result(py, send_result))
+                }
+            }
+        })
     }
 }
 
@@ -115,142 +215,156 @@ impl TryxClient {
     fn is_connected(&self) -> bool {
         self.client_rx.borrow().is_some()
     }
-    // fn download_media_to_writter<'py>(&self, py: Python<'py>, message: Py<PyAny>, path: String) -> PyResult<Bound<'py, PyAny>> {
-    //     let client = self.client_rx.borrow().clone().ok_or_else(|| {
-    //         PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
-    //     })?;
-    //     let message_type_name = message
-    //         .getattr(py, "DESCRIPTOR")
-    //         .and_then(|descriptor| descriptor.getattr(py, "name"))
-    //         .and_then(|name| name.extract::<String>(py))
-    //         .unwrap_or_default();
-    //     let serialized: Vec<u8> = message
-    //         .call_method0(py, "SerializeToString")?
-    //         .extract(py)?;
-
-    //     let locals = get_current_locals(py)?;
-    //     future_into_py_with_locals(py, locals, async move {
-    //         match message_type_name.as_str() {
-    //             "ImageMessage" => {
-    //                 let media = wa::ImageMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
-    //                         format!("Failed to decode ImageMessage: {}", e),
-    //                     )
-    //                 })?;
-    //                 client.download_to_writer(&media, path).await
-    //             }
-    //             "VideoMessage" => {
-    //                 let media = wa::VideoMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
-    //                         format!("Failed to decode VideoMessage: {}", e),
-    //                     )
-    //                 })?;
-    //                 client.download_to_writer(&media, path).await
-    //             }
-    //             "DocumentMessage" => {
-    //                 let media = wa::DocumentMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
-    //                         format!("Failed to decode DocumentMessage: {}", e),
-    //                     )
-    //                 })?;
-    //                 client.download_to_writer(&media, path).await
-    //             }
-    //             "AudioMessage" => {
-    //                 let media = wa::AudioMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
-    //                         format!("Failed to decode AudioMessage: {}", e),
-    //                     )
-    //                 })?;
-    //                 client.download_to_writer(&media, path).await
-    //             }
-    //             "StickerMessage" => {
-    //                 let media = wa::StickerMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-    //                     PyErr::new::<pyo3::exceptions::PyValueError, _>(
-    //                         format!("Failed to decode StickerMessage: {}", e),
-    //                     )
-    //                 })?;
-    //                 client.download_to_writer(&media, path).await
-    //             }
-    //             _ => {
-    //                 // Fallback path for unknown wrappers from Python side.
-    //                 if let Ok(media) = wa::ImageMessage::decode(&mut serialized.as_slice()) {
-    //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::VideoMessage::decode(&mut serialized.as_slice()) {
-    //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::DocumentMessage::decode(&mut serialized.as_slice()) {
-    //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::AudioMessage::decode(&mut serialized.as_slice()) {
-    //                     client.download_to_writer(&media, path).await
-    //                 } else if let Ok(media) = wa::StickerMessage::decode(&mut serialized.as_slice()) {
-    //                     client.download_to_writer(&media, path).await
-    //                 } else {
-    //                     return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-    //                         "Failed to decode message as supported media message",
-    //                     ));
-    //                 }
-    //             }
-    //         }.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
-    fn download_media<'py>(&self, py: Python<'py>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
+    /// Download media into memory (`bytes`). Accepts either an `EvMessage` (zero
+    /// protobuf round-trip) or a Python protobuf media object (`ImageMessage`, etc.).
+    #[pyo3(signature = (target, max_bytes=None))]
+    fn download_media<'py>(
+        &self,
+        py: Python<'py>,
+        target: Py<PyAny>,
+        max_bytes: Option<u64>,
+    ) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let message_type_name = message
+        let limits = match max_bytes {
+            Some(limit) => DownloadLimits::new(limit, limit),
+            None => DownloadLimits::default(),
+        };
+        let locals = get_current_locals(py)?;
+
+        // Fast path: EvMessage passed directly -> zero protobuf serialization round-trip!
+        if let Ok(ev_msg) = target.extract::<Py<EvMessage>>(py) {
+            let msg_arc = Arc::clone(&ev_msg.borrow(py).inner);
+            return future_into_py_with_locals::<_, Py<PyBytes>>(py, locals, async move {
+                let bytes = download_from_wa_message(&client, &msg_arc, limits).await?;
+                Ok(Python::attach(|py| PyBytes::new(py, &bytes).unbind()))
+            });
+        }
+
+        let message_type_name = target
             .getattr(py, "DESCRIPTOR")
             .and_then(|descriptor| descriptor.getattr(py, "name"))
             .and_then(|name| name.extract::<String>(py))
             .unwrap_or_default();
-        let serialized: Vec<u8> = message
-            .call_method0(py, "SerializeToString")?
-            .extract(py)?;
+        let serialized_obj = target.call_method0(py, "SerializeToString")?;
+        let serialized = serialized_obj.bind(py).cast::<PyBytes>()?.as_bytes().to_vec();
 
-        let locals = get_current_locals(py)?;
-        future_into_py_with_locals::<_, Vec<u8>>(py, locals, async move {
+        future_into_py_with_locals::<_, Py<PyBytes>>(py, locals, async move {
             let download = match message_type_name.as_str() {
-                "ImageMessage" => decode_and_download!(client, serialized.as_slice(), wa::ImageMessage, "ImageMessage"),
-                "VideoMessage" => decode_and_download!(client, serialized.as_slice(), wa::VideoMessage, "VideoMessage"),
-                "DocumentMessage" => decode_and_download!(client, serialized.as_slice(), wa::DocumentMessage, "DocumentMessage"),
-                "AudioMessage" => decode_and_download!(client, serialized.as_slice(), wa::AudioMessage, "AudioMessage"),
-                "StickerMessage" => decode_and_download!(client, serialized.as_slice(), wa::StickerMessage, "StickerMessage"),
+                "ImageMessage" => decode_and_download!(client, serialized.as_slice(), wa::ImageMessage, "ImageMessage", limits),
+                "VideoMessage" => decode_and_download!(client, serialized.as_slice(), wa::VideoMessage, "VideoMessage", limits),
+                "DocumentMessage" => decode_and_download!(client, serialized.as_slice(), wa::DocumentMessage, "DocumentMessage", limits),
+                "AudioMessage" => decode_and_download!(client, serialized.as_slice(), wa::AudioMessage, "AudioMessage", limits),
+                "StickerMessage" => decode_and_download!(client, serialized.as_slice(), wa::StickerMessage, "StickerMessage", limits),
                 _ => {
-                    // Fallback: try each media type in order.
                     if let Ok(media) = wa::ImageMessage::decode(&mut serialized.as_slice()) {
-                        client.download(&media).await
+                        client.download(&media, limits).await
                     } else if let Ok(media) = wa::VideoMessage::decode(&mut serialized.as_slice()) {
-                        client.download(&media).await
+                        client.download(&media, limits).await
                     } else if let Ok(media) = wa::DocumentMessage::decode(&mut serialized.as_slice()) {
-                        client.download(&media).await
+                        client.download(&media, limits).await
                     } else if let Ok(media) = wa::AudioMessage::decode(&mut serialized.as_slice()) {
-                        client.download(&media).await
+                        client.download(&media, limits).await
                     } else if let Ok(media) = wa::StickerMessage::decode(&mut serialized.as_slice()) {
-                        client.download(&media).await
+                        client.download(&media, limits).await
                     } else {
                         return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                            "Failed to decode message as supported media type. Expected one of: ImageMessage, VideoMessage, DocumentMessage, AudioMessage, StickerMessage",
+                            "Failed to decode message as supported media type. Expected EvMessage or one of: ImageMessage, VideoMessage, DocumentMessage, AudioMessage, StickerMessage",
                         ));
                     }
                 }
             };
 
-            download.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+            let bytes = download.map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Ok(Python::attach(|py| PyBytes::new(py, &bytes).unbind()))
         })
     }
+
+    /// Stream-download and decrypt media directly to a file on disk with constant RAM usage.
+    #[pyo3(signature = (target, path, max_bytes=None))]
+    fn download_media_to_file<'py>(
+        &self,
+        py: Python<'py>,
+        target: Py<PyAny>,
+        path: String,
+        max_bytes: Option<u64>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let client = self.client_rx.borrow().clone().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
+        })?;
+        let limits = match max_bytes {
+            Some(limit) => DownloadLimits::new(limit, limit),
+            None => DownloadLimits::default(),
+        };
+        let locals = get_current_locals(py)?;
+
+        if let Ok(ev_msg) = target.extract::<Py<EvMessage>>(py) {
+            let msg_arc = Arc::clone(&ev_msg.borrow(py).inner);
+            return future_into_py_with_locals(py, locals, async move {
+                let file = std::fs::File::create(&path)
+                    .map_err(|e| PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string()))?;
+                let writer = std::io::BufWriter::new(file);
+                download_wa_message_to_file(&client, &msg_arc, writer, limits).await
+            });
+        }
+
+        let message_type_name = target
+            .getattr(py, "DESCRIPTOR")
+            .and_then(|descriptor| descriptor.getattr(py, "name"))
+            .and_then(|name| name.extract::<String>(py))
+            .unwrap_or_default();
+        let serialized_obj = target.call_method0(py, "SerializeToString")?;
+        let serialized = serialized_obj.bind(py).cast::<PyBytes>()?.as_bytes().to_vec();
+
+        future_into_py_with_locals(py, locals, async move {
+            let file = std::fs::File::create(&path)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string()))?;
+            let writer = std::io::BufWriter::new(file);
+            let res = match message_type_name.as_str() {
+                "ImageMessage" => decode_and_download_to_writer!(client, serialized.as_slice(), wa::ImageMessage, "ImageMessage", writer, limits),
+                "VideoMessage" => decode_and_download_to_writer!(client, serialized.as_slice(), wa::VideoMessage, "VideoMessage", writer, limits),
+                "DocumentMessage" => decode_and_download_to_writer!(client, serialized.as_slice(), wa::DocumentMessage, "DocumentMessage", writer, limits),
+                "AudioMessage" => decode_and_download_to_writer!(client, serialized.as_slice(), wa::AudioMessage, "AudioMessage", writer, limits),
+                "StickerMessage" => decode_and_download_to_writer!(client, serialized.as_slice(), wa::StickerMessage, "StickerMessage", writer, limits),
+                _ => {
+                    if let Ok(media) = wa::ImageMessage::decode(&mut serialized.as_slice()) {
+                        client.download_to_writer(&media, writer, limits).await
+                    } else if let Ok(media) = wa::VideoMessage::decode(&mut serialized.as_slice()) {
+                        client.download_to_writer(&media, writer, limits).await
+                    } else if let Ok(media) = wa::DocumentMessage::decode(&mut serialized.as_slice()) {
+                        client.download_to_writer(&media, writer, limits).await
+                    } else if let Ok(media) = wa::AudioMessage::decode(&mut serialized.as_slice()) {
+                        client.download_to_writer(&media, writer, limits).await
+                    } else if let Ok(media) = wa::StickerMessage::decode(&mut serialized.as_slice()) {
+                        client.download_to_writer(&media, writer, limits).await
+                    } else {
+                        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                            "Failed to decode message as supported media type.",
+                        ));
+                    }
+                }
+            };
+            res.map(|_| ()).map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
+        })
+    }
+
     fn upload_file<'py>(&self, py: Python<'py>, path: String, media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
         let media_type_enum = media_type.bind(py).borrow_mut().to_wacore_enum();
         let locals = get_current_locals(py)?;
-        let data = std::fs::read(&path)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
         future_into_py_with_locals(py, locals, async move {
+            let data = tokio::task::spawn_blocking(move || std::fs::read(&path))
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string()))?;
             let url = client
                 .upload(data, media_type_enum, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            let result = UploadResponse {
-                inner: url,
-            };
-            Ok(result)
+            Ok(UploadResponse { inner: url })
         })
     }
     fn upload<'py>(&self, py: Python<'py>, data: Vec<u8>, media_type: Py<MediaType>) -> PyResult<Bound<'py, PyAny>> {
@@ -272,23 +386,13 @@ impl TryxClient {
         //     Ok(url)
         // })
     }
-    fn send_message<'py>(&self, py: Python<'py>, to: Py<JID>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
+    fn send_message<'py>(&self, py: Python<'py>, to: PyJidArg<'py>, message: Py<PyAny>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
 
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
-
-        // Python protobuf object -> bytes -> Rust proto
-        let serialized: Vec<u8> = message
-            .call_method0(py, "SerializeToString")?
-            .extract(py)?;
-
-        let whatsapp_message = WhatsappMessage::decode(&mut serialized.as_slice()).map_err(|e| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Failed to decode WhatsAppMessage proto: {}", e),
-            )
-        })?;
+        let jid = to.into_whatsapp_jid()?;
+        let whatsapp_message: WhatsappMessage = decode_py_proto(py, &message)?;
 
         let locals = get_current_locals(py)?;
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
@@ -300,50 +404,55 @@ impl TryxClient {
         })
     }
     #[pyo3(signature = (to, text, quoted=None))]
-    fn send_text<'py>(&self, py: Python<'py>, to: Py<JID>, text: String, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
+    fn send_text<'py>(&self, py: Python<'py>, to: PyJidArg<'py>, text: String, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
+        let jid = to.into_whatsapp_jid()?;
+        self.send_text_inner(py, jid, text, quoted)
+    }
+
+    /// Reply directly to an incoming `EvMessage` with text, automatically quoting it.
+    fn reply_text<'py>(&self, py: Python<'py>, event: Py<EvMessage>, text: String) -> PyResult<Bound<'py, PyAny>> {
+        let chat = event.bind(py).borrow().inner_message_info.source.chat.clone();
+        self.send_text_inner(py, chat, text, Some(event))
+    }
+
+    /// React directly to an incoming `EvMessage` with an emoji (pass `""` to remove reaction).
+    fn react<'py>(&self, py: Python<'py>, event: Py<EvMessage>, emoji: String) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let ev_ref = event.bind(py).borrow();
+        let info = &ev_ref.inner_message_info;
+        let chat_jid_value = info.source.chat.clone();
+        let mut key = waproto::whatsapp::MessageKey::default();
+        key.remote_jid = Some(chat_jid_value.to_string());
+        key.id = Some(info.id.to_string());
+        key.from_me = Some(info.source.is_from_me);
+        if info.source.is_group {
+            key.participant = Some(info.source.sender.to_string());
+        }
+        drop(ev_ref);
+        let mut react_msg = wa::ReactionMessage::default();
+        react_msg.key = buffa::MessageField::some(key);
+        react_msg.text = Some(emoji);
+        react_msg.sender_timestamp_ms = Some(wacore::time::now_millis());
+        let mut message = WhatsappMessage::default();
+        message.reaction_message = buffa::MessageField::some(react_msg);
         let locals = get_current_locals(py)?;
-        let context_info = Self::quote_context(py, quoted.as_ref());
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
-            match quoted {
-                Some(_) => {
-                    let message = WhatsappMessage {
-                        extended_text_message: buffa::MessageField::some(wa::ExtendedTextMessage {
-                            text: Some(text),
-                            context_info: context_info.into(),
-                            ..Default::default()
-                        }),
-                        ..Default::default()
-                    };
-                    let send_result = client
-                        .send_message(jid, message)
-                        .await
-                        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-                    Python::attach(|py| Self::into_send_result(py, send_result))
-                }
-                None => {
-                    let message = WhatsappMessage {
-                        conversation: Some(text),
-                        ..Default::default()
-                    };
-                    let send_result = client
-                        .send_message(jid, message)
-                        .await
-                        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-                    Python::attach(|py| Self::into_send_result(py, send_result))
-                }
-            }
+            let send_result = client
+                .send_message(chat_jid_value, message)
+                .await
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+            Python::attach(|py| Self::into_send_result(py, send_result))
         })
     }
+
     #[pyo3(signature = (to, photo_data, mimetype=None, caption=None, quoted=None))]
-    fn send_photo<'py>(&self, py: Python<'py>, to: Py<JID>, photo_data: Vec<u8>, mimetype: Option<String>, caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
+    fn send_photo<'py>(&self, py: Python<'py>, to: PyJidArg<'py>, photo_data: Vec<u8>, mimetype: Option<String>, caption: Option<String>, quoted: Option<Py<EvMessage>>) -> PyResult<Bound<'py, PyAny>> {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let jid = to.into_whatsapp_jid()?;
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
         future_into_py_with_locals::<_, Py<SendResult>>(py, locals, async move {
@@ -354,21 +463,18 @@ impl TryxClient {
                 .upload(photo_data, wacore::download::MediaType::Image, UploadOptions::default())
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-            let message = WhatsappMessage {
-                image_message: buffa::MessageField::some(wa::ImageMessage {
-                    url: Some(upload.url),
-                    mimetype: Some(mime),
-                    direct_path: Some(upload.direct_path),
-                    media_key: Some(upload.media_key.to_vec()),
-                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
-                    file_sha256: Some(upload.file_sha256.to_vec()),
-                    file_length: Some(upload.file_length),
-                    caption,
-                    context_info: context_info.into(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            };
+            let mut img = wa::ImageMessage::default();
+            img.url = Some(upload.url);
+            img.mimetype = Some(mime);
+            img.direct_path = Some(upload.direct_path);
+            img.media_key = Some(upload.media_key.to_vec());
+            img.file_enc_sha256 = Some(upload.file_enc_sha256.to_vec());
+            img.file_sha256 = Some(upload.file_sha256.to_vec());
+            img.file_length = Some(upload.file_length);
+            img.caption = caption;
+            img.context_info = context_info.into();
+            let mut message = WhatsappMessage::default();
+            message.image_message = buffa::MessageField::some(img);
             let send_result = client
                 .send_message(jid, message)
                 .await
@@ -381,7 +487,7 @@ impl TryxClient {
     fn send_document<'py>(
         &self,
         py: Python<'py>,
-        to: Py<JID>,
+        to: PyJidArg<'py>,
         document_data: Vec<u8>,
         mimetype: Option<String>,
         file_name: Option<String>,
@@ -391,7 +497,7 @@ impl TryxClient {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let jid = to.into_whatsapp_jid()?;
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
@@ -404,23 +510,20 @@ impl TryxClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
-            let message = WhatsappMessage {
-                document_message: buffa::MessageField::some(wa::DocumentMessage {
-                    url: Some(upload.url),
-                    mimetype: Some(mime),
-                    title: file_name.clone(),
-                    file_sha256: Some(upload.file_sha256.to_vec()),
-                    file_length: Some(upload.file_length),
-                    media_key: Some(upload.media_key.to_vec()),
-                    file_name,
-                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
-                    direct_path: Some(upload.direct_path),
-                    caption,
-                    context_info: context_info.into(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            };
+            let mut doc = wa::DocumentMessage::default();
+            doc.url = Some(upload.url);
+            doc.mimetype = Some(mime);
+            doc.title = file_name.clone();
+            doc.file_sha256 = Some(upload.file_sha256.to_vec());
+            doc.file_length = Some(upload.file_length);
+            doc.media_key = Some(upload.media_key.to_vec());
+            doc.file_name = file_name;
+            doc.file_enc_sha256 = Some(upload.file_enc_sha256.to_vec());
+            doc.direct_path = Some(upload.direct_path);
+            doc.caption = caption;
+            doc.context_info = context_info.into();
+            let mut message = WhatsappMessage::default();
+            message.document_message = buffa::MessageField::some(doc);
 
             let send_result = client
                 .send_message(jid, message)
@@ -434,7 +537,7 @@ impl TryxClient {
     fn send_audio<'py>(
         &self,
         py: Python<'py>,
-        to: Py<JID>,
+        to: PyJidArg<'py>,
         audio_data: Vec<u8>,
         mimetype: Option<String>,
         ptt: bool,
@@ -444,7 +547,7 @@ impl TryxClient {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let jid = to.into_whatsapp_jid()?;
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
@@ -457,22 +560,19 @@ impl TryxClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
-            let message = WhatsappMessage {
-                audio_message: buffa::MessageField::some(wa::AudioMessage {
-                    url: Some(upload.url),
-                    mimetype: Some(mime),
-                    file_sha256: Some(upload.file_sha256.to_vec()),
-                    file_length: Some(upload.file_length),
-                    seconds,
-                    ptt: Some(ptt),
-                    media_key: Some(upload.media_key.to_vec()),
-                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
-                    direct_path: Some(upload.direct_path),
-                    context_info: context_info.into(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            };
+            let mut audio = wa::AudioMessage::default();
+            audio.url = Some(upload.url);
+            audio.mimetype = Some(mime);
+            audio.file_sha256 = Some(upload.file_sha256.to_vec());
+            audio.file_length = Some(upload.file_length);
+            audio.seconds = seconds;
+            audio.ptt = Some(ptt);
+            audio.media_key = Some(upload.media_key.to_vec());
+            audio.file_enc_sha256 = Some(upload.file_enc_sha256.to_vec());
+            audio.direct_path = Some(upload.direct_path);
+            audio.context_info = context_info.into();
+            let mut message = WhatsappMessage::default();
+            message.audio_message = buffa::MessageField::some(audio);
 
             let send_result = client
                 .send_message(jid, message)
@@ -486,7 +586,7 @@ impl TryxClient {
     fn send_video<'py>(
         &self,
         py: Python<'py>,
-        to: Py<JID>,
+        to: PyJidArg<'py>,
         video_data: Vec<u8>,
         mimetype: Option<String>,
         caption: Option<String>,
@@ -497,7 +597,7 @@ impl TryxClient {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let jid = to.into_whatsapp_jid()?;
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
@@ -510,23 +610,20 @@ impl TryxClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
-            let message = WhatsappMessage {
-                video_message: buffa::MessageField::some(wa::VideoMessage {
-                    url: Some(upload.url),
-                    mimetype: Some(mime),
-                    file_sha256: Some(upload.file_sha256.to_vec()),
-                    file_length: Some(upload.file_length),
-                    seconds,
-                    media_key: Some(upload.media_key.to_vec()),
-                    caption,
-                    gif_playback: Some(gif_playback),
-                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
-                    direct_path: Some(upload.direct_path),
-                    context_info: context_info.into(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            };
+            let mut video = wa::VideoMessage::default();
+            video.url = Some(upload.url);
+            video.mimetype = Some(mime);
+            video.file_sha256 = Some(upload.file_sha256.to_vec());
+            video.file_length = Some(upload.file_length);
+            video.seconds = seconds;
+            video.media_key = Some(upload.media_key.to_vec());
+            video.caption = caption;
+            video.gif_playback = Some(gif_playback);
+            video.file_enc_sha256 = Some(upload.file_enc_sha256.to_vec());
+            video.direct_path = Some(upload.direct_path);
+            video.context_info = context_info.into();
+            let mut message = WhatsappMessage::default();
+            message.video_message = buffa::MessageField::some(video);
 
             let send_result = client
                 .send_message(jid, message)
@@ -540,7 +637,7 @@ impl TryxClient {
     fn send_gif<'py>(
         &self,
         py: Python<'py>,
-        to: Py<JID>,
+        to: PyJidArg<'py>,
         gif_data: Vec<u8>,
         caption: Option<String>,
         seconds: Option<u32>,
@@ -553,7 +650,7 @@ impl TryxClient {
     fn send_sticker<'py>(
         &self,
         py: Python<'py>,
-        to: Py<JID>,
+        to: PyJidArg<'py>,
         sticker_data: Vec<u8>,
         is_animated: bool,
         quoted: Option<Py<EvMessage>>,
@@ -561,7 +658,7 @@ impl TryxClient {
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let jid = to.bind(py).borrow().as_whatsapp_jid();
+        let jid = to.into_whatsapp_jid()?;
         let locals = get_current_locals(py)?;
         let context_info = Self::quote_context(py, quoted.as_ref());
 
@@ -572,21 +669,18 @@ impl TryxClient {
                 .await
                 .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
-            let message = WhatsappMessage {
-                sticker_message: buffa::MessageField::some(wa::StickerMessage {
-                    url: Some(upload.url),
-                    file_sha256: Some(upload.file_sha256.to_vec()),
-                    file_enc_sha256: Some(upload.file_enc_sha256.to_vec()),
-                    media_key: Some(upload.media_key.to_vec()),
-                    mimetype: Some(mime),
-                    direct_path: Some(upload.direct_path),
-                    file_length: Some(upload.file_length),
-                    is_animated: Some(is_animated),
-                    context_info: context_info.into(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            };
+            let mut sticker = wa::StickerMessage::default();
+            sticker.url = Some(upload.url);
+            sticker.file_sha256 = Some(upload.file_sha256.to_vec());
+            sticker.file_enc_sha256 = Some(upload.file_enc_sha256.to_vec());
+            sticker.media_key = Some(upload.media_key.to_vec());
+            sticker.mimetype = Some(mime);
+            sticker.direct_path = Some(upload.direct_path);
+            sticker.file_length = Some(upload.file_length);
+            sticker.is_animated = Some(is_animated);
+            sticker.context_info = context_info.into();
+            let mut message = WhatsappMessage::default();
+            message.sticker_message = buffa::MessageField::some(sticker);
 
             let send_result = client
                 .send_message(jid, message)
@@ -601,34 +695,37 @@ impl TryxClient {
         &self,
         py: Python<'py>,
         message_id: String,
-        chat_jid: Py<JID>,
+        chat_jid: PyJidArg<'py>,
         media_key: &[u8],
         is_from_me: bool,
-        participant: Option<Py<JID>>,
+        participant: Option<PyJidArg<'py>>,
     ) -> PyResult<Bound<'py, PyAny>> {
-        if media_key.is_empty() {
-            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                "media_key cannot be empty",
-            ));
-        }
+        let media_key_arr: [u8; 32] = media_key.try_into().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("media_key must be 32 bytes")
+        })?;
+        let msg_id = whatsapp_rust::MessageId::new(&message_id)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
 
         let client = self.client_rx.borrow().clone().ok_or_else(|| {
             PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Client is not running. Call Tryx.run() or Tryx.run_blocking() first.")
         })?;
-        let chat_jid_value = chat_jid.bind(py).borrow().as_whatsapp_jid();
+        let chat_jid_value = chat_jid.into_whatsapp_jid()?;
         let participant_value = participant
-            .as_ref()
-            .map(|value| value.bind(py).borrow().as_whatsapp_jid());
-        let media_key_data = media_key.to_vec();
+            .map(|value| value.into_whatsapp_jid())
+            .transpose()?;
         let locals = get_current_locals(py)?;
 
         future_into_py_with_locals::<_, MediaReuploadResult>(py, locals, async move {
-            let req = whatsapp_rust::MediaReuploadRequest {
-                msg_id: message_id.as_str(),
-                chat_jid: &chat_jid_value,
-                media_key: media_key_data.as_slice(),
+            let target = whatsapp_rust::MessageRef::new(
+                &chat_jid_value,
+                msg_id,
+                participant_value.as_ref(),
                 is_from_me,
-                participant: participant_value.as_ref(),
+            )
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+            let req = whatsapp_rust::MediaReuploadRequest {
+                target,
+                media_key: &media_key_arr,
             };
 
             client

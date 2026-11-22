@@ -20,10 +20,8 @@ impl NewsletterHelpers {
 
     #[staticmethod]
     fn build_text_message<'py>(py: Python<'py>, text: String) -> PyResult<Bound<'py, PyAny>> {
-        let message = waproto::whatsapp::Message {
-            conversation: Some(text),
-            ..Default::default()
-        };
+        let mut message = waproto::whatsapp::Message::default();
+        message.conversation = Some(text);
         Ok(parse_message_proto(py, message.encode_to_vec().as_slice())?
             .into_bound(py)
             .into_any())

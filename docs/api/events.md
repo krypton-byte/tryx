@@ -62,11 +62,30 @@ This page maps event classes in `tryx.events` to practical handler strategies.
 ## Dispatcher Contract
 
 `Dispatcher` is used internally by `Tryx` and by `@app.on(EventClass)` registration.
+Only event types with at least one registered handler are dispatched across the
+Rust-Python boundary (interest filtering). Both `async def` and synchronous `def`
+handlers are supported.
 
 ```python
 @app.on(EvMessage)
 async def on_message(client, event): ...
 ```
+
+### `EvMessage` Shortcut Properties
+
+`EvMessage` exposes lightweight Rust-backed getters so common handlers do not
+need to materialize `event.data` or `raw_proto`:
+
+- `event.id`, `event.chat`, `event.sender`, `event.timestamp`
+- `event.is_from_me`, `event.is_group`, `event.push_name`
+- `event.text`, `event.caption`, `event.media_type`, `event.has_media`
+
+### `EvHistorySync` Lazy Decompression
+
+`EvHistorySync` wraps `LazyHistorySync` and inflates payloads off-GIL only when
+`event.raw_bytes()` or `event.proto` is accessed. Metadata (`sync_type`,
+`chunk_order`, `progress`, `peer_data_request_session_id`, `decompressed_size`)
+is available without inflating.
 
 !!! tip "Handler model"
 	Keep handlers small, push expensive work into background tasks, and treat incoming event payloads as typed contracts.
@@ -80,6 +99,11 @@ async def on_message(client, event): ...
 - `EvLoggedOut`
 - `EvStreamReplaced`
 - `EvClientOutDated`
+- `EvClientExpirationChanged`
+- `EvOfflineSyncPreview`
+- `EvOfflineSyncCompleted`
+- `EvOfflineSyncInterrupted`
+- `EvAppStateSyncFailed`
 
 ### Pairing
 
@@ -87,13 +111,16 @@ async def on_message(client, event): ...
 - `EvPairingCode`
 - `EvPairSuccess`
 - `EvPairError`
+- `EvQrScannedWithoutMultidevice`
 
 ### Messaging
 
 - `EvMessage`
 - `EvReceipt`
+- `EvServerAck`
 - `EvUndecryptableMessage`
 - `EvNotification`
+- `EvMexNotification`
 
 ### Sync Actions
 
@@ -105,6 +132,11 @@ async def on_message(client, event): ...
 - `EvDeleteMessageForMeUpdate`
 - `EvStarUpdate`
 - `EvContactUpdate`
+- `EvLockChatUpdate`
+- `EvFavoritesUpdate`
+- `EvStatusPrivacyUpdate`
+- `EvUnarchiveChatsSettingUpdate`
+- `EvDisableLinkPreviewsUpdate`
 
 ### Contact, Profile, Presence
 
@@ -115,20 +147,23 @@ async def on_message(client, event): ...
 - `EvPresence`
 - `EvChatPresence`
 - `EvContactUpdated`
+- `EvContactRemoved`
 - `EvContactNumberChanged`
 - `EvContactSyncRequested`
+- `EvIdentityChange`
 
 ### Device and Business
 
 - `EvDeviceListUpdate`
 - `EvBusinessStatusUpdate`
 
-### Group and Newsletter
+### Group, Newsletter, and Calls
 
 - `EvJoinedGroup`
 - `EvGroupInfoUpdate`
 - `EvGroupUpdate`
 - `EvNewsletterLiveUpdate`
+- `IncomingCallEvent` (from `tryx.client`)
 
 ## Event-to-Namespace Mapping
 
