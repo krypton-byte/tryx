@@ -350,6 +350,8 @@
       
         
       
+        
+      
     
     
     
@@ -995,6 +997,8 @@
       
         
       
+        
+      
     
     
     
@@ -1164,6 +1168,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;run
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.client.Tryx.shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;shutdown
       </span>
     </span>
   </a>
@@ -1594,6 +1609,33 @@
     
   
   Profile
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../voip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Voip
 
     
   </span>
@@ -2505,6 +2547,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#tryx.client.Tryx.shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;shutdown
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tryx.client.Tryx.run_blocking" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2666,6 +2719,8 @@
       
         
       
+        
+      
     
     
     
@@ -2707,7 +2762,10 @@
 
 
 <a href="#tryx.client.Tryx" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Tryx</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="n"><span title="tryx.backend.BackendBase">BackendBase</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;FfiStoreProtocol&lt;/span&gt;" href="../backend/#tryx.backend.FfiStoreProtocol">FfiStoreProtocol</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;StoreBase&lt;/span&gt;" href="../backend/#tryx.backend.StoreBase">StoreBase</a></span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Tryx</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">backend</span><span class="p">:</span> <span class="n"><span title="tryx.backend.BackendBase">BackendBase</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;FfiStoreProtocol&lt;/span&gt;" href="../backend/#tryx.backend.FfiStoreProtocol">FfiStoreProtocol</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;StoreBase&lt;/span&gt;" href="../backend/#tryx.backend.StoreBase">StoreBase</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">signal_cache_max_entries</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2839,9 +2897,13 @@ await client.send_text(to=JID('123', 's.whatsapp.net'), text='hi')
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">on</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">event_type</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#type">type</a></span><span class="p">[</span><span class="n"><span title="tryx.client.EventT">EventT</span></span><span class="p">],</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[[</span><span class="n"><span title="tryx.client.TryxClient">TryxClient</span></span><span class="p">,</span> <span class="n"><span title="tryx.client.EventT">EventT</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Awaitable" href="https://docs.python.org/3/library/typing.html#typing.Awaitable">Awaitable</a></span><span class="p">[</span><span class="kc">None</span><span class="p">]]],</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[[</span><span class="n"><span title="tryx.client.TryxClient">TryxClient</span></span><span class="p">,</span> <span class="n"><span title="tryx.client.EventT">EventT</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Awaitable" href="https://docs.python.org/3/library/typing.html#typing.Awaitable">Awaitable</a></span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="p">[</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>            <span class="p">[</span><span class="n"><span title="tryx.client.TryxClient">TryxClient</span></span><span class="p">,</span> <span class="n"><span title="tryx.client.EventT">EventT</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Awaitable" href="https://docs.python.org/3/library/typing.html#typing.Awaitable">Awaitable</a></span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="p">]</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="p">],</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[[</span><span class="n"><span title="tryx.client.TryxClient">TryxClient</span></span><span class="p">,</span> <span class="n"><span title="tryx.client.EventT">EventT</span></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Awaitable" href="https://docs.python.org/3/library/typing.html#typing.Awaitable">Awaitable</a></span><span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2886,6 +2948,30 @@ async def handler(client: TryxClient, event: EvMessage) -&gt; None:
 <div class="doc doc-object doc-function">
 
 
+<h4 id="tryx.client.Tryx.shutdown" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">shutdown</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#tryx.client.Tryx.shutdown" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">shutdown</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Gracefully shut down the active WhatsApp client.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="tryx.client.Tryx.run_blocking" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">run_blocking</span>
 
@@ -2914,7 +3000,7 @@ async def handler(client: TryxClient, event: EvMessage) -&gt; None:
 
 </div><hr />
 <p><code>TryxClient</code> is the runtime facade passed to every handler, and it exposes
-a root messaging surface plus 12 namespace clients.</p>
+a root messaging surface plus 17 namespace clients.</p>
 <div class="admonition tip">
 <p class="admonition-title">How to read this section</p>
 <ol>
@@ -2926,7 +3012,7 @@ a root messaging surface plus 12 namespace clients.</p>
 </div>
 <h2 id="client-topology">Client Topology<a class="headerlink" href="#client-topology" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart TD
-    A[TryxClient] --&gt; B[Root send/download/upload methods]
+    A[TryxClient] --&gt; B[Root send/download/upload/reply methods]
     A --&gt; C[contact]
     A --&gt; D[chat_actions]
     A --&gt; E[community]
@@ -2938,7 +3024,12 @@ a root messaging surface plus 12 namespace clients.</p>
     A --&gt; K[polls]
     A --&gt; L[presence]
     A --&gt; M[privacy]
-    A --&gt; N[profile]</code></pre>
+    A --&gt; N[profile]
+    A --&gt; O[advanced]
+    A --&gt; P[labels]
+    A --&gt; Q[comments]
+    A --&gt; R[events]
+    A --&gt; S[voip]</code></pre>
 <h2 id="namespace-router">Namespace Router<a class="headerlink" href="#namespace-router" title="Permanent link">&para;</a></h2>
 <div class="tryx-link-grid">
 <p><a class="md-link" href="../contact/"><strong>Contact</strong></a>
@@ -2965,11 +3056,14 @@ Online/offline presence and subscriptions</p>
 Privacy settings and disallowed lists</p>
 <p><a class="md-link" href="../profile/"><strong>Profile</strong></a>
 Push name, status text, profile picture</p>
+<p><a class="md-link" href="../voip/"><strong>VoIP</strong></a>
+1:1 audio/video calls, group calls, and call links</p>
 </div>
 <hr />
 <h2 id="root-transport-methods">Root Transport Methods<a class="headerlink" href="#root-transport-methods" title="Permanent link">&para;</a></h2>
 <p>These methods stay on <code>TryxClient</code> directly because they are cross-domain
-primitives.</p>
+primitives. All <code>to</code> parameters accept either a <code>JID</code> object or a JID string
+(such as <code>"628123456789@s.whatsapp.net"</code>).</p>
 <table>
 <thead>
 <tr>
@@ -2985,13 +3079,18 @@ primitives.</p>
 <td>Guard before sends</td>
 </tr>
 <tr>
-<td><code>download_media(message)</code></td>
-<td>Download media blob</td>
+<td><code>download_media(target, max_bytes=None)</code></td>
+<td>Download media blob from <code>EvMessage</code> or media proto</td>
 <td>Save image/audio/document</td>
 </tr>
 <tr>
+<td><code>download_media_to_file(target, path, max_bytes=None)</code></td>
+<td>Stream media directly to disk</td>
+<td>Large media without RAM bloat</td>
+</tr>
+<tr>
 <td><code>upload_file(path, media_type)</code></td>
-<td>Upload file for later use</td>
+<td>Upload file off-GIL for later use</td>
 <td>Status media workflows</td>
 </tr>
 <tr>
@@ -3008,6 +3107,16 @@ primitives.</p>
 <td><code>send_text(...)</code></td>
 <td>Text helper</td>
 <td>Most command handlers</td>
+</tr>
+<tr>
+<td><code>reply_text(event, text, ...)</code></td>
+<td>Quote-reply to an <code>EvMessage</code></td>
+<td>Concise command replies</td>
+</tr>
+<tr>
+<td><code>react(event, emoji)</code></td>
+<td>React to an <code>EvMessage</code></td>
+<td>Quick acknowledgments</td>
 </tr>
 <tr>
 <td><code>send_photo(...)</code></td>
@@ -3046,6 +3155,10 @@ primitives.</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition tip">
+<p class="admonition-title">Bounded Signal Cache &amp; Graceful Shutdown</p>
+<p>Pass <code>signal_cache_max_entries</code> to <code>Tryx(backend, signal_cache_max_entries=1024)</code> to cap in-memory Signal ratchet caches, and call <code>await app.shutdown()</code> for clean disconnection.</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Reconnect-safe pattern</p>
 <p>Avoid caching <code>TryxClient</code> on global module state across runtime

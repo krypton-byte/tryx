@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://krypton-byte.github.io/tryx/dev/api/events/">
       
       
-        <link rel="prev" href="../profile/">
+        <link rel="prev" href="../voip/">
       
       
         <link rel="next" href="../types/">
@@ -310,6 +310,8 @@
       
         
           
+        
+      
         
       
         
@@ -995,6 +997,8 @@
       
         
       
+        
+      
     
     
     
@@ -1434,6 +1438,33 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../voip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Voip
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1823,10 +1854,93 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.sync_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;sync_type
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.chunk_order" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;chunk_order
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;progress
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.peer_data_request_session_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;peer_data_request_session_id
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.decompressed_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;decompressed_size
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tryx.events.EvHistorySync.proto" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;proto
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Methods:
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.raw_bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;raw_bytes
       </span>
     </span>
   </a>
@@ -1851,6 +1965,34 @@
       </span>
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Dispatcher Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evmessage-shortcut-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>EvMessage</code> Shortcut Properties
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evhistorysync-lazy-decompression" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>EvHistorySync</code> Lazy Decompression
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1933,10 +2075,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#group-and-newsletter" class="md-nav__link">
+  <a href="#group-newsletter-and-calls" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Group and Newsletter
+        Group, Newsletter, and Calls
       </span>
     </span>
   </a>
@@ -3158,10 +3300,93 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.sync_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;sync_type
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.chunk_order" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;chunk_order
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;progress
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.peer_data_request_session_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;peer_data_request_session_id
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.decompressed_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;decompressed_size
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tryx.events.EvHistorySync.proto" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;proto
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Methods:
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tryx.events.EvHistorySync.raw_bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;raw_bytes
       </span>
     </span>
   </a>
@@ -3186,6 +3411,34 @@
       </span>
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Dispatcher Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evmessage-shortcut-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>EvMessage</code> Shortcut Properties
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evhistorysync-lazy-decompression" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>EvHistorySync</code> Lazy Decompression
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3268,10 +3521,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#group-and-newsletter" class="md-nav__link">
+  <a href="#group-newsletter-and-calls" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Group and Newsletter
+        Group, Newsletter, and Calls
       </span>
     </span>
   </a>
@@ -3384,6 +3637,8 @@
       
         
           
+        
+      
         
       
         
@@ -4255,7 +4510,7 @@
 
 
 
-        <p>Contains protobuf history sync payload.</p>
+        <p>Contains lazy-decompressed protobuf history sync payload.</p>
 
 
 
@@ -4279,6 +4534,126 @@
 
 
 
+<h4 id="tryx.events.EvHistorySync.sync_type" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">sync_type</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#tryx.events.EvHistorySync.sync_type" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">sync_type</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>History sync type enum value, available without inflating.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="tryx.events.EvHistorySync.chunk_order" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">chunk_order</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#tryx.events.EvHistorySync.chunk_order" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">chunk_order</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Chunk ordering for multi-chunk transfers, available without inflating.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="tryx.events.EvHistorySync.progress" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">progress</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#tryx.events.EvHistorySync.progress" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">progress</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Sync progress (0-100), available without inflating.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="tryx.events.EvHistorySync.peer_data_request_session_id" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">peer_data_request_session_id</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#tryx.events.EvHistorySync.peer_data_request_session_id" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">peer_data_request_session_id</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Session ID for ON_DEMAND syncs, or None for server-pushed syncs.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="tryx.events.EvHistorySync.decompressed_size" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">decompressed_size</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#tryx.events.EvHistorySync.decompressed_size" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">decompressed_size</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#int">int</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Exact decompressed protobuf payload size in bytes.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h4 id="tryx.events.EvHistorySync.proto" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">proto</span>
 
@@ -4293,7 +4668,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Return the raw HistorySync protobuf.</p>
+        <p>Inflate and parse the HistorySync protobuf (cached after first access).</p>
 
 
 <table>
@@ -4324,7 +4699,27 @@
 </div>
 
 
+<h3 id="tryx.events.EvHistorySync-functions">Methods:<a href="#tryx.events.EvHistorySync-functions" class="headerlink" title="Permanent link">&para;</a></h3>
 
+<div class="doc doc-object doc-function">
+
+
+<h4 id="tryx.events.EvHistorySync.raw_bytes" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">raw_bytes</span>
+
+
+<a href="#tryx.events.EvHistorySync.raw_bytes" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">raw_bytes</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes">bytes</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Inflate and return the raw HistorySync protobuf bytes.</p>
+
+
+    </div>
+
+</div>
 
 
 
@@ -4335,10 +4730,26 @@
 </div><hr />
 <p>This page maps event classes in <code>tryx.events</code> to practical handler strategies.</p>
 <h2 id="dispatcher-contract">Dispatcher Contract<a class="headerlink" href="#dispatcher-contract" title="Permanent link">&para;</a></h2>
-<p><code>Dispatcher</code> is used internally by <code>Tryx</code> and by <code>@app.on(EventClass)</code> registration.</p>
+<p><code>Dispatcher</code> is used internally by <code>Tryx</code> and by <code>@app.on(EventClass)</code> registration.
+Only event types with at least one registered handler are dispatched across the
+Rust-Python boundary (interest filtering). Both <code>async def</code> and synchronous <code>def</code>
+handlers are supported.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">EvMessage</span><span class="p">)</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span> <span class="o">...</span>
 </span></code></pre></div>
+<h3 id="evmessage-shortcut-properties"><code>EvMessage</code> Shortcut Properties<a class="headerlink" href="#evmessage-shortcut-properties" title="Permanent link">&para;</a></h3>
+<p><code>EvMessage</code> exposes lightweight Rust-backed getters so common handlers do not
+need to materialize <code>event.data</code> or <code>raw_proto</code>:</p>
+<ul>
+<li><code>event.id</code>, <code>event.chat</code>, <code>event.sender</code>, <code>event.timestamp</code></li>
+<li><code>event.is_from_me</code>, <code>event.is_group</code>, <code>event.push_name</code></li>
+<li><code>event.text</code>, <code>event.caption</code>, <code>event.media_type</code>, <code>event.has_media</code></li>
+</ul>
+<h3 id="evhistorysync-lazy-decompression"><code>EvHistorySync</code> Lazy Decompression<a class="headerlink" href="#evhistorysync-lazy-decompression" title="Permanent link">&para;</a></h3>
+<p><code>EvHistorySync</code> wraps <code>LazyHistorySync</code> and inflates payloads off-GIL only when
+<code>event.raw_bytes()</code> or <code>event.proto</code> is accessed. Metadata (<code>sync_type</code>,
+<code>chunk_order</code>, <code>progress</code>, <code>peer_data_request_session_id</code>, <code>decompressed_size</code>)
+is available without inflating.</p>
 <div class="admonition tip">
 <p class="admonition-title">Handler model</p>
 <p>Keep handlers small, push expensive work into background tasks, and treat incoming event payloads as typed contracts.</p>
@@ -4351,6 +4762,11 @@
 <li><code>EvLoggedOut</code></li>
 <li><code>EvStreamReplaced</code></li>
 <li><code>EvClientOutDated</code></li>
+<li><code>EvClientExpirationChanged</code></li>
+<li><code>EvOfflineSyncPreview</code></li>
+<li><code>EvOfflineSyncCompleted</code></li>
+<li><code>EvOfflineSyncInterrupted</code></li>
+<li><code>EvAppStateSyncFailed</code></li>
 </ul>
 <h3 id="pairing">Pairing<a class="headerlink" href="#pairing" title="Permanent link">&para;</a></h3>
 <ul>
@@ -4358,13 +4774,16 @@
 <li><code>EvPairingCode</code></li>
 <li><code>EvPairSuccess</code></li>
 <li><code>EvPairError</code></li>
+<li><code>EvQrScannedWithoutMultidevice</code></li>
 </ul>
 <h3 id="messaging">Messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>EvMessage</code></li>
 <li><code>EvReceipt</code></li>
+<li><code>EvServerAck</code></li>
 <li><code>EvUndecryptableMessage</code></li>
 <li><code>EvNotification</code></li>
+<li><code>EvMexNotification</code></li>
 </ul>
 <h3 id="sync-actions">Sync Actions<a class="headerlink" href="#sync-actions" title="Permanent link">&para;</a></h3>
 <ul>
@@ -4376,6 +4795,11 @@
 <li><code>EvDeleteMessageForMeUpdate</code></li>
 <li><code>EvStarUpdate</code></li>
 <li><code>EvContactUpdate</code></li>
+<li><code>EvLockChatUpdate</code></li>
+<li><code>EvFavoritesUpdate</code></li>
+<li><code>EvStatusPrivacyUpdate</code></li>
+<li><code>EvUnarchiveChatsSettingUpdate</code></li>
+<li><code>EvDisableLinkPreviewsUpdate</code></li>
 </ul>
 <h3 id="contact-profile-presence">Contact, Profile, Presence<a class="headerlink" href="#contact-profile-presence" title="Permanent link">&para;</a></h3>
 <ul>
@@ -4386,20 +4810,23 @@
 <li><code>EvPresence</code></li>
 <li><code>EvChatPresence</code></li>
 <li><code>EvContactUpdated</code></li>
+<li><code>EvContactRemoved</code></li>
 <li><code>EvContactNumberChanged</code></li>
 <li><code>EvContactSyncRequested</code></li>
+<li><code>EvIdentityChange</code></li>
 </ul>
 <h3 id="device-and-business">Device and Business<a class="headerlink" href="#device-and-business" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>EvDeviceListUpdate</code></li>
 <li><code>EvBusinessStatusUpdate</code></li>
 </ul>
-<h3 id="group-and-newsletter">Group and Newsletter<a class="headerlink" href="#group-and-newsletter" title="Permanent link">&para;</a></h3>
+<h3 id="group-newsletter-and-calls">Group, Newsletter, and Calls<a class="headerlink" href="#group-newsletter-and-calls" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>EvJoinedGroup</code></li>
 <li><code>EvGroupInfoUpdate</code></li>
 <li><code>EvGroupUpdate</code></li>
 <li><code>EvNewsletterLiveUpdate</code></li>
+<li><code>IncomingCallEvent</code> (from <code>tryx.client</code>)</li>
 </ul>
 <h2 id="event-to-namespace-mapping">Event-to-Namespace Mapping<a class="headerlink" href="#event-to-namespace-mapping" title="Permanent link">&para;</a></h2>
 <table>
@@ -4551,7 +4978,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../profile/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Profile">
+          <a href="../voip/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Voip">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -4561,7 +4988,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Profile
+                Voip
               </div>
             </div>
           </a>

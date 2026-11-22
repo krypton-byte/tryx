@@ -350,6 +350,8 @@
       
         
       
+        
+      
     
     
     
@@ -995,6 +997,8 @@
       
         
       
+        
+      
     
     
     
@@ -1437,6 +1441,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../voip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Voip
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../events/" class="md-nav__link">
         
   
@@ -1538,6 +1569,45 @@
       </span>
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tryx.types.JID.parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;parse
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.types.JID.to_non_ad" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_non_ad
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.types.JID.is_same_chat_as" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_same_chat_as
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -3234,6 +3304,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tryx.types.JID.parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;parse
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.types.JID.to_non_ad" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;to_non_ad
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tryx.types.JID.is_same_chat_as" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_same_chat_as
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -4198,6 +4307,8 @@
       
         
       
+        
+      
     
     
     
@@ -4239,7 +4350,7 @@
 
 
 <a href="#tryx.types.JID" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">JID</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n">server</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">JID</span><span class="p">(</span><span class="n">user</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n">server</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4248,7 +4359,7 @@
 
         <p>Represents a WhatsApp JID (user + server).</p>
 
-        <p>Create a JID from user and server parts.</p>
+        <p>Create a JID from <code>(user, server)</code> or parse <code>"user@server"</code>.</p>
 
 
 
@@ -4259,11 +4370,7 @@
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>python/tryx/types.py</code></summary>
-                    <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-14">14</a></span>
-<span class="normal"><a href="#__codelineno-0-15">15</a></span>
-<span class="normal"><a href="#__codelineno-0-16">16</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="o">-</span> <span class="p">:</span><span class="n">class</span><span class="p">:</span><span class="err">`</span><span class="n">UploadResponse</span><span class="err">`</span> <span class="err">—</span> <span class="n">Media</span> <span class="n">upload</span> <span class="n">response</span> <span class="kn">from</span><span class="w"> </span><span class="nn">WhatsApp</span> <span class="n">servers</span><span class="o">.</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span class="n">Example</span><span class="p">::</span>
+                    <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-23">23</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="kn">from</span><span class="w"> </span><span class="nn">._tryx</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span> <span class="k">as</span> <span class="n">_types</span>  <span class="c1"># type: ignore</span>
 </span></code></pre></div></td></tr></table></div>
                   </details>
 
@@ -4279,6 +4386,99 @@
 
 
 <h3 id="tryx.types.JID-functions">Methods:<a href="#tryx.types.JID-functions" class="headerlink" title="Permanent link">&para;</a></h3>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="tryx.types.JID.parse" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">parse</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#tryx.types.JID.parse" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">parse</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;JID&lt;/span&gt;" href="./#tryx.types.JID">JID</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Parse a JID string such as <code>"628123@s.whatsapp.net"</code>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>python/tryx/types.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-26">26</a></span>
+<span class="normal"><a href="#__codelineno-0-27">27</a></span>
+<span class="normal"><a href="#__codelineno-0-28">28</a></span>
+<span class="normal"><a href="#__codelineno-0-29">29</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="n">DeviceSentMeta</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">DeviceSentMeta</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="n">JID</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">JID</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="n">MediaReuploadResult</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">MediaReuploadResult</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="n">MessageInfo</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">MessageInfo</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="tryx.types.JID.to_non_ad" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">to_non_ad</span>
+
+
+<a href="#tryx.types.JID.to_non_ad" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_non_ad</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;JID&lt;/span&gt;" href="./#tryx.types.JID">JID</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a copy of this JID stripped of any companion device id.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>python/tryx/types.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-30">30</a></span>
+<span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="n">MessageSource</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">MessageSource</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="n">MsgBotInfo</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">MsgBotInfo</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="n">MsgMetaInfo</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">MsgMetaInfo</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="tryx.types.JID.is_same_chat_as" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">is_same_chat_as</span>
+
+
+<a href="#tryx.types.JID.is_same_chat_as" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">is_same_chat_as</span><span class="p">(</span><span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;JID&lt;/span&gt;" href="./#tryx.types.JID">JID</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/builtins/functions.html#bool">bool</a></span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return True if <em>other</em> addresses the same chat.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>python/tryx/types.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="n">ProfilePicture</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">ProfilePicture</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="n">SendResult</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">SendResult</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="n">UploadResponse</span> <span class="o">=</span> <span class="n">_types</span><span class="o">.</span><span class="n">UploadResponse</span>  <span class="c1"># type: ignore[attr-defined]</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
@@ -6960,10 +7160,12 @@
 <p>Core value objects in <code>tryx.types</code> define identity, message metadata, and result contracts used across client namespaces.</p>
 <h2 id="identity-and-source-types">Identity and Source Types<a class="headerlink" href="#identity-and-source-types" title="Permanent link">&para;</a></h2>
 <h3 id="jid"><code>JID</code><a class="headerlink" href="#jid" title="Permanent link">&para;</a></h3>
-<p>Canonical WhatsApp identifier:</p>
+<p>Canonical WhatsApp identifier (stored by value in Rust with zero heap indirection):</p>
 <ul>
-<li><code>user</code>: account or group numeric/opaque id</li>
-<li><code>server</code>: domain segment (<code>s.whatsapp.net</code>, <code>g.us</code>, etc.)</li>
+<li>Construct from a full string <code>JID("628123456789@s.whatsapp.net")</code>, <code>JID.parse(...)</code>, or <code>JID("628123456789", "s.whatsapp.net")</code></li>
+<li>Fields: <code>user</code>, <code>server</code>, <code>device</code>, <code>agent</code></li>
+<li>Predicates &amp; helpers: <code>is_pn</code>, <code>is_lid</code>, <code>is_group</code>, <code>is_broadcast</code>, <code>is_newsletter</code>, <code>to_non_ad()</code>, <code>is_same_chat_as(other)</code></li>
+<li>Hashable and equality-comparable (<code>__str__</code>, <code>__eq__</code>, <code>__hash__</code>) for direct use as dict keys and set members</li>
 </ul>
 <h3 id="messagesource"><code>MessageSource</code><a class="headerlink" href="#messagesource" title="Permanent link">&para;</a></h3>
 <p>Routing context for a message:</p>

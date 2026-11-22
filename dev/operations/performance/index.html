@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#handler-design-rules" class="md-skip">
+        <a href="#built-in-low-overhead-architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -308,6 +308,8 @@
       
         
           
+        
+      
         
       
         
@@ -993,6 +995,8 @@
       
         
       
+        
+      
     
     
     
@@ -1415,6 +1419,33 @@
     
   
   Profile
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/voip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Voip
 
     
   </span>
@@ -2015,6 +2046,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#built-in-low-overhead-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Built-in Low-Overhead Architecture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#handler-design-rules" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2381,6 +2423,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#built-in-low-overhead-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Built-in Low-Overhead Architecture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#handler-design-rules" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2535,6 +2588,15 @@
 
 <h1 id="performance-guide"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 16a3 3 0 0 1-3-3c0-1.12.61-2.1 1.5-2.61l9.71-5.62-5.53 9.58c-.5.98-1.51 1.65-2.68 1.65m0-13c1.81 0 3.5.5 4.97 1.32l-2.1 1.21C14 5.19 13 5 12 5a8 8 0 0 0-8 8c0 2.21.89 4.21 2.34 5.65h.01c.39.39.39 1.02 0 1.41s-1.03.39-1.42.01A9.97 9.97 0 0 1 2 13 10 10 0 0 1 12 3m10 10c0 2.76-1.12 5.26-2.93 7.07-.39.38-1.02.38-1.41-.01a.996.996 0 0 1 0-1.41A7.95 7.95 0 0 0 20 13c0-1-.19-2-.54-2.9L20.67 8C21.5 9.5 22 11.18 22 13"/></svg></span> Performance Guide<a class="headerlink" href="#performance-guide" title="Permanent link">&para;</a></h1>
 <p>Optimize for predictable latency and stable memory under burst traffic.</p>
+<h2 id="built-in-low-overhead-architecture">Built-in Low-Overhead Architecture<a class="headerlink" href="#built-in-low-overhead-architecture" title="Permanent link">&para;</a></h2>
+<p>Tryx minimizes Python/GIL overhead and memory churn in the Rust layer:</p>
+<ol>
+<li><strong>Event-Interest Filtering</strong>: <code>Tryx</code> registers only the event types that have Python <code>@app.on(...)</code> handlers; unsubscribed events are dropped inside Rust without acquiring the GIL.</li>
+<li><strong>Shortcut Getters &amp; Lazy Parsing</strong>: Read <code>event.text</code>, <code>event.chat</code>, <code>event.sender</code>, <code>event.id</code>, and <code>event.has_media</code> on <code>EvMessage</code> without allocating <code>MessageData</code> or <code>raw_proto</code>. <code>EvHistorySync</code> keeps payloads compressed until <code>raw_bytes()</code> or <code>proto</code> is requested, and decompresses off-GIL.</li>
+<li><strong>Zero-Roundtrip &amp; Streaming Media</strong>: <code>client.download_media(event)</code> and <code>client.download_media_to_file(event, path)</code> read media descriptors directly from Rust <code>Arc&lt;Message&gt;</code> without serializing protobuf back from Python.</li>
+<li><strong>Bounded Signal Caches</strong>: Pass <code>signal_cache_max_entries</code> to <code>Tryx(backend, signal_cache_max_entries=...)</code> to cap Signal ratchet memory on high-volume bots.</li>
+<li><strong>Pooled Storage &amp; Shared Tokio Runtime</strong>: <code>SqliteStore</code> caches its <code>SqliteDatabase</code> pool in a <code>OnceCell</code>, and all async Python futures share <code>pyo3_async_runtimes::tokio::get_runtime()</code>.</li>
+</ol>
 <h2 id="handler-design-rules">Handler Design Rules<a class="headerlink" href="#handler-design-rules" title="Permanent link">&para;</a></h2>
 <ol>
 <li>keep event handlers short and non-blocking</li>
